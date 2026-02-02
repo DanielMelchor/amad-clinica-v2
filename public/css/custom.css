@@ -1,0 +1,30 @@
+/* Estilo base para todos los btn-xs */
+.btn-xs {
+    padding: 4px 7px;   /* Botón más pequeño */
+    font-size: 10px;    /* Fuente más pequeña */
+    border-radius: 4px; /* Esquinas redondeadas */
+    line-height: 1.5;   /* Alineación del texto */
+}
+
+/* Asegurar consistencia en todos los colores Bootstrap */
+.btn-xs.btn-primary   { @apply btn btn-primary; }
+.btn-xs.btn-secondary { @apply btn btn-secondary; }
+.btn-xs.btn-success   { @apply btn btn-success; }
+.btn-xs.btn-danger    { @apply btn btn-danger; }
+.btn-xs.btn-warning   { @apply btn btn-warning; }
+.btn-xs.btn-info      { @apply btn btn-info; }
+.btn-xs.btn-light     { @apply btn btn-light; }
+.btn-xs.btn-dark      { @apply btn btn-dark; }
+
+/* Efectos hover/active para compatibilidad */
+.btn-xs:hover,
+.btn-xs:focus {
+    opacity: 0.9;
+}
+
+.btn-xs:active {
+    transform: scale(0.98);
+}
+.numero {
+    text-align: right;
+}
