@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
         $url = match (true) {
             $user->hasRole('Super Admin')   => route('home'),
             $user->hasRole('Administrador') => route('graficas_index'),
-            $user->hasRole('Medico')        => route('pacientes'),
+            $user->hasRole('Medico')        => route('index_medico'),
             $user->hasRole('Recepción')     => route('nueva_agenda'), // Con tilde como en tu DB
             default                         => route('consultas'),
         };

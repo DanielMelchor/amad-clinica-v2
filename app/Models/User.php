@@ -25,6 +25,7 @@ class User extends Authenticatable
         'name',
         'username',
         'password',
+        'medico_id'
     ];
 
     /**
@@ -116,5 +117,10 @@ class User extends Authenticatable
     public function getAuthIdentifierName()
     {
         return 'username';
+    }
+
+    public function routeNotificationForTelegram()
+    {
+        return $this->telegram_chat_id;
     }
 }

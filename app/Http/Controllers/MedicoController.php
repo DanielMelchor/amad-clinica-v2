@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use DB;
 use Response;
 use Session;
+use Carbon\Carbon;
+use App\Models\AgendaController;
 use App\Models\Medico;
 use App\Models\Receta_Medico;
 use App\Models\Especialidad;
@@ -296,5 +298,43 @@ class MedicoController extends Controller
 
     public function update_config_receta_ajax(){
         $receta = Receta_Medico::where('medico_id')->first();
+    }
+
+    public function index_medico(){
+        $usuario_id = Auth::user()->medico_id;
+        $medicos = Medico::where('empresa_id', Auth::user()->empresa_id)
+                   ->where('estado', 1)
+                   ->get();
+
+        return view('medicos.index_medico', compact('medicos', 'usuario_id'));
+    }
+
+    public function trae_citas_x_medico(){
+        $medico_id = $_POST['medico_id'];
+        $fecha     = $_POST['fecha'];
+        $estado    = $_POST['estado'];
+        $ahoraPHP = now()->format('Y-m-d H:i:s');
+
+        $listado = DB::table('agendas as a')
+                   ->join('salas as s', 'a.sala_id', 's.id')
+                   ->leftjoin('pacientes as p', 'a.paciente_id', 'p.id')
+                   ->leftjoin('users as u', 'a.usuario_bloqueo', 'u.id')
+                   ->leftjoin('admisiones as ad', 'ad.agenda_id', 'a.id')
+                   ->where('a.empresa_id', Auth::user()->empresa_id)
+                   ->where(function ($query) use ($medico_id) {
+                                $query->Where('a.medico_id', '=', $medico_id);
+                           })
+                   ->whereDate('a.fecha_inicio', $fecha)
+                   ->where(function ($query) use ($estado) {
+                        $query->where('a.estado', '=', $estado);
+                              // ->orWhere('a.estado', '=', 'P');
+                    })
+                   ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'),
+                       DB::raw("IF(a.fecha_en_clinica IS NOT NULL, TIME_FORMAT(TIMEDIFF('$ahoraPHP', a.fecha_en_clinica), '%H:%i'), '00:00') AS tiempo_espera")
+                            )
+                   ->orderBy('a.sala_id', 'DESC')
+                   ->orderBy('a.fecha_inicio', 'ASC')
+                   ->get();
+        return Response::json($listado);
     }
 }

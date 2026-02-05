@@ -35,6 +35,36 @@
 		    background-color: #c3ab95 !important; /* amarillo claro */
 		}
 
+
+		/* Permite que las pestañas de salas se deslicen lateralmente en móvil */
+	    #salasTab::-webkit-scrollbar {
+	        display: none;
+	    }
+	    #salasTab {
+	        -ms-overflow-style: none;
+	        scrollbar-width: none;
+	    }
+
+	    /* Aumentar el área de clic en móviles para las filas de la tabla */
+	    /*.table-sm td {
+	        padding: 0.75rem 0.3rem !important; 
+	        vertical-align: middle;
+	    }*/
+
+	    /* Ajuste para que el input datetime-local se vea bien en iOS/Android */
+	    input[type="datetime-local"] {
+	        min-height: 38px;
+	    }
+
+	    /* Ajustes de botones para pulgares */
+	    .btn-sm.rounded-circle {
+	        width: 35px;
+	        height: 35px;
+	        line-height: 24px;
+	        text-align: center;
+	        padding: 5px 0;
+	    }
+
     </style>
 @endsection
 @section('title', 'Agenda')
@@ -44,77 +74,72 @@
 			<br><link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 			<div class="card">
 		  		<div class="card-header" style="background-color: #E1E8ED;">
-			    	<div class="row">
-			    		<div class="input-group col-lg-2 col-sm-12">
+			    	<div class="row align-items-center"> <div class="col-12 col-lg-2 mb-2">
+				        <div class="input-group input-group-sm">
 				            <div class="input-group-prepend">
-				                <label class="input-group-text">Medico</label>
+				                <label class="input-group-text">Médico</label>
 				            </div>
-				            <select class="custom-select select2 select2bs4" id="f_medico_id"  name="f_medico_id" onchange="getMedico(this);">
-				                <option value="">Seleccionar...</option>
+				            <select class="custom-select select2 select2bs4" id="f_medico_id" onchange="getMedico(this);">
 				                @foreach($medicos as $m)
-						        	<option value="{{ $m->id }}" @if($m->principal == 'S') then selected @endif> {{ $m->nombre_completo}} </option>
-						        @endforeach
+				                    <option value="{{ $m->id }}" @if($m->principal == 'S') selected @endif> {{ $m->nombre_completo}} </option>
+				                @endforeach
 				            </select>
 				        </div>
-				        <div class="input-group col-lg-2 col-sm-12">
-							<div class="input-group-prepend">
-								<label class="input-group-text" for="fecha_filtro">Fecha&nbsp;&nbsp;</label>
-							</div>
-							<input type="date" class="form-control" id="fecha_filtro" name="fecha_filtro" value="{{ $today }}" onchange="getFecha(this);">
-						</div>
-						<div class="input-group col-lg-2 col-sm-12">
-				            <div class="input-group-prepend">
-				                <label class="input-group-text" for="estado">Estado</label>
+				    </div>
+
+				    <div class="col-12 col-lg-2 mb-2">
+				        <div class="input-group input-group-sm"> <div class="input-group-prepend">
+				                <label class="input-group-text">Fecha</label>
 				            </div>
-				            <select class="custom-select select2 select2bs4" id="estado"  name="estado" onchange="getEstado(this);">
-				                <option value="T"> Todas </option>
-					        	<option value="A" selected> Activas </option>
-					        	<option value="C"> Canceladas </option>
-					        	<option value="R"> Realizadas </option>
+				            <input type="date" class="form-control" id="fecha_filtro" value="{{ $today }}" onchange="getFecha(this);">
+				        </div>
+				    </div>
+
+				    <div class="col-12 col-lg-2 mb-2">
+				        <div class="input-group input-group-sm">
+				            <div class="input-group-prepend">
+				                <label class="input-group-text">Estado</label>
+				            </div>
+				            <select class="custom-select select2 select2bs4" id="estado" onchange="getEstado(this);">
+				                <option value="T">Todas</option>
+				                <option value="A" selected>Activas</option>
+				                <option value="C">Canceladas</option>
+				                <option value="R">Realizadas</option>
 				            </select>
 				        </div>
-				        <div class="col-lg-5 col-sm-12 offset-lg-1">
-				        	<div class="row">
-				        		<!-- <div class="col-lg-7 col-sm-12" style="text-align: right;">
-						        	<div class="dropdown" id="btnExtra">
-								  		<button class="btn btn-xs btn-default dropdown-toggle rounded-circle elevation-4" type="button" data-toggle="dropdown" aria-expanded="false">
-									    	<i class="fas fa-bars"></i>
-									  	</button>
-									  	<div class="dropdown-menu">
-									    	<a class="dropdown-item" href="#" id="opcCancelar" onclick="fnCancelar();"><i class="fas fa-window-close">&nbsp; Cancelar</i></a>
-									    	<a class="dropdown-item" href="#" id="opcFinalizar" onclick="fnFinalizar();"><i class="fas fa-thumbs-up">&nbsp; Finalizar</i></a>
-									    	<a class="dropdown-item" href="#" id="opcHistorico" onclick="fnHistorico();"><i class="fas fa-book-medical">&nbsp; Historico</i></a>
-									  	</div>
-									</div>
-						        </div> -->
-				        		<div class="col-12" style="text-align: right;">
-				        			<a href="#" id="btnCita" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Crear Cita" onclick="fnEditarCita();"><i class="fas fa-plus"></i></a>
-				        			<a href="#" id="btnAdmision" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Crear Admisión" onclick="fnCrearAdmision();"><i class="fas fa-wheelchair"></i></a>
-							    	<a href="#" id="btnFinalizar" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Marcar como Finalizado" onclick="fnFinalizar();"><i class="fas fa-thumbs-up"></i></a>
-							    	<a href="#" id="btnCancelar" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Marcar como Cancelada" onclick="fnCancelar();"><i class="fas fa-ban"></i></a>
-							    	<a href="#" id="btnHistorico" class="btn btn-xs btn-outline-secondary rounded-circle elevation-4" title="Historico de Paciente" onclick="fnHistorico();"><i class="fas fa-book-medical"></i></a>
-				        			<a href="#" id="btnBloqueo" class="btn btn-xs btn-outline-secondary rounded-circle elevation-4" title="Bloquear Horario" onclick="fnBloqueo();"><i class="fas fa-lock"></i></a>
-				        		</div>
-				        	</div>
+				    </div>
+
+				    <div class="col-12 col-lg-6 ml-auto d-flex justify-content-center justify-content-lg-end mt-2 mt-lg-0">
+				        <div class="btn-group-responsive">
+				            <a href="#" id="btnAsistencia" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mx-1" onclick="confirmarPresencia()" title="Asistencia"><i class="fas fa-thumbs-up"></i></a>
+				            <a href="#" id="btnCita" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mx-1" title="Cita" onclick="fnEditarCita();"><i class="fas fa-plus"></i></a>
+				            <a href="#" id="btnAdmision" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mx-1" title="Admisión" onclick="fnCrearAdmision();"><i class="fas fa-wheelchair"></i></a>
+				            <a href="#" id="btnFinalizar" class="btn btn-xs btn-outline-success rounded-circle elevation-2 mx-1" title="Finalizar" onclick="fnFinalizar();"><i class="fas fa-thumbs-up"></i></a>
+				            <a href="#" id="btnCancelar" class="btn btn-xs btn-outline-danger rounded-circle elevation-2 mx-1" title="Cancelar" onclick="fnCancelar();"><i class="fas fa-ban"></i></a>
+				            <a href="#" id="btnHistorico" class="btn btn-xs btn-outline-secondary rounded-circle elevation-2 mx-1" title="Histórico" onclick="fnHistorico();"><i class="fas fa-book-medical"></i></a>
+				            <a href="#" id="btnBloqueo" class="btn btn-xs btn-outline-secondary rounded-circle elevation-2 mx-1" title="Bloquear" onclick="fnBloqueo();"><i class="fas fa-lock"></i></a>
 				        </div>
-			    	</div>
+				    </div>
+				</div>
 			  	</div>
 			  	<div class="card-body">
 			    	<input type="hidden" id="sala_seleccionada_id" name="sala_seleccionada_id" value="{{ $sala_seleccionada }}">
 			    	<div class="card">
-				    	<div class="card-header" style="background-color: #E1E8ED;">
-				    		<ul class="nav nav-pills nav-fill" id="salasTab">
-				                @foreach($salas as $sala)
-				    				<li class="nav-item col-12 col-lg-3">
-					    				@if($sala_seleccionada == $sala->id )
-					    					<a class="nav-link" href="#sala{{ $sala->id}}" data-toggle="tab" id="nav-link-sala{{$sala->id}}" onclick="fnDefinirSala({{ $sala->id}});">{{ $sala->sala_nombre }}</a>
-					    				@else
-					    					<a class="nav-link" href="#sala{{ $sala->id}}" data-toggle="tab" id="nav-link-sala{{$sala->id}}" onclick="fnDefinirSala({{ $sala->id}});">{{ $sala->sala_nombre }}</a>
-					    				@endif
-					  				</li>
-				    			@endforeach
-				    		</ul>
-				    	</div>
+				    	<div class="card-header p-2" style="background-color: #f4f6f9;">
+						    <ul class="nav nav-pills nav-fill d-flex flex-nowrap overflow-auto" id="salasTab" style="white-space: nowrap;-webkit-overflow-scrolling: touch;">
+						        @foreach($salas as $sala)
+						            <li class="nav-item">
+						                <a class="nav-link py-1 px-3 {{ $sala_seleccionada == $sala->id ? 'active' : '' }}" 
+						                   href="#sala{{ $sala->id}}" 
+						                   data-toggle="tab" 
+						                   id="nav-link-sala{{$sala->id}}" 
+						                   onclick="fnDefinirSala({{ $sala->id}});">
+						                   {{ $sala->sala_nombre }}
+						                </a>
+						            </li>
+						        @endforeach
+						    </ul>
+						</div>
 				    	<div class="card-body">
 				    		<input type="hidden" id="sala_seleccionada" name="sala_seleccionada" value="1">
 				    		<div class="tab-content">
@@ -126,8 +151,8 @@
 				    				@endif
 					    				<div id="contenedor_{{$sala->id}}" class="overflow-auto">
 											<div class="table-responsive">
-												<table id="tbl{{$sala->id}}" class="table table-sm table-striped" width="100%">
-													<thead>
+											    <table id="tbl{{$sala->id}}" class="table table-sm table-striped table-hover text-nowrap" width="100%">
+											    	<thead>
 														<tr class="text-center" style="font-size: 12px;">
 															<th colspan="1">Hora</th>
 															<th colspan="3">Paciente</th>
@@ -140,7 +165,7 @@
 													<tbody>
 														<tr></tr>
 													</tbody>
-												</table>							
+										        </table>
 											</div>
 										</div>
 				    				</div>
@@ -842,6 +867,65 @@
 			}
 		}
 
+		//===========================================================================
+		// Confirmar llegada de paciente
+		//===========================================================================
+		function confirmarPresencia(){
+			if (typeof idRegistro !== 'undefined' && idRegistro !== null) {
+				Swal.fire({
+		                title: 'Confirmación',
+		                text: 'Confirma el arribo de '+context_paciente_nombre,
+		                icon: 'warning',
+		                showCancelButton: true,
+		                confirmButtonColor: '#28a745', // Color success de AdminLTE
+		                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
+		                confirmButtonText: 'Si Confirmado',
+		                cancelButtonText: 'No',
+		                allowEscapeKey: true,
+		                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+		            }).then((result) => {
+		                /* result.isConfirmed será verdadero si el usuario hizo clic en "Si Cerrar" */
+		                if (result.isConfirmed) { 
+		                    $.ajax({
+		                        url: "{{ route('confirmar_ingreso') }}",
+		                        type: "POST",
+		                        dataType: 'json',
+		                        data: {
+		                            "_token": "{{ csrf_token() }}", 
+		                            cita_id: idRegistro
+		                        },
+		                        success: function(response){
+		                            console.log(response);
+		                            Swal.fire({
+		                                title: 'Trabajo Finalizado !!!',
+		                                text: response.message,
+		                                icon: response.type // Asegúrate que tu backend envíe 'success', 'error', etc.
+		                            }).then(() => {
+		                                location.reload();
+		                            });
+		                        },
+		                        error: function(error){
+		                            console.log(error);
+		                            Swal.fire('Error', 'No se pudo procesar la solicitud', 'error');
+		                        }
+		                    });
+		                } 
+		            });
+			}else{
+				Swal.fire({
+                    title: 'Error',
+                    text:  'Debe seleccionar un horario para continuar',
+                    icon:  'error',
+                    confirmButtonText: "Aceptar",
+                    confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                    customClass: {
+                        confirmButton: 'btn btn-success'
+                    },
+                    buttonsStyling: false,
+                });
+			}
+		}
+
 		//=====================================================================
 	    // Grabar cita
 	    //=====================================================================
@@ -1093,27 +1177,27 @@
 
 			        		if (context_admision_no == '') {
 			        			if (context_agenda_estado == 'P' || context_agenda_estado == 'C' || context_agenda_estado == 'B') {
-			        				document.getElementById("opcCancelar").classList.add("disabled");
+			        				// document.getElementById("opcCancelar").classList.add("disabled");
 			        			}else{
-			        				document.getElementById("opcCancelar").classList.remove("disabled");
+			        				// document.getElementById("opcCancelar").classList.remove("disabled");
 			        			}
 			        			
-			        			document.getElementById("opcFinalizar").classList.add("disabled");
+			        			// document.getElementById("opcFinalizar").classList.add("disabled");
 			        			// document.getElementById("opcTrasladar").classList.remove("disabled");
 			        		}else{
-			        			document.getElementById("opcCancelar").classList.add("disabled");
+			        			// document.getElementById("opcCancelar").classList.add("disabled");
 			        			if (context_agenda_estado != 'R') {
-			        				document.getElementById("opcFinalizar").classList.remove("disabled");
+			        				// document.getElementById("opcFinalizar").classList.remove("disabled");
 			        			}else{
-			        				document.getElementById("opcFinalizar").classList.add("disabled");
+			        				// document.getElementById("opcFinalizar").classList.add("disabled");
 			        			}
 			        			// document.getElementById("opcTrasladar").classList.add("disabled");
 			        		}
 
 			        		if (context_paciente_id != 'null') {
-			        			document.getElementById("opcHistorico").classList.remove("disabled");
+			        			// document.getElementById("opcHistorico").classList.remove("disabled");
 			        		}else{			        			
-			        			document.getElementById("opcHistorico").classList.add("disabled");
+			        			// document.getElementById("opcHistorico").classList.add("disabled");
 			        		}
 			    			fnValidaBotones();
 						}

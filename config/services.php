@@ -30,5 +30,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'telegram-bot-api' => [
+        'token' => env('TELEGRAM_BOT_TOKEN'),
+        'options' => [
+            'proxy' => 'http://proxy2.muni',
+        ],
+    ],
 ];

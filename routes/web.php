@@ -140,6 +140,7 @@ use Illuminate\Support\Facades\Route;
             Route::post('datos_cita', [AgendaController::class, 'datos_cita'])->name('datos_cita');
             Route::post('paciente_citas', [AgendaController::class, 'paciente_citas'])->name('paciente_citas');
             Route::get('fullcalendar', [AgendaController::class, 'fullcalendar_index'])->name('fullcalendar');
+            Route::post('confirmar_ingreso', [AgendaController::class, 'confirmar_ingreso'])->name('confirmar_ingreso');
         });
 
         // Aseguradoras
@@ -340,7 +341,11 @@ use Illuminate\Support\Facades\Route;
             'middleware' => ['permission:administrar-pantalla-medicos']
         ], function () {
             Route::get('nueva_admision/{paciente_id}/{origen}', [AdmisionController::class, 'nueva_admision'])->name('nueva_admision');
+
         });
+
+        Route::get('index_medico', [MedicoController::class, 'index_medico'])->name('index_medico');
+        Route::post('citas', [MedicoController::class, 'trae_citas_x_medico'])->name('trae_citas_x_medico');
 
         Route::group([
             'prefix' => 'medicos',

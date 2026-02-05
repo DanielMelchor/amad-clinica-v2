@@ -19,7 +19,7 @@ class Agenda extends Model
 
     protected $table = 'agendas';
     
-    protected $fillable = ['empresa_id', 'sala_id', 'medico_id', 'hospital_id', 'paciente_id', 'maestro_protocolo_id', 'fecha_inicio', 'fecha_final', 'nombre_completo', 'telefonos', 'observaciones', 'fecha_bloqueo', 'usuario_bloqueo', 'observaciones_bloqueo', 'estado', 'id'];
+    protected $fillable = ['empresa_id', 'sala_id', 'medico_id', 'hospital_id', 'paciente_id', 'maestro_protocolo_id', 'fecha_inicio', 'fecha_final', 'nombre_completo', 'telefonos', 'observaciones', 'fecha_bloqueo', 'usuario_bloqueo', 'observaciones_bloqueo', 'estado', 'id', 'paciente_en_clinica'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

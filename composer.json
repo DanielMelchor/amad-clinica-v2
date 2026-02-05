@@ -9,6 +9,7 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "intervention/image-laravel": "^1.5",
         "jeroennoten/laravel-adminlte": "^3.15",
+        "laravel-notification-channels/telegram": "^6.0",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",

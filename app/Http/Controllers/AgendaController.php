@@ -65,6 +65,7 @@ class AgendaController extends Controller
         switch ($estado) {
             case 'T':
                 $listado = DB::table('agendas as a')
+                       ->join('salas as s', 'a.sala_id', 's.id')
                        ->leftjoin('pacientes as p', 'a.paciente_id', 'p.id')
                        ->leftjoin('users as u', 'a.usuario_bloqueo', 'u.id')
                        ->leftjoin('admisiones as ad', 'ad.agenda_id', 'a.id')
@@ -74,13 +75,14 @@ class AgendaController extends Controller
                                           ->orWhere('a.medico_id', '=', $medico_id);
                                })
                        ->whereDate('a.fecha_inicio', $fecha)
-                       ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no')
+                       ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'))
                        ->orderBy('a.sala_id', 'DESC')
                        ->orderBy('a.fecha_inicio', 'ASC')
                        ->get();
                 break;
             case 'A' :
                 $listado = DB::table('agendas as a')
+                       ->join('salas as s', 'a.sala_id', 's.id')
                        ->leftjoin('pacientes as p', 'a.paciente_id', 'p.id')
                        ->leftjoin('users as u', 'a.usuario_bloqueo', 'u.id')
                        ->leftjoin('admisiones as ad', 'ad.agenda_id', 'a.id')
@@ -94,11 +96,10 @@ class AgendaController extends Controller
                             $query->where('a.estado', '=', $estado)
                                   ->orWhere('a.estado', '=', 'P');
                         })
-                       ->select('a.fecha_inicio', 'fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no')
+                       ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'))
                        ->orderBy('a.sala_id', 'DESC')
                        ->orderBy('a.fecha_inicio', 'ASC')
                        ->get();
-                break;
             default:
                 $listado = DB::table('agendas as a')
                        ->leftjoin('pacientes as p', 'a.paciente_id', 'p.id')
@@ -222,5 +223,18 @@ class AgendaController extends Controller
                      ->get();
 
         return Response::json($registros);
+    }
+
+    public function confirmar_ingreso(){
+        $cita_id = $_POST['cita_id'];
+        $registro = Agenda::findOrFail($cita_id);
+        $registro->fecha_en_clinica = Carbon::now();
+        $registro->paciente_en_clinica = 1;
+        $registro->save();
+
+        return response()->json([
+            'message' => '! Registro de asistencia, finalizado con éxito !',
+            'type'    => 'success'
+        ]);
     }
 }
