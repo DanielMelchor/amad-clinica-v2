@@ -75,12 +75,15 @@ class AgendaController extends Controller
                                           ->orWhere('a.medico_id', '=', $medico_id);
                                })
                        ->whereDate('a.fecha_inicio', $fecha)
-                       ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'))
+                       ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'),
+                           'a.paciente_en_clinica'
+                                )
                        ->orderBy('a.sala_id', 'DESC')
                        ->orderBy('a.fecha_inicio', 'ASC')
                        ->get();
                 break;
             case 'A' :
+                // dd(Auth::user()->empresa_id.' - '.$medico_id.' - '.$fecha.' - '.$estado);
                 $listado = DB::table('agendas as a')
                        ->join('salas as s', 'a.sala_id', 's.id')
                        ->leftjoin('pacientes as p', 'a.paciente_id', 'p.id')
@@ -96,10 +99,11 @@ class AgendaController extends Controller
                             $query->where('a.estado', '=', $estado)
                                   ->orWhere('a.estado', '=', 'P');
                         })
-                       ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'))
+                       ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'), 'a.paciente_en_clinica')
                        ->orderBy('a.sala_id', 'DESC')
                        ->orderBy('a.fecha_inicio', 'ASC')
                        ->get();
+                break;
             default:
                 $listado = DB::table('agendas as a')
                        ->leftjoin('pacientes as p', 'a.paciente_id', 'p.id')
@@ -109,7 +113,7 @@ class AgendaController extends Controller
                        ->where('a.medico_id', $medico_id)
                        ->whereDate('a.fecha_inicio', $fecha)
                        ->where('a.estado', $estado)
-                       ->select('a.fecha_inicio', 'fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no')
+                       ->select('a.fecha_inicio', 'fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 'a.paciente_en_clinica')
                        ->orderBy('a.sala_id', 'DESC')
                        ->orderBy('a.fecha_inicio', 'ASC')
                        ->get();

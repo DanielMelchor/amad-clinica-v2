@@ -1,169 +1,276 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap-4.5.2-dist/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/jQueryDataTables/DataTables-1.10.21/css/dataTables.bootstrap4.min.css') }}">
-    <title>Informe Médico</title>
+    <meta charset="UTF-8">
+    <title>Informe Clínico</title>
     <style>
-      @page {margin: 0cm 0cm;font-size: 1em;}
-      .encabezado {
-        position: fixed;
-        top: 0cm;
-        left: 1cm;
-        right: 1cm;
-        height: 2cm;
-        /*background-color: #F93855;*/
-        /*color: white;*/
-        text-align: center;
-        line-height: 15px;
-      }
-      .encabezado p {
-        font-size: 12px !important;
-        line-height: 5px;
-      }
-      body {
-        top: 4cm;
-        left: 1cm;
-        right: 1cm;
-        padding-top: 3cm;
-        padding-bottom: 1cm;
-        line-height: 12px;
-        /*background-color: #CCFF33;*/
-      }
-      footer {
-        position: fixed;
-        bottom: 0cm;
-        left: 1cm;
-        right: 1cm;
-        height: 1cm;
-        /*background-color: #F93855;*/
-        /*color: white;*/
-        text-align: center;
-        line-height: 15px;
-      }
-      .foto {padding-left: 0.5cm; float: left; max-height: 75px; display: inline-block;}
-      .page-number:before {content: "Pagina " counter(page); position: flex;}
-      .upper {text-transform: uppercase;}
-      th, td { padding:2px !important; margin:2 !important; font-size: 12px; font-family: "Times New Roman", Times, serif; }
-      .row, .col-xs-* { padding: 0 }
-      p {
-        padding:2px !important; margin:2px !important; font-size: 12px; font-family: "Times New Roman", Times, serif; text-align: justify;
-      }
+        /* Carga de Fuente Montserrat */
+        @font-face {
+            font-family: 'Montserrat';
+            src: url("{{ public_path('fonts/font Montserrat/static/Montserrat-Regular.ttf') }}") format('truetype');
+            font-weight: normal;
+        }
+        @font-face {
+            font-family: 'Montserrat';
+            src: url("{{ public_path('fonts/font Montserrat/static/Montserrat-Bold.ttf') }}") format('truetype');
+            font-weight: bold;
+        }
+
+        @page {
+            size: 8.5in 11in portrait;
+            margin: 100pt 0 20pt 0; /* Margen para header fijo */
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #2c3e50;
+            line-height: 1.3;
+        }
+
+        /* Header Fijo - Se repite en todas las hojas */
+        .header-full {
+            position: fixed;
+            top: -85pt;
+            left: 0;
+            width: 100%;
+            height: 60pt;
+            border-bottom: 2px solid #1a5c8d;
+            display: table;
+            table-layout: fixed;
+            background-color: #fff;
+        }
+
+        .header-cell {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 40pt;
+        }
+
+        .empresa-nombre {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #1a5c8d;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .empresa-datos {
+            font-size: 7.5pt;
+            color: #7f8c8d;
+        }
+
+        /* Contenedor Principal */
+        .contenido-principal {
+            padding: 0 40pt;
+        }
+
+        /* Bloque de Paciente Compacto */
+        .paciente-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8pt 12pt;
+            margin-bottom: 15pt;
+        }
+
+        .label-inline {
+            font-size: 7.5pt;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            width: 80pt;
+        }
+
+        .valor-inline {
+            font-size: 9pt; /* Tamaño reducido para el nombre y datos */
+            color: #1e293b;
+        }
+
+        /* Secciones con espacio reducido */
+        .seccion {
+            margin-bottom: 12pt; /* Espacio entre bloques de sección */
+        }
+
+        .titulo-seccion {
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: #1a5c8d;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 2pt; /* Espacio mínimo bajo el título */
+            margin-bottom: 4pt;  /* Espacio mínimo antes del cuerpo */
+        }
+
+        .contenido-texto {
+            font-size: 9.5pt;
+            text-align: justify;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Galería de Fotos */
+        .grid-fotos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5pt;
+        }
+
+        .img-container {
+            border: 1px solid #e2e8f0;
+            padding: 3pt;
+            background: #fff;
+        }
+
+        .img-ajustada {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Firma */
+        .footer-firma {
+            margin-top: 10pt; /* Espacio reducido entre el contenido y la firma */
+            text-align: center;
+            /* Si quieres que la firma también sea fija al final de la hoja, 
+               descomenta las siguientes líneas: */
+            /* position: fixed; 
+            bottom: -10pt; 
+            width: 100%; 
+            */
+        }
+
+        .linea-firma {
+            width: 160pt;
+            border-top: 1px solid #2c3e50;
+            margin: 2pt auto;
+        }
+
+        .nombre-firma {
+            font-size: 8.5pt; /* Reducimos ligeramente el tamaño */
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="encabezado">
-      <div class="row">
-        <div class="col-md-1">
-          <img class="foto" src="{{ asset('assets') }}/{{ $empresa->ruta_logo }}">
+
+    <header class="header-full">
+        <div class="header-cell" style="width: 35%;">
+            @if(!empty($pEmpresa->ruta_logo))
+                @php
+                    $path = public_path($pEmpresa->ruta_logo);
+                    $base64 = (file_exists($path)) ? 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path)) : null;
+                @endphp
+                <img src="{{ $base64 }}" style="max-height: 40pt;">
+            @endif
         </div>
-        <div class="col-md-10 offset-md-1">
-          <div class="row text-center upper">
-            <div class="col-md-12">
-              <h3>{{ $empresa->nombre_comercial }}</h3>  
+        <div class="header-cell" style="text-align: right;">
+            <h1 class="empresa-nombre">{{ $pEmpresa->nombre_comercial }}</h1>
+            <div class="empresa-datos">
+                {{ $pEmpresa->direccion }}<br>
+                {{ $pEmpresa->telefonos }}
             </div>
-          </div>
-          <div class="row text-center">
-            <div class="col-md-12">
-              <p>{{ $empresa->direccion}}</p>
+        </div>
+    </header>
+
+    <main class="contenido-principal">
+        
+        <div class="paciente-card">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 55%; vertical-align: top;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td class="label-inline">Paciente:</td>
+                                <td class="valor-inline"><strong>{{ $registro->paciente_nombre }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="label-inline">Expediente:</td>
+                                <td class="valor-inline">{{ $registro->paciente_codigo }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-inline">Procedimiento:</td>
+                                <td class="valor-inline" style="font-weight: bold;">{{ $registro->procedimiento_descripcion }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width: 45%; vertical-align: top; padding-left: 15pt;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td class="label-inline">Fecha:</td>
+                                <td class="valor-inline">{{ $dia }} / {{ $nombre_mes }} / {{ $anio }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-inline">Edad:</td>
+                                <td class="valor-inline">{{ $registro->paciente_edad }} años</td>
+                            </tr>
+                            <tr>
+                                <td class="label-inline">Hospital:</td>
+                                <td class="valor-inline">{{ $registro->nombre_hospital ?? 'N/A' }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="seccion">
+            <div class="titulo-seccion">Diagnóstico</div>
+            <div class="contenido-texto">{!! $registro->diagnostico !!}</div>
+        </div>
+
+        <div class="seccion">
+            <div class="titulo-seccion">Indicaciones</div>
+            <div class="contenido-texto">{!! $registro->indicacion !!}</div>
+        </div>
+
+        @if($fotos->count() > 0)
+        <div class="seccion">
+            <div class="titulo-seccion">Evidencia Fotográfica</div>
+            <table class="grid-fotos" cellpadding="4">
+                @foreach($fotos->chunk(3) as $fila)
+                    <tr>
+                        @foreach($fila as $foto)
+                            @php
+                                $fPath = public_path('storage/procedimientos/' . $foto->ruta);
+                                $b64 = (file_exists($fPath)) ? 'data:image/' . pathinfo($fPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($fPath)) : null;
+                            @endphp
+                            <td style="width: 33.3%;">
+                                <div class="img-container">
+                                    @if($b64)
+                                        <img src="{{ $b64 }}" class="img-ajustada">
+                                    @endif
+                                </div>
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </table>
+        </div>
+        @endif
+
+        <div class="seccion">
+            <div class="titulo-seccion">Recomendaciones</div>
+            <div class="contenido-texto">{!! $registro->indicacion !!}</div>
+        </div>
+
+        @if(isset($firma) && !empty($firma->firma))
+            <div class="footer-firma">
+                @php
+                    $fFile = str_replace('firmas/', '', $firma->firma);
+                    $fPath = public_path('firmas/' . ltrim($fFile, '/'));
+                    $b64F = (file_exists($fPath)) ? 'data:image/' . pathinfo($fPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($fPath)) : null;
+                @endphp
+                @if($b64F)
+                    <img src="{{ $b64F }}" style="max-height: 65pt; margin-bottom: -8pt;">
+                @endif
+                <div class="linea-firma"></div>
+                <div class="nombre-firma">{{ $firma->nombre_profesional }}</div>
             </div>
-          </div>
-          <div class="row text-center">
-            <div class="col-md-12">
-              <p>TELEFONOS: {{ $empresa->telefonos}}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-10 offset-md-1">
-        <table class="table table-sm table-borderless">
-          <tbody>
-            <tr>
-              <th colspan="1">Código</th><td colspan="1">{{ $admision->paciente_codigo}}</td>
-            </tr>
-            <tr>
-              <th colspan="1">Nombre</th><td colspan="4">{{ $admision->paciente_nombre}}</td>
-              <th colspan="1">Edad</th><td colspan="1">{{ $admision->paciente_edad}}</td>
-            </tr>
-            <tr>
-              <th colspan="1">Procedimiento</th><td colspan="4">{{ $admision->procedimiento_descripcion}}</td>
-              <th colspan="1">Fecha</th><td colspan="1">{{ \Carbon\Carbon::parse($admision->fecha)->format('d/m/Y') }}</td>
-            </tr>
-            <tr>
-              <th colspan="1">Referido por</th><td colspan="4">{{ $admision->referido_por}}</td>
-              <th colspan="1">Hospital</th><td colspan="4">{{ $admision->hospital_nombre }}</td>
-            </tr>
-            <tr>
-              <th colspan="1">Premedicación</th><td colspan="4">{!! $admision->premedicacion !!}</td>
-              <th colspan="1">Tolerancia</th><td colspan="1">{{ $admision->tolerancia_descripcion }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-10 offset-md-1">
-        <h6><b>Indicación</b></h6>
-      </div>
-    </div>
-    <!-- indicacion -->
-    <div class="row">
-      <div class="col-md-10 offset-md-1">
-        <p>{!! $admision->indicacion !!}</p>
-      </div>
-    </div>
-    <!-- /indicacion -->
-    <br>
-    <br>
-    <!-- imagenes -->
-      <div class="row">
-        <div class="col-md-3 offset-md-1">
-          @foreach($fotos as $f)
-            <img class="card-img-top mt-2" src="{{asset('storage')}}/{{ $admision->id }}/mini/{{ $f->nombre_imagen}}" style="width: 225px; height: 160px; margin-right: 10px;">
-          @endforeach
-        </div>
-      </div>
-    <!-- /imagenes --> 
-    <div class="row">
-      <div class="col-md-10 offset-md-1">
-        <h6><b>Diagnostico</b></h6>
-      </div>
-    </div>
-    <!-- diagnostico -->
-    <div class="row">
-      <div class="col-md-10 offset-md-1">
-        <p>{{ $admision->diagnostico }}</p>
-      </div>
-    </div>
-    <!-- /diagnostico -->
-    <div class="row">
-      <div class="col-md-10 offset-md-1">
-        <h6><b>Recomendaciones</b></h6>
-      </div>
-    </div>
-    <!-- recomendaciones -->
-    <div class="row">
-      <div class="col-md-10 offset-md-1">
-        <p>{{ $admision->recomendaciones }}</p>
-      </div>
-    </div>
-    <!-- /recomendaciones -->
-    @if( !empty($admision->firma))
-      <br><br>
-      <div class="row text-center">
-        <div class="col-md-8 offset-md-2">
-          <img src="{{ asset('') }}{{ $admision->firma }}" style="width: 35%">
-        </div>
-      </div>
-    @endif
-    <footer><br><div class="page-number"></div></footer>
-    <script src="{{ asset('assets/bootstrap-4.5.2-dist/js/bootstrap.min.js') }}"></script>
-    <script src="{{ asset('assets/jQueryDataTables/DataTables-1.10.21/js/dataTables.bootstrap.min.js') }}"></script>
+        @endif
+
+    </main>
 </body>
 </html>

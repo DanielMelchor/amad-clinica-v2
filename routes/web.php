@@ -75,6 +75,7 @@ use Illuminate\Support\Facades\Route;
             Route::post('actualizar_admision', [AdmisionController::class, 'update_ajax'])->name('actualizar_admision_ajax');
             Route::post('cerrar_admision', [AdmisionController::class, 'cerrar_admision_ajax'])->name('cerrar_admision');
             Route::get('generar_receta/{admision_id}', [AdmisionController::class, 'receta'])->name('generar_receta');
+            Route::get('generar_informe/{admision_id}', [AdmisionController::class, 'informe'])->name('generar_informe');
             Route::post('abrir/{admision_id}', [AdmisionController::class, 'reapertura'])->name('reapertura_admision');
             Route::post('paciente_x_admision', [AdmisionController::class, 'trae_paciente_x_admision'])->name('paciente_x_admision');
             Route::post('genrales_admision', [AdmisionController::class, 'trae_generales'])->name('trae_generales_admision');
@@ -346,6 +347,8 @@ use Illuminate\Support\Facades\Route;
 
         Route::get('index_medico', [MedicoController::class, 'index_medico'])->name('index_medico');
         Route::post('citas', [MedicoController::class, 'trae_citas_x_medico'])->name('trae_citas_x_medico');
+        Route::post('inicioAtencion', [MedicoController::class, 'setBegin'])->name('inicioAtencion');
+        Route::post('finalAtencion', [MedicoController::class, 'setEnd'])->name('finalAtencion');
 
         Route::group([
             'prefix' => 'medicos',

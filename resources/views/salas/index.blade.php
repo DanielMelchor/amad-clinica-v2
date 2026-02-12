@@ -1,80 +1,97 @@
 @extends('adminlte::page')
+
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
+        .btn-guardar{ background-color: #A5C890 !important; }
+        .numero{ text-align: right; }
+        
+        /* Ajustes Mobile First */
         .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
+            width: 100%;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Estilo para que las etiquetas no se amontonen en móviles */
+        @media (max-width: 576px) {
+            .input-group {
+                flex-direction: column;
+            }
+            .input-group-prepend, .input-group-text {
+                width: 100% !important;
+                border-radius: 0.25rem 0.25rem 0 0 !important;
+                justify-content: center;
+            }
+            .form-control {
+                width: 100% !important;
+                border-radius: 0 0 0.25rem 0.25rem !important;
+            }
+            .card-header h6 {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
         }
     </style>
 @endsection
+
 @section('title', 'Salas')
-@section('content_header')
-    <br>
-@endsection
+
 @section('content')
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <div class="card">
-                <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <h6>Salas</h6>
-                        </div>
-                        <div class="col-md-3" style="text-align: right;">
-                            <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Registro" onclick="fn_agregar(); return false;">
-                                <i class="fas fa-plus-circle"></i>
-                            </button>
-                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+    <div class="container-fluid pt-3">
+        <div class="row">
+            <div class="col-12 col-lg-10 offset-lg-1">
+                <div class="card shadow-sm">
+                    <div class="card-header" style="background-color: #E1E8ED;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-secondary">Salas</h6>
+                            <div>
+                                <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-2" title="Agregar Registro" onclick="fn_agregar(); return false;">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                                <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-10 offset-md-1">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped table-hover text-center" id="tblprincipal">
-                                    <thead class="thead-primary">
-                                        <tr class="text-center" style="font-size: 12px;">
-                                            <th>Nombre</th>
-                                            <th>Hora Inicio</th>
-                                            <th>Maximo Citas</th>
-                                            <th>Minutos por Cita</th>
-                                            <th>Estado</th>
-                                            <th>&nbsp;</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($salas as $s)
-                                            <tr class="text-center" style="font-size: 12px;">
-                                                <td>{{ $s->sala_nombre }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($s->hora_inicio)->format('H:i:s') }}</td>
-                                                <td>{{ $s->maximo_registros }}</td>
-                                                <td>{{ $s->minutos_por_registro }}</td>
-                                                @if($s->estado == 1)
-                                                    <td>Alta</td>
-                                                @else
-                                                    <td>Baja</td>
-                                                @endif
+                    <div class="card-body p-2 p-md-3">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover text-center w-100" id="tblprincipal">
+                                <thead class="thead-light">
+                                    <tr style="font-size: 12px;">
+                                        <th>Nombre</th>
+                                        <th>Inicio</th>
+                                        <th class="d-none d-md-table-cell">Máx Citas</th>
+                                        <th class="d-none d-md-table-cell">Min/Cita</th>
+                                        <th>Estado</th>
+                                        <th>&nbsp;</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 13px;">
+                                    @foreach($salas as $s)
+                                        <tr>
+                                            <td class="align-middle text-left text-md-center">{{ $s->sala_nombre }}</td>
+                                            <td class="align-middle">{{ \Carbon\Carbon::parse($s->hora_inicio)->format('H:i') }}</td>
+                                            <td class="align-middle d-none d-md-table-cell">{{ $s->maximo_registros }}</td>
+                                            <td class="align-middle d-none d-md-table-cell">{{ $s->minutos_por_registro }}</td>
+                                            <td class="align-middle">
+                                                <span class="badge {{ $s->estado == 1 ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $s->estado == 1 ? 'Alta' : 'Baja' }}
+                                                </span>
+                                            </td>
+                                            <td class="align-middle">
                                                 @php $Id= Crypt::encrypt($s->id); @endphp
-                                                <td>
-                                                    <a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar" onclick="fn_edicion('{{ $Id }}')"><i class="fas fa-edit"></i></a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                                <a href="#" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar" onclick="fn_edicion('{{ $Id }}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -82,60 +99,43 @@
         </div>
     </div>
 
-    <!-- agregar Modal -->
-    <div class="modal fade" id="agregarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal fade" id="agregarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <form role="form" id="formaNuevoRegistro" method="POST" action="{{route('sala_grabar')}}">
                     @csrf
-                    <div class="card">
-                        <div class="card-header" style="background-color: #F4F6F7;">
-                            <div class="row">
-                                <div class="col-md-9"><h6>Nuevo Registro</h6></div>
-                                <div class="col-md-3" style="text-align: right;">
-                                    <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
+                    <div class="card mb-0">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="m-0">Nuevo Registro</h6>
+                                <div>
+                                    <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle mr-1"><i class="fas fa-save"></i></button>
+                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle" data-dismiss="modal"><i class="fas fa-times"></i></button>
                                 </div>
-                            </div>  
+                            </div>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body px-3 py-4">
                             <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Nombre</label>
+                                <div class="col-12 col-md-10 offset-md-1">
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Nombre</label></div>
+                                        <input type="text" class="form-control" id="sala_nombre" name="sala_nombre" required>
                                     </div>
-                                    <input type="text" class="form-control" placeholder="nombre Sala" aria-label="Username" aria-describedby="basic-addon1" id="sala_nombre" name="sala_nombre" autofocus required value="{{ old('sala_nombre')}}">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Hora Inicio</label>
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Hora Inicio</label></div>
+                                        <input type="time" class="form-control" id="hora_inicio" name="hora_inicio" required>
                                     </div>
-                                    <input type="time" class="form-control" aria-label="Username" aria-describedby="basic-addon1" id="hora_inicio" name="hora_inicio" autofocus required value="{{ old('hora_inicio')}}">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Máximo de Cítas</label>
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Máximo Citas</label></div>
+                                        <input type="number" class="form-control text-right" id="maximo_registros" name="maximo_registros" required>
                                     </div>
-                                    <input type="number" min="1" step="1" class="form-control" placeholder="0" aria-label="Username" aria-describedby="basic-addon1" id="maximo_registros" name="maximo_registros" autofocus required value="{{ old('maximo_registros')}}" style="text-align: right;">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-group input-group-sm mb-3 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Minútos por Cíta</label>
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Minutos/Cita</label></div>
+                                        <input type="number" class="form-control text-right" id="minutos_x_cita" name="minutos_x_cita" required>
                                     </div>
-                                    <input type="number" class="form-control" placeholder="0" aria-label="Username" aria-describedby="basic-addon1" id="minutos_x_cita" name="minutos_x_cita" autofocus required value="{{ old('minutos_x_cita')}}" style="text-align: right;">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <div class="custom-control custom-switch custom-switch-on-success">
                                         <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A">
-                                        <label class="custom-control-label" for="estado">Activar</label>
+                                        <label class="custom-control-label" for="estado">Activar Sala</label>
                                     </div>
                                 </div>
                             </div>
@@ -145,64 +145,45 @@
             </div>
         </div>
     </div>
-    <!-- /agregar Modal -->
-    <!-- editar Modal -->
-    <div class="modal fade" id="editarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="editarModalCenterTitle" aria-hidden="true">
+
+    <div class="modal fade" id="editarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <form role="form" method="POST" action="{{route('sala_actualizar')}}">
                     @csrf
-                    <div class="card">
-                        <div class="card-header" style="background-color: #F4F6F7;">
-                            <div class="row">
-                                <div class="col-md-9">
-                                    <h6>Edición de Registro</h6>
+                    <div class="card mb-0">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="m-0 text-bold">Edición de Registro</h6>
+                                <div>
+                                    <button type="submit" class="btn btn-xs btn-outline-success rounded-circle mr-1"><i class="fas fa-save"></i></button>
+                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle" data-dismiss="modal"><i class="fas fa-times"></i></button>
                                 </div>
-                                <div class="col-md-3" style="text-align: right;">
-                                    <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Grabar"><i class="fas fa-save"></i></button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
-                                </div>
-                            </div>  
+                            </div>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body px-3 py-4">
                             <input type="hidden" id="eid" name="eid">
                             <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Nombre</label>
+                                <div class="col-12 col-md-10 offset-md-1">
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Nombre</label></div>
+                                        <input type="text" class="form-control" id="esala_nombre" name="esala_nombre" required>
                                     </div>
-                                    <input type="text" class="form-control" placeholder="nombre Sala" aria-label="Username" aria-describedby="basic-addon1" id="esala_nombre" name="esala_nombre" autofocus required>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Hora Inicio</label>
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Hora Inicio</label></div>
+                                        <input type="time" class="form-control" id="ehora_inicio" name="ehora_inicio" required>
                                     </div>
-                                    <input type="time" class="form-control" aria-label="Username" aria-describedby="basic-addon1" id="ehora_inicio" name="ehora_inicio" autofocus required>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Máximo de Cítas</label>
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Máximo Citas</label></div>
+                                        <input type="number" class="form-control text-right" id="emaximo_registros" name="emaximo_registros" required>
                                     </div>
-                                    <input type="number" min="1" step="1" class="form-control" placeholder="0" aria-label="Username" aria-describedby="basic-addon1" id="emaximo_registros" name="emaximo_registros" autofocus required style="text-align: right;">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text w-100">Minútos por Cíta</label>
+                                    <div class="input-group input-group-sm mb-3">
+                                        <div class="input-group-prepend"><label class="input-group-text">Minutos/Cita</label></div>
+                                        <input type="number" class="form-control text-right" id="eminutos_x_cita" name="eminutos_x_cita" required>
                                     </div>
-                                    <input type="number" class="form-control" placeholder="0" aria-label="Username" aria-describedby="basic-addon1" id="eminutos_x_cita" name="eminutos_x_cita" autofocus required style="text-align: right;">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <div class="custom-control custom-switch custom-switch-on-success">
                                         <input type="checkbox" class="custom-control-input" id="eestado" name="eestado" value="A">
-                                        <label class="custom-control-label" for="eestado">Activar</label>
+                                        <label class="custom-control-label" for="eestado">Activar Sala</label>
                                     </div>
                                 </div>
                             </div>
@@ -212,142 +193,51 @@
             </div>
         </div>
     </div>
-    <!-- /editar Modal -->
 @endsection
+
 @section('js')
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
     <script type="text/javascript">
         $(function () {
             $('#tblprincipal').DataTable({
+                "responsive": true, // Habilita el comportamiento responsivo nativo
+                "autoWidth": false,
                 "paging": true,
                 "lengthChange": true,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "autoWidth": false,
-                "pageLength": 25,  // Esto establece que por defecto se muestren 25 registros
-                "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],  // Esto establece las opciones en el dropdown
-                "language": {
-                    "sProcessing": "Procesando...",
-                    "sLengthMenu": "Mostrar _MENU_ registros",
-                    "sZeroRecords": "No se encontraron resultados",
-                    "sEmptyTable": "Ningún dato disponible en esta tabla =(",
-                    "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-                    "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-                    "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-                    "sSearch": "Buscar:",
-                    "oPaginate": {
-                        "sFirst": "Primero",
-                        "sLast": "Último",
-                        "sNext": "Siguiente",
-                        "sPrevious": "Anterior"
-                    }
-                },
-                "dom": '<"row"<"col-sm-4"l><"col-sm-4 text-center"B><"col-sm-4"f>>rtip', // Ajuste para disposición
-                "buttons": [
-                    {
-                        extend: 'excelHtml5',
-                        text: 'Excel',
-                        className: 'btn btn-md btn-default'
-                    }
-                ]
+                "pageLength": 10,
+                // "language": { "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" },
+                "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
             });
         });
 
-        //========================================================================
-        // inicializar librerias
-        //========================================================================
-        $(function () {
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
-        });
-
-        //========================================================================
-        // Levantar modal de Agregar
-        //========================================================================
         function fn_agregar(){
-            document.getElementById('sala_nombre').value  = '';
-            /*$('#plural').prop('checked', false);
-            $('#estado').prop('checked', false);*/
+            $('#formaNuevoRegistro')[0].reset();
+            $('#agregarModalCenter').modal('show');
             $('#agregarModalCenter').on('shown.bs.modal', function () {
                 $('#sala_nombre').trigger('focus');
             });
-            
-            $("#agregarModalCenter").modal();
         }
 
-        //========================================================================
-        // Levantar modal de edición
-        //========================================================================
         function fn_edicion(id){
             $.ajax({
                 url: "{{ route('sala_editar') }}",
                 type: "POST",
                 dataType: 'json',
-                data: {"_token": "{{ csrf_token() }}", 
-                       id : id},
+                data: {"_token": "{{ csrf_token() }}", id : id},
                 success: function(response){
-                    document.getElementById('eid').value               = id;
-                    document.getElementById('esala_nombre').value      = response.sala_nombre;
-                    document.getElementById('ehora_inicio').value      = response.hora_inicio.substring(0,5);
-                    document.getElementById('emaximo_registros').value = response.maximo_registros;
-                    document.getElementById('eminutos_x_cita').value   = response.minutos_por_registro;
-
-                    if (response.estado == 1) {
-                        $('#eestado').prop('checked', true);
-                    }else{
-                        $('#eestado').prop('checked', false);
-                    }
-
-                    $('#editarModalCenter').on('shown.bs.modal', function () {
-                        $('#esala_nombre').trigger('focus');
-                    });
-                    
-                    $("#editarModalCenter").modal();
-                },
-                error: function(error){
-                    console.log(error);
+                    $('#eid').val(id);
+                    $('#esala_nombre').val(response.sala_nombre);
+                    $('#ehora_inicio').val(response.hora_inicio.substring(0,5));
+                    $('#emaximo_registros').val(response.maximo_registros);
+                    $('#eminutos_x_cita').val(response.minutos_por_registro);
+                    $('#eestado').prop('checked', response.estado == 1);
+                    $('#editarModalCenter').modal('show');
                 }
             });
         }
 
         $(document).ready(function() {
             $('#formaNuevoRegistro').on('submit', function() {
-                // Deshabilitar el botón de submit cuando se envíe el formulario
                 $('#submitButton').prop('disabled', true);
-                // $('#submitButton').text('Enviando...');
             });
         });
     </script>

@@ -13,6 +13,7 @@ use DB;
 use Response;
 use Session;
 use Carbon\Carbon;
+use App\Models\Admision;
 use App\Models\AgendaController;
 use App\Models\Medico;
 use App\Models\Receta_Medico;
@@ -330,11 +331,54 @@ class MedicoController extends Controller
                               // ->orWhere('a.estado', '=', 'P');
                     })
                    ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'),
-                       DB::raw("IF(a.fecha_en_clinica IS NOT NULL, TIME_FORMAT(TIMEDIFF('$ahoraPHP', a.fecha_en_clinica), '%H:%i'), '00:00') AS tiempo_espera")
+                       DB::raw("IF(a.fecha_en_clinica IS NOT NULL, TIME_FORMAT(TIMEDIFF('$ahoraPHP', a.fecha_en_clinica), '%H:%i'), '00:00') AS tiempo_espera"), 'a.paciente_en_clinica', 'ad.admision_no', 'ad.atencion_medica'
                             )
                    ->orderBy('a.sala_id', 'DESC')
                    ->orderBy('a.fecha_inicio', 'ASC')
                    ->get();
+
+        $listado->transform(function ($item) {
+            // Si el paciente_id existe, lo encriptamos. Si no, lo dejamos null.
+            $item->paciente_id = $item->paciente_id ? Crypt::encryptString($item->paciente_id) : null;
+            return $item;
+        });
+
         return Response::json($listado);
+    }
+
+    function setBegin(){
+        $admision_id = $_POST['admision_id'];
+
+        $registro = Admision::findOrFail($admision_id);
+        $registro->inicio_atencion_medica = DB::raw('NOW()');
+        $registro->atencion_medica = 1;
+        $registro->save();
+
+        return response()->json([
+                                'message' => 'Registro actualizado con exito !!!',
+                                'type'    => 'success'
+                            ]);
+    }
+
+    function setEnd(){
+        $admision_id = $_POST['admision_id'];
+        
+        // $registro = Admision::findOrFail($admision_id);
+        // $registro->final_atencion_medica = DB::raw('NOW()');
+        // $registro->atencion_medica = 2;
+        // $registro->segundos_atencion_medica = Carbon::parse($registro->inicio_atencion_medica)->diffInSeconds(Carbon::parse($registro->final_atencion_medica));
+        // $registro->save();
+        \DB::table('admisiones')
+        ->where('id', $admision_id)
+        ->update([
+            'final_atencion_medica'    => DB::raw('NOW()'),
+            'atencion_medica'          => 2,
+            'segundos_atencion_medica' => DB::raw('TIMESTAMPDIFF(SECOND, inicio_atencion_medica, NOW())')
+        ]);
+
+        return response()->json([
+                                'message' => 'Registro actualizado con exito !!!',
+                                'type'    => 'success'
+                            ]);
     }
 }

@@ -382,12 +382,12 @@ return [
             'topnav_right' => false,
             'can'     => 'ver-generales',
             'submenu' => [
-                // [
-                //     'text' => 'Empresas',
-                //     'route'  => 'empresas',
-                //     'icon' => 'fas fa-landmark',
-                //     'can'   => 'ver-empresas'
-                // ],
+                [
+                    'text' => 'Empresas',
+                    'route'  => 'empresas',
+                    'icon' => 'fas fa-landmark',
+                    'can'   => 'ver-empresas'
+                ],
                 [
                     'text' => 'Correlativos',
                     'route'  => 'correlativos',

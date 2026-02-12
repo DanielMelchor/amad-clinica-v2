@@ -357,7 +357,7 @@
                 </div>
             </div>
         </div>
-        <!-- <!-- barra lateral derecha -->
+        <!-- barra lateral derecha -->
         <aside class="control-sidebar">
             <div class="p-3">
                 <div class="card mb-1">

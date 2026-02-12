@@ -108,20 +108,35 @@
         }
 
         /* Indicador de expansión */
-        .admission-node::before {
+        /*.admission-node::before {
           content: '➕ ';
           font-size: 10px;
-        }
+        }*/
 
-        .open > .admission-node::before {
+        /*.open > .admission-node::before {
           content: '➖ ';
-        }
+        }*/
 
         .leaf {
           font-weight: normal;
           color: #555;
           padding-left: 15px;
           cursor: default;
+        }
+
+        .link-deshabilitado {
+            /* Evita que el clic funcione */
+            pointer-events: none;
+            
+            /* Cambia el aspecto visual (gris y transparente) */
+            color: #6c757d !important;
+            opacity: 0.5;
+            
+            /* Quita el subrayado si lo tiene */
+            text-decoration: none;
+            
+            /* Cambia el cursor para indicar que no se puede tocar */
+            cursor: not-allowed;
         }
 
         .btn-tree-compact {
@@ -183,6 +198,10 @@
             background-color: #e9ecef !important;
             cursor: not-allowed;
         }
+
+        #timer {
+            transition: color 0.3s ease;
+        }
     </style>
 @endsection
 @section('title', 'Seguimiento Medico a Admisiones')
@@ -191,15 +210,15 @@
 @endsection
 @section('content')
     <div class="container-fluid">
-        <input type="hidden" id="admision_id" name="admision_id">
-        <input type="hidden" id="admision_atencion_id" name="admision_atencion_id">
+        <input type="text" id="admision_id" name="admision_id">
+        <input type="text" id="admision_atencion_id" name="admision_atencion_id">
 
         <header class="patient-banner">
             <div class="patient-identity">
                 <div class="avatar">Sr.</div>
                 <div class="info">
                     <h2>
-                        {{ $pPaciente->nombre_completo }} 
+                        {{ $pPaciente->nombre_completo }}
                         <span class="age" id="EdadHtml">45 años</span>
                         <span class="genero">| {{ $pPaciente->genero }}</span>
                     </h2>
@@ -220,6 +239,83 @@
                 <button class="btn-action note">✍️ Evolución</button>
             </div> -->
         </header>
+        <div id="Antecedentes">
+            <div class="accordion" id="accordionExample">
+                <div class="card">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Antecedentes
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-2 col-sm-12">
+                                    <ul class="nav flex-column" style="font-size: 12px; !important">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" href="#AntecedentesMedico" data-toggle="tab">Medico</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#AntecedentesQuuirugico" data-toggle="tab">Quirurgico</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#AntecedentesAlergias" data-toggle="tab">Alergias</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#AntecedentesGinecologico" data-toggle="tab">Ginecologico</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#AntecedentesFamiliares" data-toggle="tab">Familiares</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#AntecedentesMedicamentos" data-toggle="tab">Medicamentos</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#AntecedentesHabitos" data-toggle="tab">Habitos</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-lg-10 col-sm-12">
+                                    <div class="tab-content">
+                                        <!-- Antecedentes Medicos -->
+                                        <div class="active tab-pane" id="AntecedentesMedico">
+                                            {{ $pPaciente->antmedico_descripcion }}
+                                        </div>
+                                        <!-- Antecedentes Quirurgico -->
+                                        <div class="tab-pane" id="AntecedentesQuuirugico">
+                                            {{ $pPaciente->antquirurgico_descripcion }}
+                                        </div>
+                                        <!-- Antecedentes Alergias -->
+                                        <div class="tab-pane" id="AntecedentesAlergias">
+                                            {{ $pPaciente->antalergia_descripcion }}
+                                        </div>
+                                        <!-- Antecedentes Ginecologico -->
+                                        <div class="tab-pane" id="AntecedentesGinecologico">
+                                            {{ $pPaciente->antgineco_descripcion }}
+                                        </div>
+                                        <!-- Antecedentes Familiares -->
+                                        <div class="tab-pane" id="AntecedentesFamiliares">
+                                            {{ $pPaciente->antfamiliar_descripcion }}
+                                        </div>
+                                        <!-- Antecedentes Medicamentos -->
+                                        <div class="tab-pane" id="AntecedentesMedicamentos">
+                                            {{ $pPaciente->antmedicamento_descripcion }}
+                                        </div>
+                                        <!-- Antecedentes Habitos -->
+                                        <div class="tab-pane" id="AntecedentesHabitos">
+                                            <p>Cigarro {{ $pPaciente->tabaco_cnt }} - {{ $pPaciente->tabaco_tiempo }}</p>
+                                            <p>Bebida {{ $pPaciente->alchohol_cnt }} - {{ $pPaciente->alchohol_tiempo }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Signos Vitales -->
         <div id="signosVitalesDiv" hidden>
             <div class="card">
@@ -379,194 +475,58 @@
         <!-- barra lateral derecha -->
         <aside class="control-sidebar">
             <ul id="tree-medico" class="tree" style="font-size: 12px;">
-                <li>
-                    <span class="admission-node">📋 Antecedentes</span>
-                    <ul>
-                        <div class="accordion" id="accordionAntecedentes">
-                            <div class="card">
-                                <div class="card-header" id="headingAntMedico">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link btn-block text-left btn-tree-compact" type="button" data-toggle="collapse" data-target="#AntMedico" aria-expanded="true" aria-controls="AntMedico">
-                                          Médico
-                                        </button>
-                                    </h2>
-                                </div>
-                                <div id="AntMedico" class="collapse" aria-labelledby="headingAntMedico" data-parent="#accordionAntecedentes">
-                                    <div class="card-body" style="text-align: justify;">
-                                        {{ $pPaciente->antmedico_descripcion }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header" id="headingAntQuirurgico">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link btn-block text-left btn-tree-compact" type="button" data-toggle="collapse" data-target="#AntQuirurgico" aria-expanded="true" aria-controls="AntQuirurgico">
-                                          Quirurgico - Traumas
-                                        </button>
-                                    </h2>
-                                </div>
-                                <div id="AntQuirurgico" class="collapse" aria-labelledby="headingAntQuirurgico" data-parent="#accordionAntecedentes">
-                                    <div class="card-body" style="text-align: justify;">
-                                        {{ $pPaciente->antquirurgico_descripcion }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header" id="headingAntAlergico">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link btn-block text-left btn-tree-compact" type="button" data-toggle="collapse" data-target="#AntAlergico" aria-expanded="true" aria-controls="AntAlergico">
-                                          Alergias
-                                        </button>
-                                    </h2>
-                                </div>
-                                <div id="AntAlergico" class="collapse" aria-labelledby="headingAntAlergico" data-parent="#accordionAntecedentes">
-                                    <div class="card-body" style="text-align: justify;">
-                                        {{ $pPaciente->antalergia_descripcion }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header" id="headingAntGineco">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link btn-block text-left btn-tree-compact" type="button" data-toggle="collapse" data-target="#AntGineco" aria-expanded="true" aria-controls="AntGineco">
-                                          Gineco - Obstetra
-                                        </button>
-                                    </h2>
-                                </div>
-                                <div id="AntGineco" class="collapse" aria-labelledby="headingAntGineco" data-parent="#accordionAntecedentes">
-                                    <div class="card-body" style="text-align: justify;">
-                                        {{ $pPaciente->antgineco_descripcion }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header" id="headingAntFamiliares">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link btn-block text-left btn-tree-compact" type="button" data-toggle="collapse" data-target="#AntFamilia" aria-expanded="true" aria-controls="AntFamilia">
-                                          Familiares
-                                        </button>
-                                    </h2>
-                                </div>
-                                <div id="AntFamilia" class="collapse" aria-labelledby="headingAntFamiliares" data-parent="#accordionAntecedentes">
-                                    <div class="card-body" style="text-align: justify;">
-                                        {{ $pPaciente->antfamiliar_descripcion }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header" id="headingAntMedicamentos">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link btn-block text-left btn-tree-compact" type="button" data-toggle="collapse" data-target="#AntMedicamentos" aria-expanded="true" aria-controls="AntMedicamentos">
-                                          Medicamentos
-                                        </button>
-                                    </h2>
-                                </div>
-                                <div id="AntMedicamentos" class="collapse" aria-labelledby="headingAntMedicamentos" data-parent="#accordionAntecedentes">
-                                    <div class="card-body" style="text-align: justify;">
-                                        {{ $pPaciente->antmedicamento_descripcion }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header" id="headingAntHabitos">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link btn-block text-left btn-tree-compact" type="button" data-toggle="collapse" data-target="#AntHabitos" aria-expanded="true" aria-controls="AntHabitos">
-                                          Habitos
-                                        </button>
-                                    </h2>
-                                </div>
-                                <div id="AntHabitos" class="collapse" aria-labelledby="headingAntHabitos" data-parent="#accordionAntecedentes">
-                                    <div class="card-body">
-                                        <p>Cigarro {{ $pPaciente->tabaco_cnt }} - {{ $pPaciente->tabaco_tiempo }}</p>
-                                        <p>Bebida {{ $pPaciente->alchohol_cnt }} - {{ $pPaciente->alchohol_tiempo }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </ul>
-                </li>
                 @foreach($listado as $admision)
                     <li>
-                        <span class="admission-node" id="{{ $admision->id }}" value="{{ $admision->admision_no }}" data-revisado="{{ $admision->encabezado_revisado }}" data-estado="{{ $admision->estado }}">
-                            📋 Admisión: #{{ $admision->admision_no }}
+                        <span class="admission-node" id="{{ $admision->id }}" value="{{ $admision->admision_no }}" data-revisado="{{ $admision->encabezado_revisado }}" data-estado="{{ $admision->estado }}" data-atencion="{{ $admision->inicio_atencion_medica }}">
+                            📋 Admisión: #{{ $admision->admision_no }} --- {{ $admision->fecha }}
                         </span>
                         <ul>
-                            <li><span class="leaf">🔬 Laboratorios</span></li>
+                            <br>
+                            <div class="row">
+                                <div class="col-lg-10 offset-lg-1" style="display: flex; align-items: center; justify-content: space-between;">
+        
+                                    <div id="cronometro-container-{{ $admision->id }}" class="cronometro-instancia" style="display: none;"> 
+                                        <span style="font-size: 1.2rem; font-family: 'monospace'; font-weight: bold;">
+                                            <i class="fas fa-stopwatch text-muted mr-2"></i> 
+                                            <span id="timer-{{ $admision->id }}" class="timer-text">00:00:00</span>
+                                        </span>
+                                    </div>
+
+                                    <div style="display: flex; gap: 8px;">
+                                        <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4 inicio-atencion" title="Iniciar Atención" onclick="fnInicioAtencion();">
+                                            <i class="fas fa-lock-open"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 final-atencion" title="Finalizar Atención" onclick="fnFinalAtencion();">
+                                            <i class="fas fa-lock"></i>
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <li><span class="leaf leaf-link">🔬 Laboratorios</span></li>
                             <li>
-                                <span class="leaf">
+                                <span class="leaf leaf-link">
                                     <a href="#" onclick="openDiv(this, 'signosVitalesDiv'); return false;">❤️ Signos Vitales</a>
                                 </span>
                             </li>
                             <li>
-                                <span class="leaf">
+                                <span class="leaf leaf-link">
                                     <a href="#" onclick="openDiv(this, 'consultasDiv'); return false;">👨‍⚕️ Consultas</a>
                                 </span>
                             </li>
                             <li>
-                                <span class="leaf">
+                                <span class="leaf leaf-link">
                                     <a href="#" onclick="openDiv(this, 'procedimientosDiv'); return false;">💉 Procedimientos</a>
                                 </span>
                             </li>
                             <li>
-                                <span class="leaf">
+                                <span class="leaf leaf-link">
                                     <a href="#" onclick="openDiv(this, 'hospitalizacionDiv'); return false;">🏥 Hospitalizaciones</a>
                                 </span>
                             </li>
                         </ul>
                     </li>
                 @endforeach
-                <!-- <li>
-                    <span class="admission-node" id="1" value="2000022">📋 Admisión: #2000022</span>
-                    <ul>
-                        <li><span class="leaf">🔬 Laboratorios</span></li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'signosVitalesDiv'); return false;">❤️ Signos Vitales</a>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'consultasDiv'); return false;">👨‍⚕️ Consultas</a>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'procedimientosDiv'); return false;">💉 Procedimientos</a>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'hospitalizacionDiv'); return false;">🏥 Hospitalizaciones</a>
-                            </span>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <span class="admission-node" id="2" value="2000000">📋 Admisión: #2000000</span>
-                    <ul>
-                        <li><span class="leaf">🔬 Laboratorios</span></li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'signosVitalesDiv'); return false;">❤️ Signos Vitales</a>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'consultasDiv'); return false;">👨‍⚕️ Consultas</a>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'procedimientosDiv'); return false;">💉 Procedimientos</a>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="leaf">
-                                <a href="#" onclick="openDiv(this, 'hospitalizacionDiv'); return false;">🏥 Hospitalizaciones</a>
-                            </span>
-                        </li>
-                    </ul>
-                </li> -->
             </ul>
         </aside>
         <!-- /barra lateral derecha -->
@@ -846,7 +806,7 @@
                             </div>
                             <div class="card-body">
                                 <input type="hidden" id="procedimiento_admision_id" name="procedimiento_admision_id">
-                                <input type="hidden" id="procedimiento_atencion_id" name="procedimiento_atencion_id" value="0">
+                                <input type="text" id="procedimiento_atencion_id" name="procedimiento_atencion_id">
                                 <div class="row">
                                     <div class="col-lg-2 col-sm-12">
                                         <ul class="nav flex-column" style="font-size: 12px; !important">
@@ -945,7 +905,7 @@
                                             <div class="tab-pane" id="indicacion">
                                                 <div class="row">
                                                     <div class="form-group col-md-10 offset-md-1">
-                                                        <textarea class="form-control form-control-sm summernote" id="pIndicacion" name="pIndicacion" maxlength="975" style="text-align: justify;" placeholder="Sintomatología principal, tiempo de evolución, signos de alarma y objetivo del estudio (ej. tamizaje, diagnóstico o seguimiento)."></textarea>
+                                                        <textarea class="form-control form-control-sm summernote" id="pindicacion" name="pindicacion" maxlength="975" style="text-align: justify;" placeholder="Sintomatología principal, tiempo de evolución, signos de alarma y objetivo del estudio (ej. tamizaje, diagnóstico o seguimiento)."></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -954,7 +914,7 @@
                                             <div class="tab-pane" id="hallazgos">
                                                 <div class="row">
                                                     <div class="form-group col-md-10 offset-md-1">
-                                                        <textarea class="form-control form-control-sm summernote" id="pHallazgos" name="pHallazgos" maxlength="975" style="text-align: justify;" placeholder="Descripción técnica "></textarea>
+                                                        <textarea class="form-control form-control-sm summernote" id="phallazgos" name="phallazgos" maxlength="975" style="text-align: justify;" placeholder="Descripción técnica "></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -963,7 +923,7 @@
                                             <div class="tab-pane" id="diagnostico">
                                                 <div class="row">
                                                     <div class="form-group col-md-10 offset-md-1">
-                                                        <textarea class="form-control form-control-sm summernote" id="pDiagnostico" name="pDiagnostico" maxlength="975" style="text-align: justify;" placeholder="La conclusión sindromática"></textarea>
+                                                        <textarea class="form-control form-control-sm summernote" id="pdiagnostico" name="pdiagnostico" maxlength="975" style="text-align: justify;" placeholder="La conclusión sindromática"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -972,7 +932,7 @@
                                             <div class="tab-pane" id="recomendacion">
                                                 <div class="row">
                                                     <div class="form-group col-md-10 offset-md-1">
-                                                        <textarea class="form-control form-control-sm summernote" id="pRecomendacion" name="pRecomendacion" maxlength="975" style="text-align: justify;" placeholder="Plan a seguir"></textarea>
+                                                        <textarea class="form-control form-control-sm summernote" id="precomendacion" name="precomendacion" maxlength="975" style="text-align: justify;" placeholder="Plan a seguir"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1124,6 +1084,17 @@
     <script type="text/javascript">
         var nLinea =  0;
         let archivosMaster = [];
+
+        var admision_id = null;
+        var admision_no = null;
+        var admision_revisado = null;
+        var admision_estado   = null;
+        var admision_atencion_medica = null;
+
+        let timerInterval;
+        let startTime;
+
+
         // Usamos esta forma para que '$' siempre funcione dentro
         (function($) {
             "use strict";
@@ -1249,26 +1220,9 @@
         });
 
         
-
-        // $(document).ready(function() {
-        //     $('.admission-node').click(function(e) {
-        //         // Localiza la lista (ul) que sigue al número de admisión
-        //         var $submenu = $(this).next('ul');
-            
-        //         // Toggle (abrir/cerrar) con animación
-        //         $submenu.slideToggle(200);
-            
-        //         // Cambia la clase para el icono +/-
-        //         $(this).parent().toggleClass('open');
-            
-        //         // Opcional: Cerrar otras admisiones al abrir una nueva
-        //         // $('.tree ul').not($submenu).slideUp().parent().removeClass('open');
-        //     });
-
-        //     $("#EdadHtml").text('49 años');
-        // });
         $(document).ready(function() {
             $('.admission-node').click(function(e) {
+                var elemento = $(this);
                 // 1. CERRAR TODOS LOS DIVS DE CONTENIDO ABIERTOS
                 // Buscamos todos los divs que terminan en 'Div' y los ocultamos
                 $('#signosVitalesDiv, #consultasDiv, #procedimientosDiv, #hospitalizacionDiv').hide().attr('hidden', true);
@@ -1287,166 +1241,224 @@
                 if(noAdmision) {
                     document.getElementById('AdmisionNo').innerHTML = "<strong>Admisión: </strong>" + noAdmision;
                     document.getElementById('admision_id').value = $(this).attr('id');
+                    admision_id = document.getElementById('admision_id').value;
+                    generalesAdmision();
                 }
             });
 
             $("#EdadHtml").text('49 años'); // Tu lógica existente
+
+            // $('.admission-node').on('click', function() {
+            //     // 1. Identificamos el <li> padre de este nodo
+            //     var $actualLi = $(this).closest('li');
+                
+            //     // 2. Cerramos todos los demás <li> que estén al mismo nivel
+            //     $actualLi.siblings().each(function() {
+            //         $(this).find('ul').slideUp(); // O .hide()
+            //         $(this).removeClass('open');  // Por si usas clases de CSS para los iconos (+/-)
+            //     });
+
+            //     // 3. Abrimos el actual (toggle)
+            //     $(this).next('ul').slideToggle();
+
+            //     // 4. Tu lógica de los botones (usando clases en lugar de IDs)
+            //     var admision_atencion_id = parseInt($(this).data('atencion'), 10);
+            //     actualizarBotones($(this), admision_atencion_id);
+            // });
+            $('.admission-node').on('click', function(e) {
+                // 1. Identificamos el <li> que contiene el nodo clickeado
+                var $liPadre = $(this).closest('li');
+                
+                // 2. Buscamos el <ul> interno de este nodo (el que queremos expandir)
+                var $miLista = $(this).siblings('ul'); 
+
+                // 3. COLAPSAR LOS DEMÁS: 
+                // Buscamos todos los <li> hermanos, entramos en sus <ul> y los cerramos
+                $liPadre.siblings().find('ul').slideUp();
+                
+                // Opcional: remover clases de estilo de los hermanos para que visualmente se vean cerrados
+                $liPadre.siblings().removeClass('active');
+
+                // 4. ACCIÓN SOBRE EL ACTUAL:
+                // Hacemos que el <ul> de este nodo se despliegue (slideDown) 
+                // o alterne (slideToggle) si quieres que se cierre al clickear de nuevo
+                $miLista.slideDown(); 
+                $liPadre.addClass('active');
+
+                // Aquí iría tu lógica de actualización de botones que vimos antes...
+                var estadoAtencion = parseInt($(this).data('atencion'), 10);
+                actualizarBotones($(this), estadoAtencion);
+            });
         });
 
-        // function openDiv(elemento, div){
-        //     var spanAdmision = $(elemento).closest('ul').prev('.admission-node');
-        //     var idAdmision = spanAdmision.attr('id');
-        //     // var noAdmision = spanAdmision.attr('value');
-        //     var noAdmision = spanAdmision.attr('value');
-            
-        //     // closeDiv('signosVitalesDiv');
-        //     // closeDiv('consultasDiv');
-        //     // closeDiv('procedimientosDiv');
-        //     // closeDiv('hospitalizacionDiv');
-        //     document.getElementById('admision_id').value = idAdmision;
-        //     document.getElementById('AdmisionNo').innerHTML = "<strong>Admisión:   </strong>"+noAdmision;
+        function actualizarBotones($nodo, estado) {
+            // Buscamos los botones SOLO dentro del <li> donde se hizo clic
+            var $contenedor = $nodo.closest('li');
+            var $btnInicio = $contenedor.find('.inicio-atencion');
+            var $btnFinal = $contenedor.find('.final-atencion');
 
-        //     $('.admission-node').css('background-color', 'transparent');
-        //     spanAdmision.css('background-color', '#e3f2fd');
-
-        //     switch (div){
-        //         case 'signosVitalesDiv':
-        //             actualizarTablaVitales(idAdmision);
-        //             break;
-        //         case 'hospitalizacionDiv':
-        //             actualizarTablaHospializacion(idAdmision);
-        //             break;
-
-        //     }
-        //     $('#'+div).show();
-        //     $('#'+div).removeAttr('hidden');
-        // }
-        // function openDiv(elemento, div){
-        //     var spanAdmision = $(elemento).closest('ul').prev('.admission-node');
-        //     var idAdmision = spanAdmision.attr('id');
-        //     var noAdmision = spanAdmision.attr('value');
-            
-        //     // Seteamos IDs
-        //     document.getElementById('admision_id').value = idAdmision;
-        //     document.getElementById('AdmisionNo').innerHTML = "<strong>Admisión: </strong>" + noAdmision;
-
-        //     // Ejecutar carga de datos específica
-        //     switch (div){
-        //         case 'signosVitalesDiv':
-        //             actualizarTablaVitales(idAdmision);
-        //             break;
-        //         case 'hospitalizacionDiv':
-        //             actualizarTablaHospializacion(idAdmision);
-        //             break;
-        //     }
-            
-        //     // Mostrar el div solicitado
-        //     $('#'+div).fadeIn().removeAttr('hidden');
-        // }
-        function openDiv(elemento, div) {
-            // 1. Obtener los datos de la admisión desde el nodo padre (el <li> del árbol)
-            var spanAdmision = $(elemento).closest('ul').prev('.admission-node');
-            var idAdmisionNueva = spanAdmision.attr('id');
-            var noAdmisionNueva = spanAdmision.attr('value');
-            var revisado = spanAdmision.data('revisado');
-            var estado   = spanAdmision.data('estado');
-
-            if (revisado == 0) {
-                $('.agregar_registro').prop('hidden', true);
-                // Swal.fire({
-                //     icon: 'warning',
-                //     title: 'Atención',
-                //     text: 'No puede agregar registros porque el encabezado no ha sido revisado.',
-                //     confirmButtonColor: '#3085d6'
-                // });
-                // return false; // Detiene la ejecución
-            }else{
-                if (estado == 'C') {
-                    $('.agregar_registro').prop('hidden', true);
-                    // $('#formVitales input, form textarea').prop('readonly', true);
-                    $('#formVitales').find('input, textarea').prop('readonly', true);
-                    $('#formVitales button[type="submit"]').addClass('deshabilitar_registro');
-
-                    $('#formConsultas').find('input, textarea').prop('readonly', true);
-                    $('#formConsultas select').prop('disabled', true);
-                    $('#formConsultas button[type="submit"]').addClass('deshabilitar_registro');
-                    $('#formConsultas .summernote').each(function() {
-                        $(this).summernote('disable');
-                    });
-
-                    $('#formProcedimientos').find('input, textarea').prop('readonly', true);
-                    $('#formProcedimientos select').prop('disabled', true);
-                    $('#formProcedimientos button[type="submit"]').addClass('deshabilitar_registro');
-                    $('#formProcedimientos input[type="radio"]').prop('disabled', true);
-                    // 1. Bloqueo directo del input
-                    $('#formProcedimientos input[type="checkbox"]').prop('disabled', true);
-                    // 2. Bloqueo de la interacción del mouse en el contenedor (esto es lo que falta)
-                    // Esto evita que al hacer clic en el label se active el check
-                    $('#formProcedimientos .custom-checkbox').css({
-                        'pointer-events': 'none',
-                        'opacity': '0.7'
-                    });
-                    // 3. Específicamente para los que tienen el ID que mencionaste
-                    $('input[id^="old_img_"]').prop('disabled', true);
-
-                    // $('#formProcedimientos input[name="imagenes_viejas_visibles[]"]').prop('disabled', true);
-                    $('#formProcedimientos .custom-control-label').css('cursor', 'not-allowed');
-                    $('#formProcedimientos input[type="file"]').prop('disabled', true);
-                    $('.custom-file-label').addClass('disabled').css('cursor', 'not-allowed');
-                    $('#formProcedimientos .summernote').each(function() {
-                        $(this).summernote('disable');
-                    });
-
-                    $('#formHospitalizaciones').find('input, textarea').prop('readonly', true);
-                    $('#formHospitalizaciones select').prop('disabled', true);
-                    $('#formHospitalizaciones button[type="submit"]').addClass('deshabilitar_registro');
-                    $('#formHospitalizaciones .summernote').each(function() {
-                        $(this).summernote('disable');
-                    });
-                    
-                    
-                    
-                }else{
-                    $('.agregar_registro').prop('hidden', false);
-                    $('#formVitales input, form textarea').prop('readonly', false);
-                    $('#formConsultas input, form textarea').prop('readonly', false);
-                    $('#formProcedimientos input, form textarea').prop('readonly', false);
-                    $('#formHospitalizaciones input, form textarea').prop('readonly', false);
-                }
-            }        
-            // 2. Obtener el ID de la admisión que estaba cargada previamente en el input hidden
-            var idAdmisionActual = document.getElementById('admision_id').value;
-
-            // 3. VALIDACIÓN LÓGICA:
-            // Si la admisión actual es diferente a la que se acaba de cliquear, 
-            // cerramos todos los paneles abiertos para no mezclar datos.
-            if (idAdmisionActual !== "" && idAdmisionActual !== idAdmisionNueva) {
-                $('[id$="Div"]').hide().attr('hidden', true);
+            switch (estado) {
+                case 0:
+                    $btnInicio.removeClass('link-deshabilitado').css('pointer-events', 'auto');
+                    $btnFinal.addClass('link-deshabilitado').css('pointer-events', 'none');
+                    break;
+                case 1:
+                    $btnInicio.addClass('link-deshabilitado').css('pointer-events', 'none');
+                    $btnFinal.removeClass('link-deshabilitado').css('pointer-events', 'auto');
+                    break;
+                case 2:
+                    $btnInicio.addClass('link-deshabilitado').css('pointer-events', 'none');
+                    $btnFinal.addClass('link-deshabilitado').css('pointer-events', 'none');
+                    break;
             }
+        }
 
-            // 4. Actualizar los campos de referencia global
-            document.getElementById('admision_id').value = idAdmisionNueva;
-            document.getElementById('AdmisionNo').innerHTML = "<strong>Admisión:   </strong>" + noAdmisionNueva;
+        function generalesAdmision(){
+            $.ajax({
+                url: "{{ route('trae_generales_admision') }}", // La ruta de Laravel
+                method: "POST",
+                data: {"_token": "{{ csrf_token() }}",
+                       admision_id: admision_id},
+                success: function(response) {
+                    admision_id = response.id;
+                    admision_no = response.admision_no;
+                    admision_estado = response.estado;
+                    admision_atencion_medica = Number(response.atencion_medica);
+                    let segundos_iniciales = Number(response.segundos_atencion) || 0;
 
-            // Resaltar visualmente el nodo en el árbol
-            $('.admission-node').css('background-color', 'transparent');
-            spanAdmision.css('background-color', '#e3f2fd');
+                    // Reiniciamos estilos por defecto
+                    clearInterval(timerInterval);
+                    $('#timer').css('color', '#2d3748'); // Color normal
 
-            // 5. CARGAR DATOS Y MOSTRAR EL PANEL
-            // Solo cargamos si el div está oculto (para evitar peticiones AJAX innecesarias)
+                    if (admision_atencion_medica > 0) {
+                        $('#cronometro-container').css('visibility', 'visible').show();
+                    }
+
+                    // switch (admision_atencion_medica) {
+                    //     case 0:
+                    //         console.log(segundos_iniciales);
+                    //         clearInterval(timerInterval);
+                    //         actualizarTimerManual(0);
+                    //         $('.inicio-atencion')
+                    //             .removeClass('link-deshabilitado')
+                    //             .prop('disabled', false) // Por si es un <button>
+                    //         .css({
+                    //             'pointer-events': 'auto',
+                    //             'opacity': '1'
+                    //         });
+                    //         $('.final-atencion').addClass('link-deshabilitado');
+                    //         $('.agregar_registro').addClass('link-deshabilitado');
+                    //         break;
+                    //     case 1:
+                    //         startTime = Date.now() - (segundos_iniciales * 1000);
+                    //         timerInterval = setInterval(actualizarTimer, 1000);
+                    //         $('.inicio-atencion').addClass('link-deshabilitado');
+                    //         $('.final-atencion').removeClass('link-deshabilitado');
+                    //         $('.agregar_registro').removeClass('link-deshabilitado');
+                    //         break;
+                    //     case 2:
+                    //         console.log(segundos_iniciales);
+                    //         clearInterval(timerInterval);
+                    //         actualizarTimerManual(segundos_iniciales);
+                    //         $('#timer').css('color', '#dc3545'); // Rojo
+                    //         $('.inicio-atencion')
+                    //             .addClass('link-deshabilitado')
+                    //             .prop('disabled', true) // Por si es un <button>
+                    //         .css({
+                    //             'pointer-events': 'none',
+                    //             'opacity': '0.5'
+                    //         });
+                    //         $('.final-atencion').addClass('link-deshabilitado');
+                    //         $('.agregar_registro').addClass('link-deshabilitado');
+                    //         break;
+                    // }
+                    switch (admision_atencion_medica) {
+                        case 0:
+                            $('.cronometro-instancia').hide();
+                            $('#cronometro-container-' + admision_id).show().css('visibility', 'visible');
+                            actualizarTimerManual(0);
+                            $('#timer-' + admision_id).css('color', '#gray');
+                            
+                            $('.inicio-atencion')
+                                .removeClass('link-deshabilitado')
+                                .prop('disabled', false)
+                                .css({ 'pointer-events': 'auto', 'opacity': '1' });
+                            $('.final-atencion').addClass('link-deshabilitado');
+                            $('.agregar_registro').addClass('link-deshabilitado');
+                            break;
+
+                        case 1:
+                            $('.cronometro-instancia').hide(); 
+                            $('#cronometro-container-' + admision_id).show().css('visibility', 'visible');
+                            
+                            startTime = Date.now() - (segundos_iniciales * 1000);
+                            timerInterval = setInterval(actualizarTimer, 1000);
+                            
+                            $('#timer').css('color', '#A6CAE2'); // Color normal (azul/negro)
+                            $('.inicio-atencion').addClass('link-deshabilitado');
+                            $('.final-atencion').removeClass('link-deshabilitado');
+                            $('.agregar_registro').removeClass('link-deshabilitado');
+                            break;
+
+                        case 2:
+                            $('.cronometro-instancia').hide();
+                            $('#cronometro-container-' + admision_id).show().css('visibility', 'visible');
+                            actualizarTimerManual(segundos_iniciales);
+                            $('#timer-' + admision_id).css('color', '#609E33');
+                            
+                            $('.inicio-atencion')
+                                .addClass('link-deshabilitado')
+                                .prop('disabled', true)
+                                .css({ 'pointer-events': 'none', 'opacity': '0.5' });
+                            $('.final-atencion').addClass('link-deshabilitado');
+                            $('.agregar_registro').addClass('link-deshabilitado');
+                            break;
+                    }
+                },
+                error: function(xhr) {
+                    // Aquí manejas errores (validaciones de Laravel, etc.)
+                    let errores = xhr.responseJSON.errors;
+                    // console.error("Error al guardar:", errores);
+                    // alert("Hubo un error al procesar la solicitud.");
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
+                        text: "{!! Session::get('message') !!}",
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            });
+        }
+
+        // $(document).on('click', '.admission-node', function(e) {
+        //     generalesAdmision();
+        // });
+
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            if (window.ID_ADMISION_ACTIVA) {
+                $('#admision_id').val(window.ID_ADMISION_ACTIVA);
+            }
+        });
+
+        function openDiv(elemento, div) {
             if ($('#' + div).is(':hidden')) {
                 switch (div) {
                     case 'signosVitalesDiv':
-                        actualizarTablaVitales(idAdmisionNueva);
+                        actualizarTablaVitales(admision_id);
                         break;
                     case 'consultasDiv':
-                        actualizarTablaConsulta(idAdmisionNueva);
+                        actualizarTablaConsulta(admision_id);
                         break;
                     case 'procedimientosDiv':
-                        actualizarTablaProcedimiento(idAdmisionNueva);
+                        actualizarTablaProcedimiento(admision_id);
                         break;
                     case 'hospitalizacionDiv':
-                        actualizarTablaHospializacion(idAdmisionNueva);
+                        actualizarTablaHospializacion(admision_id);
                         break;
                     // Agrega aquí los demás casos (consultas, procedimientos) cuando implementes sus funciones
                 }
@@ -1863,7 +1875,6 @@
                 method: "POST",
                 data: formData,
                 success: function(response) {
-                    console.log(response);
                     actualizarTablaConsulta(valorExterno);
                     $('#formConsultas')[0].reset();
                     $("#modalConsultas").modal('hide');
@@ -1899,7 +1910,6 @@
                 }
             });
         });
-
 
         $('#formHospitalizaciones').on('submit', function(e) {
             e.preventDefault();
@@ -2075,16 +2085,20 @@
                         $('#consulta_plan').summernote('code', '');
                         $('#consulta_tratamiento').summernote('code', '');
                     }
+                    $('#formConsultas').find('input, textarea').prop('readonly', false);
+                    $('#formConsultas select').prop('disabled', false);
+                    $('#formConsultas button[type="submit"]').removeClass('deshabilitar_registro');
+                    $('#formConsultas .summernote').summernote('enable');
                     
                 }
                 if (modal === 'modalProcedimientos') {
                     $('#formProcedimientos')[0].reset();
                     document.getElementById('procedimiento_admision_id').value = admision_id;
                     if ($.isFunction($.fn.summernote)) {
-                        $('#pIndicacion').summernote('code', '');
-                        $('#pHallazgos').summernote('code', '');
-                        $('#pDiagnostico').summernote('code', '');
-                        $('#pRecomendacion').summernote('code', '');
+                        $('#pindicacion').summernote('code', '');
+                        $('#phallazgos').summernote('code', '');
+                        $('#pdiagnostico').summernote('code', '');
+                        $('#precomendacion').summernote('code', '');
                     }
                     
                 }
@@ -2093,10 +2107,10 @@
                     document.getElementById('hospitalizacion_admision_id').value = admision_id;
                 }
                 // ... resto de tus resets ...
-                $("#"+modal).modal('show');
-                $('#formVitales')[0].reset();
-                graficoIMC(parseFloat(0));
-                $('#formHospitalizaciones')[0].reset();
+                // $("#"+modal).modal('show');
+                // $('#formVitales')[0].reset();
+                // graficoIMC(parseFloat(0));
+                // $('#formHospitalizaciones')[0].reset();
                 $("#"+modal).modal('show');
             }
         }
@@ -2211,7 +2225,6 @@
                        medicamento_id : valorMedicamento,
                        dosis_id : valorDosis},
                 success: function(response){
-                    console.log(response);
                     campoTexto.value = response.descripcion;
                     $(campoTexto).fadeOut(100).fadeIn(100);
                 },
@@ -2228,6 +2241,7 @@
                 data: {"_token": "{{ csrf_token() }}",
                        atencion_id: atencion_id},
                 success: function(response) {
+                    console.log(response);
                     switch (response.tipo_atencion_id) {
                         case 1:
                             openModal('modalConsultas');
@@ -2250,36 +2264,55 @@
                             $('#consulta_objetivo').summernote('code', response.cobjetivo);
                             $('#consulta_impresion_clinica').summernote('code', response.cimpresion_clinica);
                             $('#consulta_plan').summernote('code', response.cplan);
-                            // if (response.ctratamiento) {
-                            //     // Usamos un pequeño delay para asegurar que el modal y el editor estén listos
-                            //     alert('entre');
-                            //     setTimeout(function() {
-                            //         $('#consulta_tratamiento').summernote('code', response.ctratamiento);
-                            //         alert('ya');
-                            //     }, 200); 
-                            // } else {
-                            //     if (typeof $.fn.summernote !== 'undefined') {
-                            //         $('#consulta_tratamiento').summernote('code', '');
-                            //     } else {
-                            //         console.error("Summernote no se ha cargado correctamente.");
-                            //     }
-                            // }
+
+                            if (admision_atencion_medica != 1) {
+                                $('#formConsultas').find('input, textarea').prop('readonly', true);
+                                $('#formConsultas select').prop('disabled', true);
+                                $('#formConsultas button[type="submit"]').addClass('deshabilitar_registro');
+                                $('#formConsultas .summernote').each(function() {
+                                    if ($(this).data('summernote')) { // Verifica si está inicializado
+                                        $(this).summernote('disable');
+                                    }
+                                });
+                            }else{
+                                $('#formConsultas').find('input, textarea').prop('readonly', false);
+                                $('#formConsultas select').prop('disabled', false);
+                                $('#formConsultas button[type="submit"]').removeClass('deshabilitar_registro');
+                                $('#formConsultas .summernote').summernote('enable');
+                            }
                             break;
                         case 2:
-                            // $('#formHospitalizaciones')[0].reset();
-                            openModal('modalHospitalizacion');
                             document.getElementById('hospitalizacion_admision_id').value = response.admision_id;
                             document.getElementById('hospitalizacion_atencion_id').value = response.id;
                             document.getElementById('fecha_inicio').value = response.hfecha_inicio;
                             document.getElementById('fecha_inicio').value = response.hfecha_inicio;
                             document.getElementById('fecha_fin').value = response.hfecha_fin;
                             $('#resumen_egreso').summernote('code', response.hresumen);
+                            if (admision_atencion_medica != 1) {
+                                $('#formHospitalizaciones').find('input, textarea').prop('disabled', true);
+                                $('#formHospitalizaciones select').prop('disabled', true);
+                                $('#formHospitalizaciones button[type="submit"]').addClass('deshabilitar_registro');
+                                $('#formHospitalizaciones .summernote').each(function() {
+                                    if ($(this).data('summernote')) { // Verifica si está inicializado
+                                        $(this).summernote('disable');
+                                    }
+                                });
+                            }else{
+                                $('#formHospitalizaciones').find('input, textarea').prop('readonly', false);
+                                $('#formHospitalizaciones select').prop('disabled', false);
+                                $('#formHospitalizaciones button[type="submit"]').removeClass('deshabilitar_registro');
+                                $('#formHospitalizaciones .summernote').summernote('enable');
+                            }
+                            openModal('modalHospitalizacion');
+                            
                             break;
                         case 3:
                             openModal('modalProcedimientos');
+                            // console.log('entre a procedimiento y el response devuelve '+response)
                             document.getElementById('procedimiento_admision_id').value = response.admision_id;
                             document.getElementById('procedimiento_atencion_id').value = response.id;
-                            document.getElementById('p_procedimiento_id').value = response.pprocedimiento_id;
+                            console.log(response.pprocedimiento_id);
+                            $('#p_procedimiento_id').val(response.pprocedimiento_id).trigger('change');
                             document.getElementById('p_premedicacion_id').value = response.ppremedicacion;
                             document.getElementById('panestesiologo').value = response.panestesiologo;
                             document.getElementById('ppatologo').value = response.ppatologo;
@@ -2289,11 +2322,39 @@
                             const target = document.querySelector(`input[name="tolerncia"][value="${response.ptolerancia}"]`);
                             if(target) target.checked = true;
 
-                            $('#pIndicacion').summernote('code', response.indicacion);
-                            $('#pHallazgos').summernote('code', response.hallazgos);
-                            $('#pDiagnostico').summernote('code', response.diagnostico);
-                            $('#pRecomendacion').summernote('code', response.recomendaciones);
+                            if (response.indicacion) {
+                                $('#pindicacion').summernote('code', response.indicacion);
+                            } else {
+                                $('#pindicacion').summernote('code', 'nulo'); // Limpia si viene vacío
+                            }
+                            $('#consulta_subjetivo').summernote('code', response.csubjetivo);
+                            $('#phallazgos').summernote('code', response.hallazgos);
+                            $('#pdiagnostico').summernote('code', response.diagnostico);
+                            $('#precomendacion').summernote('code', response.recomendaciones);
                             cargarImagenesGuardadas(response.id);
+
+                            if (admision_atencion_medica != 1) {
+                                $('input[name="imagenes_viejas_visibles[]"]').prop('disabled', true);
+                                $('label.custom-control-label').css('cursor', 'not-allowed');
+
+                                $('#formProcedimientos').find('input[type="checkbox"]').prop('disabled', true);
+                                $('#formProcedimientos').find('input, textarea').prop('disabled', true);
+                                $('#formProcedimientos select').prop('disabled', true);
+                                $('#formProcedimientos button[type="submit"]').addClass('deshabilitar_registro');
+                                $('#formProcedimientos .summernote').each(function() {
+                                    if ($(this).data('summernote')) { // Verifica si está inicializado
+                                        $(this).summernote('disable');
+                                    }
+                                });
+                            }else{
+                                $('input[name="imagenes_viejas_visibles[]"]').prop('disabled', false);
+                                $('label.custom-control-label').css('cursor', 'pointer');
+                                $('#formProcedimientos').find('input[type="checkbox"]').prop('disabled', false);
+                                $('#formProcedimientos').find('input, textarea').prop('disabled', false);
+                                $('#formProcedimientos select').prop('disabled', false);
+                                $('#formProcedimientos button[type="submit"]').removeClass('deshabilitar_registro');
+                                $('#formProcedimientos .summernote').summernote('enable');
+                            }
                             break;
                     }
                 },
@@ -2418,6 +2479,13 @@
                     document.getElementById('imc').value = response.bmi;
                     // $('#fecha_inicio').val = response.hfecha_inicio;
                     graficoIMC(parseFloat(response.bmi));
+                    if (admision_atencion_medica == 1) {
+                        $('#formVitales').find('input, textarea').prop('readonly', false);
+                        $('#formVitales button[type="submit"]').removeClass('deshabilitar_registro');
+                    }else{
+                        $('#formVitales').find('input, textarea').prop('readonly', true);
+                        $('#formVitales button[type="submit"]').addClass('deshabilitar_registro');
+                    }
                 },
                 error: function(xhr) {
                     // Aquí manejas errores (validaciones de Laravel, etc.)
@@ -2442,48 +2510,39 @@
         function generar_receta(){
             var atencion_id = document.getElementById('consulta_atencion_id').value;
 
-            // Generamos la URL base con Blade y reemplazamos un "comodín" por el ID de JS
             var urlBase = "{{ route('generar_receta', [':id']) }}";
             var urlFinal = urlBase.replace(':id', atencion_id);
 
-            //  $.ajax({
-            //     url: urlFinal, // La ruta de Laravel
-            //     method: "GET",
-            //     data: {"_token": "{{ csrf_token() }}",
-            //            "atencion_id": atencion_id},
-            //     success: function(response) {
-            //         if (response.success) {
-            //             var urlBase = "{{ route('generar_receta', [':id']) }}";
-            //             var urlFinal = urlBase.replace(':id', atencion_id);
+            var win = window.open(urlFinal, '_blank');
 
-            //             var win = window.open(urlFinal, '_blank');
-    
-            //             // Si 'win' es null, el navegador bloqueó la ventana
-            //             if (win) {
-            //                 win.focus();
-            //             } else {
-            //                 Swal.fire({
-            //                     title: 'Ventana bloqueada',
-            //                     text: 'Por favor, permite las ventanas emergentes para este sitio',
-            //                     icon: 'warning'
-            //                 });
-            //             }
-            //         }
-            //     },
-            //     error: function(xhr) {
-            //         // Aquí manejas errores (validaciones de Laravel, etc.)
-            //         let errores = xhr.responseJSON.errors;
-            //         // console.error("Error al guardar:", errores);
-            //         // alert("Hubo un error al procesar la solicitud.");
-            //         swal.fire({
-            //             title: 'ERROR',
-            //             text: "Error al guardar:", errores,
-            //             type: 'error',
-            //         });
-            //     }
-            // });
+            // Si 'win' es null, el navegador bloqueó la ventana
+            if (win) {
+                win.focus();
+            } else {
+                Swal.fire({
+                    title: "¡Trabajo Finalizado!",
+                    text: "{!! Session::get('message') !!}",
+                    icon: "warning", // Cambiado de 'type' a 'icon'
+                    confirmButtonText: "Aceptar",
+                    confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                    customClass: {
+                        confirmButton: 'btn btn-warning'
+                    },
+                    buttonsStyling: false
+                });
+                Swal.fire({
+                    title: 'Ventana bloqueada',
+                    text: 'Por favor, permite las ventanas emergentes para este sitio',
+                    icon: 'warning'
+                });
+            }
+        }
 
-            var urlBase = "{{ route('generar_receta', [':id']) }}";
+        function generar_informe(){
+            var atencion_id = document.getElementById('procedimiento_atencion_id').value;
+
+            // Generamos la URL base con Blade y reemplazamos un "comodín" por el ID de JS
+            var urlBase = "{{ route('generar_informe', [':id']) }}";
             var urlFinal = urlBase.replace(':id', atencion_id);
 
             var win = window.open(urlFinal, '_blank');
@@ -2609,6 +2668,165 @@
             
             // 3. Mostrar el modal usando jQuery (estándar en AdminLTE)
             $('#modalVisorImagen').modal('show');
+        }
+
+        function fnInicioAtencion(){
+           let admision_id = $('#admision_id').val();
+           $.ajax({
+                url: "{{ route('inicioAtencion') }}", // La ruta de Laravel
+                method: "POST",
+                data: {"_token": "{{ csrf_token() }}",
+                       admision_id: admision_id},
+                success: function(response) {
+                    if (response.type == 'success') {
+                        Swal.fire({
+                            title: '¡ Trabajo Finalizado !',
+                            text: response.message,
+                            icon: 'success',
+                            showCancelButton: false,
+                            confirmButtonColor: '#28a745', // Color success de AdminLTE
+                            confirmButtonText: 'Aceptar'
+                        }).then((result) => {
+                            if (result.isConfirmed) { 
+                                generalesAdmision();
+                                // Hacer visible el cronómetro a la izquierda
+                                document.getElementById('cronometro-container').style.visibility = 'visible';
+                                
+                                clearInterval(timerInterval);
+                                startTime = Date.now();
+                                timerInterval = setInterval(actualizarTimer, 1000);
+                            } 
+                        });
+                    }else{
+                        Swal.fire({
+                            title: "¡ Ooops !",
+                            text: response.message,
+                            icon: "error", // Cambiado de 'type' a 'icon'
+                            confirmButtonText: "Aceptar",
+                            confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                            customClass: {
+                                confirmButton: 'btn btn-danger'
+                            },
+                            buttonsStyling: false
+                        });
+                    }
+                }, 
+                error: function(xhr) {
+                    // Aquí manejas errores (validaciones de Laravel, etc.)
+                    let errores = xhr.responseJSON.errors;
+                    // console.error("Error al guardar:", errores);
+                    // alert("Hubo un error al procesar la solicitud.");
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
+                        text: "{!! Session::get('message') !!}",
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            });
+        }
+
+        function fnFinalAtencion(){
+           let admision_id = $('#admision_id').val();
+           $.ajax({
+                url: "{{ route('finalAtencion') }}", // La ruta de Laravel
+                method: "POST",
+                data: {"_token": "{{ csrf_token() }}",
+                       admision_id: admision_id},
+                success: function(response) {
+                    if (response.type == 'success') {
+                        Swal.fire({
+                            title: '¡ Trabajo Finalizado !',
+                            text: response.message,
+                            icon: 'success',
+                            showCancelButton: false,
+                            confirmButtonColor: '#28a745', // Color success de AdminLTE
+                            confirmButtonText: 'Aceptar'
+                        }).then((result) => {
+                            if (result.isConfirmed) { 
+                                // const btn = document.getElementById("btnFinalAtencion");
+                                // btn.style.display = "none";
+                                generalesAdmision();
+                                // Detener el tiempo
+                                clearInterval(timerInterval);
+                                
+                                // Opcional: poner el texto en rojo para indicar que se detuvo
+                                document.getElementById('timer').style.color = '#dc3545';
+                            } 
+                        });
+                    }else{
+                        Swal.fire({
+                            title: "¡ Ooops !",
+                            text: response.message,
+                            icon: "error", // Cambiado de 'type' a 'icon'
+                            confirmButtonText: "Aceptar",
+                            confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                            customClass: {
+                                confirmButton: 'btn btn-danger'
+                            },
+                            buttonsStyling: false
+                        });
+                    }
+                }, 
+                error: function(xhr) {
+                    // Aquí manejas errores (validaciones de Laravel, etc.)
+                    let errores = xhr.responseJSON.errors;
+                    // console.error("Error al guardar:", errores);
+                    // alert("Hubo un error al procesar la solicitud.");
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
+                        text: "{!! Session::get('message') !!}",
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            });
+        }
+
+        function actualizarTimer() {
+            let now = Date.now();
+            let diff = now - startTime;
+
+            let horas = Math.floor(diff / 3600000);
+            let minutos = Math.floor((diff % 3600000) / 60000);
+            let segundos = Math.floor((diff % 60000) / 1000);
+
+            // Formatear con ceros a la izquierda (00:00:00)
+            let format = 
+                (horas < 10 ? "0" + horas : horas) + ":" + 
+                (minutos < 10 ? "0" + minutos : minutos) + ":" + 
+                (segundos < 10 ? "0" + segundos : segundos);
+
+            // document.getElementById('timer').innerText = format;
+            let el = document.getElementById('timer-' + admision_id);
+            if(el) el.innerText = format;
+        }
+
+        function actualizarTimerManual(totalSegundos) {
+            let total = parseInt(totalSegundos) || 0;
+            let horas = Math.floor(total / 3600);
+            let minutos = Math.floor((total % 3600) / 60);
+            let segundos = total % 60;
+
+            let format = 
+                (horas < 10 ? "0" + horas : horas) + ":" + 
+                (minutos < 10 ? "0" + minutos : minutos) + ":" + 
+                (segundos < 10 ? "0" + segundos : segundos);
+
+            $('#timer-' + admision_id).text(format);
+            
+            $('.cronometro-instancia').hide(); // Ocultamos todos los demás primero
+            $('#cronometro-container-' + admision_id).attr('style', 'display: inline-block !important; visibility: visible !important;');
         }
     </script>
 @endsection

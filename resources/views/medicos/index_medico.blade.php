@@ -36,7 +36,7 @@
             </div>
             <div class="col-12 col-md-1 col-lg-1 mb-3">
                 <a href="#" class="btn btn-md btn-outline-primary rounded elevation-4 w-100 d-flex align-items-center justify-content-center" onclick="actualizarTabla();">
-                    <i class="fas fa-search"></i>
+                    <i class="fas fa-retweet"></i>
                     <span class="d-md-none ml-2">Actualizar</span> </a>
             </div>
         </div>
@@ -44,16 +44,7 @@
         <div class="row">
             <div class="col-12 col-lg-3 order-2 order-lg-1">
                 <div class="row">
-                    <div class="col-12 col-sm-4 col-lg-12 mb-2">
-                        <div class="small-box shadow-sm" style="background-color: #C9DFEE; color: #2c3e50;">
-                            <div class="inner">
-                                <h3 id="estimado">00:00</h3>
-                                <p>Estimado</p>
-                            </div>
-                            <div class="icon"><i class="fas fa-clock"></i></div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-4 col-lg-12 mb-2">
+                    <div class="col-12 col-sm-6 col-lg-12 mb-2">
                         <div class="small-box shadow-sm" style="background-color: #C9DFEE; color: #2c3e50;">
                             <div class="inner">
                                 <h3 id="promedio">00:00</h3>
@@ -62,7 +53,7 @@
                             <div class="icon"><i class="fas fa-stopwatch"></i></div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-4 col-lg-12 mb-2">
+                    <div class="col-12 col-sm-6 col-lg-12 mb-2">
                         <div class="small-box shadow-sm" style="background-color: #C9DFEE; color: #2c3e50;">
                             <div class="inner">
                                 <h3 id="actual">00:00</h3>
@@ -116,7 +107,7 @@
                                         <th>Nombre</th>
                                         <th>Espera</th>
                                         <th>Motivo</th>
-                                        <th>Acción</th>
+                                        <th>Admisión</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -171,15 +162,20 @@
                         // Validamos que el tiempo de espera no sea nulo
                         let espera = response[i]['tiempo_espera'] ? response[i]['tiempo_espera'] : '00:00';
                         
-                        html += '<tr>';
+                        if (response[i]['paciente_en_clinica'] == 1) {
+                            html += '<tr style="background-color: #CCFFCC;">';
+                        }else{
+                            html += '<tr>';
+                        }
+                        
                         html += '  <td>' + response[i]['sala_nombre'] + '</td>';
                         html += '  <td>' + response[i]['horario'] + '</td>';
                         html += '  <td>' + response[i]['nombre_completo'] + '</td>';
                         html += '  <td class="text-danger font-weight-bold">' + espera + '</td>'; // Resaltamos la espera
                         html += '  <td>' + (response[i]['observaciones'] || '') + '</td>';
                         html += '  <td>'
-                        if (response[i]['paciente_id'] != null){
-                            html += '<a href="'+asset+'medicos/nueva_admision/'+response[i]['paciente_id']+'/A" data-toggle="tooltip" data-placement="top" title="'+replacer(response[i]['observaciones'])+'" target="_blank"><i class="fas fa-eye"></i></a>';
+                        if (response[i]['paciente_id'] != null && response[i]['admision_no'] !=  null){
+                            html += '<a href="'+asset+'medicos/nueva_admision/'+response[i]['paciente_id']+'/A" data-toggle="tooltip" data-placement="top" title="'+replacer(response[i]['observaciones'])+'" target="_blank">'+response[i]['admision_no']+'</a>';
                         }
 
                         html += '  </td>';
@@ -202,11 +198,36 @@
                             { "width": "10%", "targets": 5 }  // Acciones (si la hay)
                         ],
                         "order": [[3, "desc"]], // Ordenar por la segunda columna (horario)
+                        // "language": {
+                        //     "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" // Idioma español
+                        // },
+                        "pageLength": 25,  // Esto establece que por defecto se muestren 25 registros
+                        "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],  // Esto establece las opciones en el dropdown
                         "language": {
-                            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" // Idioma español
+                            "sProcessing": "Procesando...",
+                            "sLengthMenu": "Mostrar _MENU_ registros",
+                            "sZeroRecords": "No se encontraron resultados",
+                            "sEmptyTable": "Ningún dato disponible en esta tabla =(",
+                            "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                            "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                            "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                            "sSearch": "Buscar:",
+                            "oPaginate": {
+                                "sFirst": "Primero",
+                                "sLast": "Último",
+                                "sNext": "Siguiente",
+                                "sPrevious": "Anterior"
+                            }
                         },
-                        "dom": 'Bfrtip', // Opcional: agrega botones si tienes la extensión
-                        "pageLength": 10
+                        // "dom": 'Bfrtip', // Opcional: agrega botones si tienes la extensión
+                        "dom": '<"row"<"col-sm-4"l><"col-sm-4 text-center"B><"col-sm-4"f>>rtip', // Ajuste para disposición
+                        "buttons": [
+                            {
+                                extend: 'excelHtml5',
+                                text: 'Excel',
+                                className: 'btn btn-md btn-default'
+                            }
+                        ]
                     });
                 },
                 error: function(xhr) {

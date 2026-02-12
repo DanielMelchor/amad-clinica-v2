@@ -65,6 +65,39 @@
 	        padding: 5px 0;
 	    }
 
+	    /* Cambiar el estilo de los botones del SweetAlert */
+		.swal2-styled.swal2-confirm {
+		    border-radius: 50px !important;
+		    background-color: #28a745 !important; /* Verde success */
+		    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+		}
+
+		.swal2-popup {
+		    border-top: 3px solid #007bff; /* Línea azul arriba como las cards de AdminLTE */
+		}
+
+		.mi-clase-personalizada {
+		    font-family: 'Source Sans Pro', sans-serif;
+		    border: 2px solid #A5C890;
+		}
+
+		.mi-boton-redondo {
+		    border-radius: 20px !important;
+		    text-transform: uppercase;
+		    font-weight: bold;
+		}
+
+		@media (max-width: 576px) {
+		    .swal2-popup {
+		        width: 90% !important; /* Que ocupe casi todo el ancho en celular */
+		        font-size: 0.8rem !important;
+		    }
+		    
+		    .swal2-title {
+		        font-size: 1.2rem !important;
+		    }
+		}
+
     </style>
 @endsection
 @section('title', 'Agenda')
@@ -141,7 +174,6 @@
 						    </ul>
 						</div>
 				    	<div class="card-body">
-				    		<input type="hidden" id="sala_seleccionada" name="sala_seleccionada" value="1">
 				    		<div class="tab-content">
 				    			@foreach($salas as $sala)
 				    				@if($sala_seleccionada == $sala->id )
@@ -559,20 +591,11 @@
 	     	}
 	    }
 
-	    function getMedico(sel)
-		{
-		    aplicar_filtro();
-		}
+	    function getMedico(sel){aplicar_filtro();}
 
-		function getFecha(sel)
-		{
-		    aplicar_filtro();
-		}
+		function getFecha(sel){aplicar_filtro();}
 
-	    function getEstado(sel)
-		{
-		    aplicar_filtro();
-		}
+	    function getEstado(sel){aplicar_filtro();}
 
 	    //===========================================================================
 	    // Inhabilitar todos los botones
@@ -634,9 +657,9 @@
 		//===========================================================================
 	    function fnDefinirSala(id){
 		
-			document.getElementById('sala_seleccionada').value = id;
+			document.getElementById('sala_seleccionada_id').value = id;
 			const tabla = document.getElementById("tbl" + id);
-			const sala_seleccionada = document.getElementById('sala_seleccionada').value;
+			const sala_seleccionada = document.getElementById('sala_seleccionada_id').value;
 			$("table[id^='tbl'] tbody tr").removeClass("table-active");
 			idRegistro = null;
 		}
@@ -646,7 +669,7 @@
 		//===========================================================================
 		function aplicar_filtro()
 		{
-			let sala_activa = document.getElementById('sala_seleccionada').value;
+			let sala_activa = document.getElementById('sala_seleccionada_id').value;
 			var fecha  = $('#fecha_filtro').val();
 			var medico = $('#f_medico_id').val();
 			var estado = $('#estado').val();
@@ -764,6 +787,9 @@
 						html += '</td>'
 						html += '<td style="display:none;">'
 						html += medico;
+						html += '</td>'
+						html += '<td style="display:none;">'
+						html += response[i]['paciente_en_clinica'];
 						html += '</td>'
 		        		html += '</tr>'
 		        	}
@@ -1005,13 +1031,29 @@
 		function fnCrearAdmision(){
 			// alert(context_admision_no);
 			if (typeof idRegistro !== 'undefined' && idRegistro !== null) {
-				document.getElementById('adm_paciente_id').value = context_paciente_id;
-				$('#adm_paciente_id').change();
-				document.getElementById('adm_hospital_id').value = context_hospital_id;
-				$('#adm_hospital_id').change();
-				document.getElementById('adm_medico_id').value = context_medico_id;
-				$('#adm_medico_id').change();
-				$('#nuevaAdmisionModal').modal('show');
+				if (context_paciente_en_clinica == 0) {
+					Swal.fire({
+	                    title: 'Error',
+	                    text:  'Paciente aun no aparece disponible',
+	                    icon:  'error',
+	                    confirmButtonText: "Aceptar",
+	                    confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+	                    customClass: {
+					        popup: 'mi-clase-personalizada',
+					        confirmButton: 'mi-boton-redondo btn-guardar', // Puedes usar tus clases existentes
+					        cancelButton: 'btn-danger'
+					    },
+					    buttonsStyling: false,
+	                });
+				}else{
+					document.getElementById('adm_paciente_id').value = context_paciente_id;
+					$('#adm_paciente_id').change();
+					document.getElementById('adm_hospital_id').value = context_hospital_id;
+					$('#adm_hospital_id').change();
+					document.getElementById('adm_medico_id').value = context_medico_id;
+					$('#adm_medico_id').change();
+					$('#nuevaAdmisionModal').modal('show');
+				}
 			}else{
 				// alert('Debe seleccionar un horario para continuar');
 				Swal.fire({
@@ -1145,7 +1187,7 @@
 		// obtener el valor del registro seleccionado
 		//===========================================================================
 		document.addEventListener("DOMContentLoaded", function() {
-		    const sala_seleccionada = document.getElementById('sala_seleccionada').value;
+		    const sala_seleccionada_id = document.getElementById('sala_seleccionada_id').value;
 
 		    var salas = @json($salas);
 		    $.each(salas, function(index, valor) {
@@ -1163,17 +1205,18 @@
 			    			idRegistro = valores[0];
 			    			idPaciente = valores[2];
 
-			        		context_agenda_id          = fila.cells[0].textContent;
-			        		context_hospital_id        = fila.cells[1].textContent;
-			        		context_paciente_id        = fila.cells[2].textContent;
-			        		context_paciente_nombre    = fila.cells[3].textContent;
-			        		context_paciente_telefonos = fila.cells[4].textContent;
-			        		context_hora               = fila.cells[5].textContent;
-			        		context_expediente_no      = fila.cells[8].textContent;
-			        		context_admision_no        = fila.cells[9].textContent;
-			        		context_agenda_estado      = fila.cells[11].textContent;
-			        		context_observaciones      = fila.cells[12].textContent;
-			        		context_medico_id          = fila.cells[13].textContent;
+			        		context_agenda_id           = fila.cells[0].textContent;
+			        		context_hospital_id         = fila.cells[1].textContent;
+			        		context_paciente_id         = fila.cells[2].textContent;
+			        		context_paciente_nombre     = fila.cells[3].textContent;
+			        		context_paciente_telefonos  = fila.cells[4].textContent;
+			        		context_hora                = fila.cells[5].textContent;
+			        		context_expediente_no       = fila.cells[8].textContent;
+			        		context_admision_no         = fila.cells[9].textContent;
+			        		context_agenda_estado       = fila.cells[11].textContent;
+			        		context_observaciones       = fila.cells[12].textContent;
+			        		context_medico_id           = fila.cells[13].textContent;
+			        		context_paciente_en_clinica = fila.cells[14].textContent;
 
 			        		if (context_admision_no == '') {
 			        			if (context_agenda_estado == 'P' || context_agenda_estado == 'C' || context_agenda_estado == 'B') {
@@ -1203,7 +1246,7 @@
 						}
 			        });
 			    } else {
-			        console.error("No se encontró la tabla con ID: tbl" + sala_seleccionada);
+			        console.error("No se encontró la tabla con ID: tbl" + sala_seleccionada_id);
 			    }
             });
 

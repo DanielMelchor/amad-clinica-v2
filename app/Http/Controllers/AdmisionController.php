@@ -96,9 +96,10 @@ class AdmisionController extends Controller
     }
 
     public function nueva_admision($id, $origen){
-
         $hoy = Carbon::now()->format('Y-m-d');
-        $pPaciente  = Paciente::where('id', $id)
+        $paciente_id = Crypt::decryptString($id);
+
+        $pPaciente  = Paciente::where('id', $paciente_id)
                       ->select('id', DB::raw('CONCAT(nombres, " ", apellidos) nombre_completo'), 'expediente_no', 
                                'fecha_nacimiento', 'antmedico_descripcion', 'antquirurgico_descripcion', 'antalergia_descripcion', 'antgineco_descripcion', 'antfamiliar_descripcion', 'antmedicamento_descripcion', 'tabaco_cnt', 'tabaco_tiempo', 'alcohol_cnt', 'alcohol_tiempo',
                                DB::raw('CASE WHEN genero = "M" THEN "Masculino" ELSE "Femenino" END as genero'))
@@ -112,13 +113,13 @@ class AdmisionController extends Controller
 
         $totalAdmisiones = \DB::table('admisiones')
                            ->where('empresa_id', Auth::user()->empresa_id)
-                           ->where('paciente_id', $id)
+                           ->where('paciente_id', $paciente_id)
                            ->count();
 
         $listado = DB::table('admisiones as a')
                    ->where('a.empresa_id', Auth::user()->empresa_id)
-                   ->where('a.paciente_id', $id)
-                   ->select('a.id', 'a.admision_no', 'a.encabezado_revisado', 'a.estado')
+                   ->where('a.paciente_id', $paciente_id)
+                   ->select('a.id', 'a.admision_no', 'a.encabezado_revisado', 'a.estado', DB::raw('DATE_FORMAT(a.fecha, "%d/%m/%Y") as fecha'), 'a.inicio_atencion_medica', 'a.atencion_medica')
                    ->orderBy('a.admision_no', 'DESC')
                    ->get();
                    // ->paginate(15);
@@ -126,7 +127,7 @@ class AdmisionController extends Controller
         $pListaC = DB::table('admisiones as a')
                    ->leftjoin('admision_atenciones as aa', 'a.id', 'aa.admision_id')
                    ->where('a.empresa_id', Auth::user()->empresa_id)
-                   ->where('a.paciente_id', $id)
+                   ->where('a.paciente_id', $paciente_id)
                    ->where('aa.tipo_atencion_id', 1)
                    ->select('a.admision_no', 'aa.id as detalle_id', 'a.id', 'a.created_at as fecha')
                    ->orderBy('a.admision_no', 'DESC')
@@ -135,7 +136,7 @@ class AdmisionController extends Controller
         $pListaP = DB::table('admisiones as a')
                    ->leftjoin('admision_atenciones as aa', 'a.id', 'aa.admision_id')
                    ->where('a.empresa_id', Auth::user()->empresa_id)
-                   ->where('a.paciente_id', $id)
+                   ->where('a.paciente_id', $paciente_id)
                    ->where('aa.tipo_atencion_id', 3)
                    ->select('a.admision_no', 'aa.id as detalle_id', 'a.id', 'a.created_at as fecha', 'aa.pprocedimiento_id', 'aa.ptolerancia', 'aa.ppremedicacion', 'aa.ppatologo', 'aa.panestesiologo', 'aa.indicacion', 'aa.hallazgos', 'aa.diagnostico', 'aa.recomendaciones')
                    ->orderBy('a.admision_no', 'DESC')
@@ -144,7 +145,7 @@ class AdmisionController extends Controller
         $pListaH = DB::table('admisiones as a')
                    ->leftjoin('admision_atenciones as aa', 'a.id', 'aa.admision_id')
                    ->where('a.empresa_id', Auth::user()->empresa_id)
-                   ->where('a.paciente_id', $id)
+                   ->where('a.paciente_id', $paciente_id)
                    ->where('aa.tipo_atencion_id', 2)
                    ->select('a.admision_no', 'aa.id as detalle_id', 'a.id', 'a.created_at as fecha')
                    ->orderBy('a.admision_no', 'DESC')
@@ -1369,16 +1370,28 @@ class AdmisionController extends Controller
         $admision_id = $_REQUEST['admision_id'];
 
         $generales = DB::table('admisiones as a')
-                     ->join('admision_atenciones as aa', 'a.id', 'aa.admision_id')
-                     ->join('tipo_atenciones as ta', 'aa.tipo_atencion_id', 'ta.id')
+                     // ->leftjoin('admision_atenciones as aa', 'a.id', 'aa.admision_id')
+                     // ->leftjoin('tipo_atenciones as ta', 'aa.tipo_atencion_id', 'ta.id')
                      ->join('medicos as m', 'a.medico_id', 'm.id')
                      ->join('hospitales as h', 'a.hospital_id', 'h.id')
                      ->leftjoin('aseguradoras as a1', 'a.aseguradora_id', 'a1.id')
-                     ->where('aa.id', $admision_id)
+                     ->where('a.id', $admision_id)
                      ->select('a.id', 'a.admision_no', 'a.fecha', 'h.nombre as hospital_nombre', 
                               'm.nombre_completo as medico_nombre', 'a1.nombre as aseguradora_nombre',
-                              'a.poliza_no', 'a.medico_id', 'a.edad', 'a.estado', 
-                              'ta.nombre as tipo_admision'
+                              'a.poliza_no', 'a.medico_id', 'a.edad', 'a.estado', 'a.atencion_medica',
+                              DB::raw("
+                                    CASE 
+                                        /* 1. Si el campo ya tiene segundos (atención finalizada), devolvemos ese valor */
+                                        WHEN a.segundos_atencion_medica > 0 THEN a.segundos_atencion_medica
+                                        
+                                        /* 2. Si el campo es cero o null, pero ya inició la atención, calculamos contra NOW() */
+                                        WHEN a.inicio_atencion_medica IS NOT NULL THEN 
+                                            TIMESTAMPDIFF(SECOND, a.inicio_atencion_medica, COALESCE(a.final_atencion_medica, NOW()))
+                                        
+                                        /* 3. Caso contrario (no ha iniciado), devolvemos 0 */
+                                        ELSE 0 
+                                    END as segundos_atencion
+                                ")
                      )
                      ->first();
 
@@ -1458,73 +1471,114 @@ class AdmisionController extends Controller
     }
 
     public function receta($atencion_id){
-        // if (empty($pRecetaC->pagina_alto) || empty($pRecetaC->pagina_ancho)) {
-        //     $message = array(
-        //         'message' => 'Definición de receta inexistente !!!',
-        //         'type'    => 'error'
-        //     );
-        //     return redirect()->back()->with($message);
-        // }
-        // else{
-        //     setlocale(LC_ALL,"es_ES");
-        //     \Carbon\Carbon::setLocale('es'); 
-            $pEmpresa = Empresa::findOrFail(Auth::user()->empresa_id);
-            $pConsulta = DB::table('admision_atenciones as aa')
-                         ->join('admisiones as a', 'aa.admision_id', 'a.id')
-                         ->join('pacientes as p', 'a.paciente_id', 'p.id')
-                         ->where('aa.id', $atencion_id)
-                         ->select('a.id', 'a.fecha','aa.ctratamiento', 'p.nombre_completo as paciente_nombre')
-                         ->first();
-            // $pConsulta->ctratamiento = strip_tags($pConsulta->ctratamiento);
+        $pEmpresa = Empresa::findOrFail(Auth::user()->empresa_id);
+        $pConsulta = DB::table('admision_atenciones as aa')
+                     ->join('admisiones as a', 'aa.admision_id', 'a.id')
+                     ->join('pacientes as p', 'a.paciente_id', 'p.id')
+                     ->where('aa.id', $atencion_id)
+                     ->select('a.id', 'a.fecha','aa.ctratamiento',
+                              DB::raw("CONCAT(CASE WHEN p.genero = 'M' THEN 'Sr. ' ELSE 'Sra. ' END, p.nombre_completo) as paciente_nombre"))
+                     ->first();
 
-            $medico = admision::findOrFail($pConsulta->id)->select('medico_id')->first();
-            $pRecetaC = Receta_Medico::where('medico_id', $medico->medico_id)->first();
+        $medico = admision::findOrFail($pConsulta->id)->select('medico_id')->first();
+        $firma = Medico::findOrFail($medico->medico_id)->select('firma')->first();
+        $pRecetaC = Receta_Medico::where('medico_id', $medico->medico_id)->first();
+        $fecha = \Carbon\Carbon::parse($pConsulta->fecha);
+        $dia = $fecha->format('d');
+        $mes = $fecha->format('m');
+        switch ($mes) {
+            case '01': $nombre_mes = 'enero'; break;
+            case '02': $nombre_mes = 'febrero'; break;
+            case '03': $nombre_mes = 'marzo'; break;
+            case '04': $nombre_mes = 'abril'; break;
+            case '05': $nombre_mes = 'mayo'; break;
+            case '06': $nombre_mes = 'junio'; break;
+            case '07': $nombre_mes = 'julio'; break;
+            case '08': $nombre_mes = 'agosto'; break;
+            case '09': $nombre_mes = 'septiembre'; break;
+            case '10': $nombre_mes = 'octubre'; break;
+            case '11': $nombre_mes = 'noviembre'; break;
+            case '12': $nombre_mes = 'diciembre'; break;
+            default: $nombre_mes = 'no definido';  break;
+        }
+        $anio = $fecha->format('Y');
 
-            // $pConsulta = DB::table('admision_consultas as ac')
-            //              ->join('admisiones as a', 'ac.admision_id', 'a.id')
-            //              ->join('pacientes as p', 'ac.paciente_id', 'p.id')
-            //              ->where('ac.admision_id', $admision_id)
-            //              ->select('a.fecha','ac.tratamiento', 'p.nombre_completo as paciente_nombre')
-            //              ->first();
-            $fecha = \Carbon\Carbon::parse($pConsulta->fecha);
-            $dia = $fecha->format('d');
-            $mes = $fecha->format('m');
-            switch ($mes) {
-                case '01': $nombre_mes = 'enero'; break;
-                case '02': $nombre_mes = 'febrero'; break;
-                case '03': $nombre_mes = 'marzo'; break;
-                case '04': $nombre_mes = 'abril'; break;
-                case '05': $nombre_mes = 'mayo'; break;
-                case '06': $nombre_mes = 'junio'; break;
-                case '07': $nombre_mes = 'julio'; break;
-                case '08': $nombre_mes = 'agosto'; break;
-                case '09': $nombre_mes = 'septiembre'; break;
-                case '10': $nombre_mes = 'octubre'; break;
-                case '11': $nombre_mes = 'noviembre'; break;
-                case '12': $nombre_mes = 'diciembre'; break;
-                default: $nombre_mes = 'no definido';  break;
-            }
-            $anio = $fecha->format('Y');
+        $posiciones = [
+            'pagina'    => ['alto' => ($pRecetaC->pagina_alto * 2.834).' pt', 'ancho' => ($pRecetaC->pagina_ancho * 2.834).' pt'],
+            'dia'       => ['x' => $pRecetaC->dia_x* 2.834, 'y' => $pRecetaC->dia_y* 2.834],
+            'mes'       => ['x' => $pRecetaC->mes_x* 2.834, 'y' => $pRecetaC->mes_y* 2.834],
+            'anio'      => ['x' => $pRecetaC->anio_x* 2.834, 'y' => $pRecetaC->anio_y* 2.834],
+            'paciente'  => ['x' => $pRecetaC->paciente_x* 2.834, 'y' => $pRecetaC->paciente_y* 2.834],
+            'tratamiento' => ['x' => $pRecetaC->tratamiento_x* 2.834, 'y' => $pRecetaC->tratamiento_y* 2.834],
+        ];
 
-            $posiciones = [
-                'pagina'    => ['alto' => ($pRecetaC->pagina_alto * 2.834).' pt', 'ancho' => ($pRecetaC->pagina_ancho * 2.834).' pt'],
-                'dia'       => ['x' => $pRecetaC->dia_x* 2.834, 'y' => $pRecetaC->dia_y* 2.834],
-                'mes'       => ['x' => $pRecetaC->mes_x* 2.834, 'y' => $pRecetaC->mes_y* 2.834],
-                'anio'      => ['x' => $pRecetaC->anio_x* 2.834, 'y' => $pRecetaC->anio_y* 2.834],
-                'paciente'  => ['x' => $pRecetaC->paciente_x* 2.834, 'y' => $pRecetaC->paciente_y* 2.834],
-                'tratamiento' => ['x' => $pRecetaC->tratamiento_x* 2.834, 'y' => $pRecetaC->tratamiento_y* 2.834],
-            ];
-            // dd($posiciones);
-
-        $pdf = Pdf::loadView('admisiones.receta', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'posiciones', 'pConsulta'));
-    
-        // Configura el tamaño de papel dinámico que tienes en tu base de datos
-        $orientacion = $pRecetaC->orientacion == 'L' ? 'landscape' : 'portrait';
-
-        $pdf->setPaper([0, 0, $pRecetaC->pagina_ancho * 2.834, $pRecetaC->pagina_alto * 2.834], $orientacion);
+        $pdf = Pdf::loadView('admisiones.receta', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'posiciones', 'pConsulta', 'firma'));
+        $pdf->setPaper([0, 0, 612, 396], 'landscape');
+        // $pdf->setPaper([0, 0, $pRecetaC->pagina_ancho * 2.834, $pRecetaC->pagina_alto * 2.834], $orientacion);
 
         return $pdf->stream('receta_' . $pConsulta->paciente_nombre . '.pdf');
         // return view('admisiones.receta', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'posiciones', 'pConsulta'));
+        
+    }
+
+    function informe($atencion_id){
+        // dd('entre');
+        // $pEmpresa = Empresa::findOrFail(Auth::user()->empresa_id);
+        $pEmpresa = DB::table('empresas as e')
+                    ->join('municipios as m', 'e.municipio_id', 'm.id')
+                    ->join('departamentos as d', 'e.departamento_id', 'd.id')
+                    ->join('paises as p', 'e.pais_id', 'p.id')
+                    ->where('e.id', Auth::user()->empresa_id)
+                    ->select('nombre_comercial', DB::raw('CONCAT(e.direccion, " ", m.nombre, " ", d.nombre, " ", p.nombre) as direccion'), 'e.ruta_logo', DB::raw('CONCAT(e.codigo_postal, " ",e.telefonos, " | ", e.email) as telefonos'))
+                    ->first();
+
+        $registro = DB::table('admision_atenciones as aa')
+                    ->join('admisiones as a', 'aa.admision_id', 'a.id')
+                    ->join('pacientes as p', 'a.paciente_id', 'p.id')
+                    ->join('productos as prd', 'aa.pprocedimiento_id', 'prd.id')
+                    ->leftjoin('productos as prem', 'aa.ppremedicacion', 'prem.id')
+                    ->join('hospitales as h', 'a.hospital_id', 'h.id')
+                    ->where('aa.id', $atencion_id)
+                    ->select('a.id as admision_id', 'a.fecha','aa.pprocedimiento_id', 'aa.ptolerancia', 'aa.ppremedicacion', 'aa.ppatologo', 'aa.panestesiologo', 'aa.indicacion', 'aa.hallazgos', 'aa.diagnostico', 'aa.recomendaciones', 'p.codigo_id as paciente_codigo', 'a.edad as paciente_edad', 'prd.descripcion as procedimiento_descripcion', 'a.referido_por', 'h.nombre as hospital_nombre', 'prem.descripcion as premedicacion', DB::raw('CASE ptolerancia WHEN "B" THEN "Bueno" WHEN "R" THEN "Regular" WHEN "M" THEN "Malo" ELSE "No definido" END AS tolerancia_descripcion'),
+                              DB::raw("CONCAT(CASE WHEN p.genero = 'M' THEN 'Sr. ' ELSE 'Sra. ' END, p.nombre_completo) as paciente_nombre"))
+                    ->first();
+
+        $fecha = \Carbon\Carbon::parse($registro->fecha);
+        $dia = $fecha->format('d');
+        $mes = $fecha->format('m');
+        switch ($mes) {
+            case '01': $nombre_mes = 'enero'; break;
+            case '02': $nombre_mes = 'febrero'; break;
+            case '03': $nombre_mes = 'marzo'; break;
+            case '04': $nombre_mes = 'abril'; break;
+            case '05': $nombre_mes = 'mayo'; break;
+            case '06': $nombre_mes = 'junio'; break;
+            case '07': $nombre_mes = 'julio'; break;
+            case '08': $nombre_mes = 'agosto'; break;
+            case '09': $nombre_mes = 'septiembre'; break;
+            case '10': $nombre_mes = 'octubre'; break;
+            case '11': $nombre_mes = 'noviembre'; break;
+            case '12': $nombre_mes = 'diciembre'; break;
+            default: $nombre_mes = 'no definido';  break;
+        }
+        $anio = $fecha->format('Y');
+
+        $medico = DB::table('admision_atenciones as aa')
+                  ->join('users as u', 'aa.created_by', 'u.username')
+                  ->where('aa.id', $atencion_id)
+                  ->select('u.medico_id')
+                  ->first();
+
+        $firma = Medico::findOrFail($medico->medico_id)->select(DB::raw('CONCAT(titulo, " ", nombre_completo) as nombre_profesional'),'firma')->first();
+
+        $fotos = AdmisionAtencionImagen::where('admision_atencion_id', $atencion_id)->get();
+
+        // return view('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos'));
+
+        $pdf = Pdf::loadView('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos', 'firma'));
+        $pdf->setPaper([0, 0, 612, 396], 'landscape');
+
+        return $pdf->stream('informe_' . $registro->paciente_nombre . '.pdf');
         
     }
 
@@ -1581,7 +1635,7 @@ class AdmisionController extends Controller
         $registros = $registros->get();
 
 
-        return Response::json($registros);
+        return Response::json($registros);  
     }
 
     public function encabezadoRevisado(){

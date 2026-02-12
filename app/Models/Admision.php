@@ -19,7 +19,7 @@ class Admision extends Model
 
     protected $table = 'admisiones';
 
-    protected $fillable = ['id', 'empresa_id', 'agenda_id', 'fecha', 'serie', 'admision', 'paciente_id', 'edad', 'medico_id', 'hospital_id', 'admision_tercero', 'referido_por', 'aseguradora_id', 'poliza_no', 'aseguradora_aut_no', 'coaseguro', 'copago', 'pagado_por_aseguradora', 'fecha_inicio', 'fecha_fin', 'resumen_egreso', 'estado', 'encabezado_revisado'];
+    protected $fillable = ['id', 'empresa_id', 'agenda_id', 'fecha', 'serie', 'admision', 'paciente_id', 'edad', 'medico_id', 'hospital_id', 'admision_tercero', 'referido_por', 'aseguradora_id', 'poliza_no', 'aseguradora_aut_no', 'coaseguro', 'copago', 'pagado_por_aseguradora', 'fecha_inicio', 'fecha_fin', 'resumen_egreso', 'estado', 'encabezado_revisado', 'inicio_atencion_medica', 'final_atencion_medica', 'atencion_medica', 'segundos_atencion_medica'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 

@@ -289,6 +289,9 @@
                 <a href="#especialidades" class="hover:text-blue-700 transition">Especialidades</a>
                 <a href="#equipo" class="hover:text-blue-700 transition">Nuestro Equipo</a>
                 <a href="#contacto" class="bg-blue-700 text-white px-5 py-2 rounded-full hover:bg-blue-800 transition">Pedir Cita</a>
+                <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-700 transition flex items-center">
+                    <i class="fas fa-user mr-2"></i> Ingresar
+                </a>
             </div>
         </div>
     </nav>
