@@ -979,6 +979,9 @@ class AdmisionController extends Controller
         $fecha_inicial = $_POST['fecha_inicial'];
         $fecha_final   = $_POST['fecha_final'];
         $result = [];
+
+        $empresa_id = Auth::user()->empresa_id;
+
         $total = Admision::where('empresa_id', Auth::user()->empresa_id)
                  ->whereBetween('fecha', [$fecha_inicial, $fecha_final])
                  ->count();
@@ -1003,20 +1006,6 @@ class AdmisionController extends Controller
                  })
                  ->select(DB::raw('COUNT(a.id) as total_admisiones'))
                  ->first();
-        // $total = DB::table('admisiones as a')
-        //          ->join(DB::raw('(select admision_id 
-        //                          from detalle_movimientos 
-        //                          where estado = 1 
-        //                            and IFNULL(maestro_documento_id, 0) = 0
-        //                          group by admision_id) detalle'),
-        //                 function($j){
-        //                     $j->on('a.id', '=', 'detalle.admision_id');
-        //                 })
-        //          ->where('a.empresa_id', Auth::user()->empresa_id)
-        //          ->whereBetween('fecha', [$fecha_inicial, $fecha_final])
-        //          // ->where('a.estado', 'P')
-        //          ->select(DB::raw('COUNT(a.id) as total_admisiones'))
-        //          ->first();
 
         array_push($result, ['total_adm_con_saldo' => $total]);
 
@@ -1040,7 +1029,7 @@ class AdmisionController extends Controller
                               function($j){
                                 $j->on('a.id', '=', 'p.admision_id');
                               })
-                    ->select('a.admision', 'p.nombre_completo as paciente_nombre', 'a.fecha', DB::raw('SUM(dm.precio_total) as total_cargos'), 
+                    ->select('a.admision_no', 'p.nombre_completo as paciente_nombre', 'a.fecha', DB::raw('SUM(dm.precio_total) as total_cargos'), 
                               DB::raw('ifnull(f.total,0) as total_facturado'), 
                               DB::raw('ifnull(p.total,0) as total_pagado'),
                               DB::raw('ifnull(f.total,0)-ifnull(p.total,0) as saldo')
@@ -1048,7 +1037,7 @@ class AdmisionController extends Controller
                     ->where('a.empresa_id', Auth::user()->empresa_id)
                     ->whereBetween('a.fecha', [$fecha_inicial, $fecha_final])
                     ->Where(DB::raw('ifnull(f.total,0)-ifnull(p.total,0)'), '!=', 0)
-                    ->groupBy('a.admision', 'p.nombre_completo', 'a.fecha', 
+                    ->groupBy('a.admision_no', 'p.nombre_completo', 'a.fecha', 
                                DB::raw('ifnull(f.total,0)'), 
                                DB::raw('ifnull(p.total,0)'),
                                DB::raw('ifnull(f.total,0)-ifnull(p.total,0)')
@@ -1089,6 +1078,41 @@ class AdmisionController extends Controller
         }else{
             array_push($result, ['porcentaje_admisiones' => 0 ]);
         }
+
+        // *************************************************************************************//
+        // ********************************   Finanzas   ***************************************//
+        // *************************************************************************************//
+        // 1. Subconsulta de Detalles (Totales por maestro)
+        $subDetalles = DB::table('documentoventa_detalles')
+            ->select('documentoventa_maestro_id', DB::raw('SUM(precio_neto) AS total'))
+            ->where('estado', '!=', 2)
+            ->groupBy('documentoventa_maestro_id');
+
+        // 2. Subconsulta de Pagos (Total pagado por documento)
+        $subPagos = DB::table('pago_documentos')
+            ->select('documentoventa_id', DB::raw('SUM(monto_aplicado) AS total_pagado'))
+            ->where('estado', 1)
+            ->groupBy('documentoventa_id');
+
+        // 3. Consulta Principal
+        $resumen = DB::table('documentoventa_maestros as dvm')
+            ->leftJoinSub($subDetalles, 'dvd', function ($join) {
+                $join->on('dvm.id', '=', 'dvd.documentoventa_maestro_id');
+            })
+            ->leftJoinSub($subPagos, 'pd', function ($join) {
+                $join->on('dvm.id', '=', 'pd.documentoventa_id');
+            })
+            ->where('dvm.empresa_id', $empresa_id)
+            ->whereBetween('dvm.fecha_emision', [$fecha_inicial, $fecha_final])
+            ->select(
+                DB::raw('COUNT(1) AS total_documentos'),
+                DB::raw('SUM(CASE WHEN dvm.estado = 2 THEN 1 ELSE 0 END) AS total_anulados'),
+                DB::raw('SUM(IFNULL(dvd.total, 0)) AS monto_facturado'),
+                DB::raw('SUM(IFNULL(dvd.total, 0) - IFNULL(pd.total_pagado, 0)) AS saldo_pendiente')
+            )
+            ->first(); // Usamos first() porque solo esperamos una fila de totales
+
+        array_push($result, ['ventas' => $resumen ]);
         
         return Response()->json($result);
     }

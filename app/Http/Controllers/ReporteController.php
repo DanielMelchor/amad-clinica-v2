@@ -21,7 +21,7 @@ class ReporteController extends Controller{
 	// Admisiones 
 	//====================================================================================
 	public function adm_unificado_idx($fecha_inicial, $fecha_final, $tipo_admision, $saldo, $estado){
-		$tipo_admisiones = DB::table('empresa_tipo_atenciones as eta')
+    $tipo_admisiones = DB::table('empresa_tipo_atenciones as eta')
                            ->join('tipo_atenciones as ta', 'eta.tipo_atencion_id', 'ta.id')
                            ->where('eta.empresa_id', Auth::user()->empresa_id)
                            ->where('eta.estado', 1)
@@ -31,17 +31,17 @@ class ReporteController extends Controller{
 
 		$registros = DB::table('admisiones as a')
 		             ->join('pacientes as p', 'a.paciente_id', 'p.id')
-		             ->join('tipo_atenciones as ta', 'a.tipo_admision', 'ta.id')
+		             // ->join('tipo_atenciones as ta', 'a.tipo_admision', 'ta.id')
 		             ->join('hospitales as h', 'a.hospital_id', 'h.id')
 		             ->join('users as u', 'a.created_by', 'u.id')
 		             ->leftjoin('detalle_movimientos as dm', 'a.id', 'dm.admision_id')
 		             ->whereDate('a.fecha', '>=', $fecha_inicial)
 		             ->whereDate('a.fecha', '<=', $fecha_final)
 		             ->when($estado != 'T', function($query) use ($estado) {
-        					return $query->where('a.estado', '=', $estado);
-					 })
-		             ->groupBy('a.id', 'a.admision', 'u.username', 'p.nombre_completo', 'p.expediente_no', 'a.fecha', 'ta.nombre', 'h.nombre')
-		             ->select('a.id', 'a.admision', 'u.username', 'p.nombre_completo', 'p.expediente_no', 'a.fecha', 'ta.nombre as tipo_admision', 'h.nombre as hospital_nombre', DB::raw('("x") as procedimiento_nombre'),  DB::raw('SUM(dm.precio_total) as total_cargos'),
+                    					return $query->where('a.estado', '=', $estado);
+            					 })
+		             ->groupBy('a.id', 'a.admision_no', 'a.created_by', 'p.nombre_completo', 'p.expediente_no', 'a.fecha', 'h.nombre')
+		             ->select('a.id', 'a.admision_no', 'a.created_by as username', 'p.nombre_completo', 'p.expediente_no', 'a.fecha', 'h.nombre as hospital_nombre', DB::raw('("x") as procedimiento_nombre'),  DB::raw('SUM(dm.precio_total) as total_cargos'),
 			                 DB::raw('CASE WHEN a.estado = "P" THEN "Proceso" WHEN a.estado =  "C" THEN "Cerrada" ELSE "Inactiva" END AS estado'))
 		             ->get();
 		

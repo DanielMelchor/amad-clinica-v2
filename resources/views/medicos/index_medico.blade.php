@@ -12,7 +12,7 @@
 @section('content')
     <div class="container-fluid">
         <br>
-        <div class="row justify-content-end">
+        <div class="row">
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="input-group input-group-sm mb-3">
                     <div class="input-group-prepend">
@@ -42,10 +42,10 @@
         </div>
 
         <div class="row">
-            <div class="col-12 col-lg-3 order-2 order-lg-1">
+            <div class="col-12 col-lg-10 order-1 order-lg-1">
                 <div class="row">
-                    <div class="col-12 col-sm-6 col-lg-12 mb-2">
-                        <div class="small-box shadow-sm" style="background-color: #C9DFEE; color: #2c3e50;">
+                    <div class="col-6 col-md-3 mb-2">
+                        <div class="small-box shadow-sm" style="background-color: /*#C9DFEE*/#EDFBFF; color: #2c3e50;">
                             <div class="inner">
                                 <h3 id="promedio">00:00</h3>
                                 <p>Promedio</p>
@@ -53,22 +53,8 @@
                             <div class="icon"><i class="fas fa-stopwatch"></i></div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-12 mb-2">
-                        <div class="small-box shadow-sm" style="background-color: #C9DFEE; color: #2c3e50;">
-                            <div class="inner">
-                                <h3 id="actual">00:00</h3>
-                                <p>Actual</p>
-                            </div>
-                            <div class="icon"><i class="fas fa-hourglass-half"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-lg-9 order-1 order-lg-2">
-                <div class="row">
-                    <div class="col-6 col-md-4 mb-2">
-                        <div class="small-box bg-success shadow-sm">
+                    <div class="col-6 col-md-3 mb-2">
+                        <div class="small-box shadow-sm" style="background-color: #AFCFAB; color: #2c3e50;">
                             <div class="inner">
                                 <h3 id="finalizados">8</h3>
                                 <p>Finalizados</p>
@@ -76,8 +62,8 @@
                             <div class="icon"><i class="fas fa-check-circle"></i></div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-4 mb-2">
-                        <div class="small-box bg-warning shadow-sm">
+                    <div class="col-6 col-md-3 mb-2">
+                        <div class="small-box shadow-sm" style="background-color: #CFCFAB; color: #2c3e50;">
                             <div class="inner">
                                 <h3 id="pendientes">12</h3>
                                 <p>Pendientes</p>
@@ -85,8 +71,8 @@
                             <div class="icon"><i class="fas fa-list-ol"></i></div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-4 mb-2">
-                        <div class="small-box bg-danger shadow-sm">
+                    <div class="col-6 col-md-3 mb-2">
+                        <div class="small-box shadow-sm" style="background-color: #CFAEAB; color: #2c3e50;">
                             <div class="inner">
                                 <h3 id="cancelados">2</h3>
                                 <p>Cancelados</p>
@@ -117,6 +103,37 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="col-12 col-lg-2 order-2 order-lg-1">
+                <!-- <div class="row">
+                    <div class="col-6 col-md-12 mb-2">
+                        <div class="small-box shadow-sm" style="background-color: #DCF1C6; color: #2c3e50;">
+                            <div class="inner">
+                                <h3 id="total_agenda">0</h3>
+                                <p>Agendados</p>
+                            </div>
+                            <div class="icon"><i class="fas fa-user-injured"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-12 mb-2">
+                        <div class="small-box shadow-sm" style="background-color: #EAF7DF; color: #2c3e50;">
+                            <div class="inner">
+                                <h3 id="agenda_presentes">0</h3>
+                                <p>Presentes</p>
+                            </div>
+                            <div class="icon"><i class="fas fa-user-injured"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-12 mb-2">
+                        <div class="small-box shadow-sm" style="background-color: #F7E1DF; color: #2c3e50;">
+                            <div class="inner">
+                                <h3 id="agenda_ausentes">0</h3>
+                                <p>ausentes</p>
+                            </div>
+                            <div class="icon"><i class="fas fa-user-injured"></i></div>
+                        </div>
+                    </div>
+                </div> -->
             </div>
         </div>
     </div>
@@ -152,30 +169,36 @@
                     estado: 'A'
                 },
                 success: function(response) {
+                    console.log(response);
+                    // document.getElementById('total_agenda').textContent = response[0]['total_agendados'];
+                    // document.getElementById('agenda_presentes').textContent = response[0]['presentes'];
+                    // document.getElementById('agenda_ausentes').textContent = response[0]['ausentes'];
+                    document.getElementById('finalizados').textContent = response[1]['finalizados'];
+                    document.getElementById('pendientes').textContent = response[1]['pendientes'];
                     // 1. Destruir la instancia actual de DataTable para poder reinicializarla
                     if ($.fn.DataTable.isDataTable('#tblPrincipal')) {
                         $('#tblPrincipal').DataTable().destroy();
                     }
 
                     var html = '';
-                    for (var i = 0; i < response.length; i++) {
+                    for (var i = 0; i < response[2].length; i++) {
                         // Validamos que el tiempo de espera no sea nulo
-                        let espera = response[i]['tiempo_espera'] ? response[i]['tiempo_espera'] : '00:00';
+                        let espera = response[2][i]['tiempo_espera'] ? response[2][i]['tiempo_espera'] : '00:00';
                         
-                        if (response[i]['paciente_en_clinica'] == 1) {
-                            html += '<tr style="background-color: #CCFFCC;">';
+                        if (response[2][i]['paciente_en_clinica'] == 1) {
+                            html += '<tr style="background-color: #E8FDFA;">';
                         }else{
                             html += '<tr>';
                         }
                         
-                        html += '  <td>' + response[i]['sala_nombre'] + '</td>';
-                        html += '  <td>' + response[i]['horario'] + '</td>';
-                        html += '  <td>' + response[i]['nombre_completo'] + '</td>';
+                        html += '  <td>' + response[2][i]['sala_nombre'] + '</td>';
+                        html += '  <td>' + response[2][i]['horario'] + '</td>';
+                        html += '  <td>' + response[2][i]['nombre_completo'] + '</td>';
                         html += '  <td class="text-danger font-weight-bold">' + espera + '</td>'; // Resaltamos la espera
-                        html += '  <td>' + (response[i]['observaciones'] || '') + '</td>';
+                        html += '  <td>' + (response[2][i]['observaciones'] || '') + '</td>';
                         html += '  <td>'
-                        if (response[i]['paciente_id'] != null && response[i]['admision_no'] !=  null){
-                            html += '<a href="'+asset+'medicos/nueva_admision/'+response[i]['paciente_id']+'/A" data-toggle="tooltip" data-placement="top" title="'+replacer(response[i]['observaciones'])+'" target="_blank">'+response[i]['admision_no']+'</a>';
+                        if (response[2][i]['paciente_id'] != null && response[2][i]['admision_no'] !=  null){
+                            html += '<a href="'+asset+'medicos/nueva_admision/'+response[2][i]['paciente_id']+'/A" data-toggle="tooltip" data-placement="top" title="'+replacer(response[2][i]['observaciones'])+'" target="_blank">'+response[2][i]['admision_no']+'</a>';
                         }
 
                         html += '  </td>';

@@ -17,44 +17,6 @@
 @endsection
 @section('content')
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-info elevation-3">
-                    <div class="inner">
-                        <h3>{{ $listado->count() }}</h3>
-                        <p>Documentos Totales</p>
-                    </div>
-                    <div class="icon"><i class="fas fa-file-invoice"></i></div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-success elevation-3">
-                    <div class="inner">
-                        <h3>Q. {{ number_format($listado->sum('total'), 2) }}</h3>
-                        <p>Total Facturado</p>
-                    </div>
-                    <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-warning elevation-3">
-                    <div class="inner">
-                        <h3>Q. {{ number_format($listado->sum('saldo'), 2) }}</h3>
-                        <p>Saldo Pendiente</p>
-                    </div>
-                    <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-danger elevation-3">
-                    <div class="inner">
-                        <h3>{{ $listado->where('estado', 'Anulado')->count() }}</h3>
-                        <p>Anulados</p>
-                    </div>
-                    <div class="icon"><i class="fas fa-ban"></i></div>
-                </div>
-            </div>
-        </div>
         <div class="card">
             <div class="card-header" style="background-color: #E1E8ED;">
                 <div class="bg-default clearfix">

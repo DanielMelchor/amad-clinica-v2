@@ -316,6 +316,31 @@ class MedicoController extends Controller
         $estado    = $_POST['estado'];
         $ahoraPHP = now()->format('Y-m-d H:i:s');
 
+        $final = [];
+
+        $agenda = DB::table('agendas as a')
+                  ->whereDate('a.fecha_inicio', $fecha)
+                  ->where('a.medico_id', $medico_id)
+                  ->select(DB::raw('COUNT(1) AS total_agendados'),
+                           DB::raw('SUM(CASE WHEN paciente_en_clinica = 1 THEN 1 ELSE 0 END) AS presentes'),
+                           DB::raw('SUM(CASE WHEN paciente_en_clinica = 0 THEN 1 ELSE 0 END) AS ausentes')
+                          )
+                  ->first();
+        
+        array_push($final, $agenda);
+
+        $admision = DB::table('admisiones as a')
+                    ->whereDate('a.fecha', $fecha)
+                    ->where('a.medico_id', $medico_id)
+                    ->select(DB::raw('COUNT(1) AS total'),
+                           DB::raw('SUM(CASE WHEN atencion_medica = 0 THEN 1 WHEN atencion_medica = 1 THEN 1 ELSE 0 END) AS pendientes'),
+                           DB::raw('SUM(CASE WHEN atencion_medica = 2 THEN 1 ELSE 0 END) AS finalizados'),
+                           DB::raw('ROUND(AVG(segundos_atencion_medica),0) AS promedio_atencion'),
+                          )
+                  ->first();
+
+        array_push($final, $admision);
+
         $listado = DB::table('agendas as a')
                    ->join('salas as s', 'a.sala_id', 's.id')
                    ->leftjoin('pacientes as p', 'a.paciente_id', 'p.id')
@@ -326,12 +351,14 @@ class MedicoController extends Controller
                                 $query->Where('a.medico_id', '=', $medico_id);
                            })
                    ->whereDate('a.fecha_inicio', $fecha)
-                   ->where(function ($query) use ($estado) {
-                        $query->where('a.estado', '=', $estado);
-                              // ->orWhere('a.estado', '=', 'P');
-                    })
-                   ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'),
-                       DB::raw("IF(a.fecha_en_clinica IS NOT NULL, TIME_FORMAT(TIMEDIFF('$ahoraPHP', a.fecha_en_clinica), '%H:%i'), '00:00') AS tiempo_espera"), 'a.paciente_en_clinica', 'ad.admision_no', 'ad.atencion_medica'
+                   // ->where(function ($query) use ($estado) {
+                   //      $query->where('a.estado', '=', $estado);
+                   //      $query->orWhere('a.estado', '=', 'P');
+                   //  })
+                   ->select('a.fecha_inicio', 'a.fecha_final', 'a.estado', 'a.observaciones', 'a.paciente_id', 'a.nombre_completo', 'a.telefonos', 'p.expediente_no', 'a.id', 'a.observaciones_bloqueo', 'u.name as usuario_bloqueo', 'a.fecha_bloqueo', 'a.hospital_id', 'a.sala_id', 'ad.id as admision_id', 'ad.admision_no', 's.sala_nombre', 
+                       'a.paciente_en_clinica', 'ad.admision_no', 'ad.atencion_medica',
+                       DB::raw('DATE_FORMAT(a.fecha_inicio, "%H:%i") AS horario'),
+                       DB::raw("IF(a.fecha_en_clinica IS NOT NULL, TIME_FORMAT(TIMEDIFF('$ahoraPHP', a.fecha_en_clinica), '%H:%i'), '00:00') AS tiempo_espera")
                             )
                    ->orderBy('a.sala_id', 'DESC')
                    ->orderBy('a.fecha_inicio', 'ASC')
@@ -343,7 +370,9 @@ class MedicoController extends Controller
             return $item;
         });
 
-        return Response::json($listado);
+        array_push($final, $listado);
+
+        return Response::json($final);
     }
 
     function setBegin(){

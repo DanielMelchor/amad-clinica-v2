@@ -569,8 +569,8 @@
 			var sala_seleccionada_id = $('#sala_seleccionada_id').val();
 			fnDefinirSala(sala_seleccionada_id);
 			// fnInhabilitaBotones();
-			document.getElementById("btnCancelar").classList.add("disabled");
-			document.getElementById("btnFinalizar").classList.add("disabled");
+			// document.getElementById("btnCancelar").classList.add("disabled");
+			// document.getElementById("btnFinalizar").classList.add("disabled");
 			// document.getElementById("opcTrasladar").classList.add("disabled");
 			document.getElementById("btnHistorico").classList.add("disabled");
 		});

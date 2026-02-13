@@ -705,7 +705,6 @@
 
         function fnAnularDocumento(){
             $('#documento_id').val($('#id').val());
-            jQuery.noConflict();
             $('#anulacionModal').modal('show')
         }
 

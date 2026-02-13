@@ -2,7 +2,6 @@
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('lib/fontawesome/css/font-awesome.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/highcharts-11.1.0/css/highcharts.css') }}">
     <style type="text/css">
         .nav-pills .nav-link.active,
@@ -240,9 +239,9 @@
                                             <div class="col-lg-3 col-sm-12">
                                                 <div class="row">
                                                     <div class="col-12" style="color: black;">
-                                                        <div class="small-box" style="background-color: #cca988;">
+                                                        <div class="small-box bg-info elevation-3">
                                                             <div class="inner">
-                                                                <a href="#" style="color: white;" class="btn-link" onclick="fnTodasAdmisiones();">Ingresos
+                                                                <a href="#" style="color: white;" class="btn-link" onclick="fnTodasAdmisiones();">Cantidad Doctos.
                                                                     <i class="fas fa-arrow-circle-right"></i>
                                                                 </a>
                                                                 <h3><div id="total_ingresos">999,392,485.74</div></h3>
@@ -255,10 +254,10 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-12" style="color: black;">
-                                                        <div class="small-box" style="background-color: #adaeaf;">
+                                                        <div class="small-box bg-success elevation-3">
                                                             <div class="inner">
-                                                                <h5>Cobro</h5>
-                                                                <h3><div id="porcentaje_cobro">0.00</div></h3>
+                                                                <h5>Total Facturado</h5>
+                                                                <h3><div id="total_facturado">0.00</div></h3>
                                                             </div>
                                                             <div class="icon">
                                                                 <i class="fas fa-percent"></i>
@@ -268,10 +267,10 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-12" style="color: black;">
-                                                        <div class="small-box" style="background-color: #b9aca2;">
+                                                        <div class="small-box bg-warning elevation-3">
                                                             <div class="inner">
-                                                                <h5>Ticket Promedio</h5>
-                                                                <h3><div id="ticket_promedio"></div></h3>
+                                                                <h5>Saldo Pendiente</h5>
+                                                                <h3><div id="saldo_pendiente"></div></h3>
                                                             </div>
                                                             <div class="icon">
                                                                 <i class="fas fa-coins"></i>
@@ -281,9 +280,9 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-12" style="color: black;">
-                                                        <div class="small-box" style="background-color: #b9aca2;">
+                                                        <div class="small-box bg-danger elevation-3">
                                                             <div class="inner">
-                                                                <h5>Anulaciones</h5>
+                                                                <h5>Cantidad Anulaciones</h5>
                                                                 <h3><div id="total_anulaciones">0.00</div></h3>
                                                             </div>
                                                             <div class="icon">
@@ -422,6 +421,7 @@
                 }
             });
         }
+        
         function fn_datos(){
             var fecha_inicial = document.getElementById('fecha_inicial').value;
             var fecha_final   = document.getElementById('fecha_final').value;
@@ -435,6 +435,7 @@
                        fecha_inicial : fecha_inicial,
                        fecha_final   : fecha_final},
                 success: function(response){
+                    console.log(response[6]['ventas']);
                     document.getElementById('total_admisiones').innerHTML  = response[0]['total_adm'];
                     document.getElementById('admisiones_activas').innerHTML = response[1]['total_adm_activas'];
                     document.getElementById('admisiones_con_saldo').innerHTML = response[2]['total_adm_con_saldo']['total_admisiones'];
@@ -591,30 +592,38 @@
                         }]
                     });
 
+                    // **************************************************************************************//
+                    // *************************************   Finanzas   ***********************************//
+                    // **************************************************************************************//
+                    document.getElementById('total_ingresos').innerHTML  = response[6]['ventas']['total_documentos'];
+                    document.getElementById('total_facturado').innerHTML  = response[6]['ventas']['monto_facturado'];
+                    document.getElementById('saldo_pendiente').innerHTML  = response[6]['ventas']['saldo_pendiente'];
+                    document.getElementById('total_anulaciones').innerHTML  = response[6]['ventas']['total_anulados'];
+
                 },
                 error: function(error){
                     console.log(error);
                 }
             });
 
-            $.ajax({
-                url: "{{ route('grp_data') }}",
-                dataType: "json",
-                type: "POST",
-                async: true,
-                data: {"_token": "{{ csrf_token() }}",
-                       fecha_inicial : fecha_inicial,
-                       fecha_final   : fecha_final},
-                success: function(response){
-                    console.log(response[2]);
-                    document.getElementById('ticket_promedio').innerHTML  = response[0]['ticket_promedio'];
-                    document.getElementById('total_ingresos').innerHTML  = response[1]['total_ventas'];
-                    drilldown(response[3], response[4]);
-                },
-                error: function(error){
-                    console.log(error);
-                }
-            });
+            // $.ajax({
+            //     url: "{{ route('grp_data') }}",
+            //     dataType: "json",
+            //     type: "POST",
+            //     async: true,
+            //     data: {"_token": "{{ csrf_token() }}",
+            //            fecha_inicial : fecha_inicial,
+            //            fecha_final   : fecha_final},
+            //     success: function(response){
+            //         console.log(response[2]);
+            //         document.getElementById('ticket_promedio').innerHTML  = response[0]['ticket_promedio'];
+            //         document.getElementById('total_ingresos').innerHTML  = response[1]['total_ventas'];
+            //         drilldown(response[3], response[4]);
+            //     },
+            //     error: function(error){
+            //         console.log(error);
+            //     }
+            // });
         }
 
         window.onload = function() {

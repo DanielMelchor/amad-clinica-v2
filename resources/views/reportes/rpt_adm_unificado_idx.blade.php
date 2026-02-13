@@ -1,11 +1,5 @@
 @extends('adminlte::page')
 @section('css')
-	<link rel="stylesheet" type="text/css" href="{{ asset('plugins/jquery.dataTables.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/bootstrap-4.6.2-dist/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/dataTables_buttons_2.4.2.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/datatables_bootstrap_4.5.2_css_bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/dataTables_buttons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 	<style type="text/css">
@@ -60,48 +54,50 @@
                     </div>
                 </div>
                 <div class="card-body">
-                	<table class="table table-sm table-striped" id="tblPrincipal">
-                		<thead>
-                			<th># Admisión</th>
-                			<th>Fecha</th>
-                			<th>Creado</th>
-                			<th>Paciente</th>
-                			<th>Expediente</th>
-                			<th>Tipo</th>
-                			<th style="display: none;">Hospital</th>
-                			<th style="display: none;">Procedimiento</th>
-                			<th style="display: none;">Ingreso</th>
-                			<th style="display: none;">Egreso</th>
-                			<th>Cargos</th>
-                			<th>Facturado</th>
-                			<th>Pagado</th>
-                			<th>Saldo</th>
-                			<th>Facturas</th>
-                			<th>Estado</th>
-                		</thead>
-                		<tbody>
-                			@foreach($registros as $registro)
-                			<tr style="font-size: 12px;">
-	                			<td class="numero">{{ $registro->admision }}</td>
-	                			<td>{{ \Carbon\Carbon::parse($registro->fecha)->format('d/m/Y') }}</td>
-                				<td>{{ $registro->username }}</td>
-                				<td>{{ $registro->nombre_completo }}</td>
-                				<td class="numero">{{ $registro->expediente_no }}</td>
-                				<td>{{ $registro->tipo_admision }}</td>
-                				<td style="display: none;">{{ $registro->hospital_nombre }}</td>
-	                			<td style="display: none;">{{ $registro->procedimiento_nombre }}</td>
-	                			<td style="display: none;"></td>
-	                			<td style="display: none;"></td>
-	                			<td class="numero">{{ $registro->total_cargos }}</td>
-	                			<td class="numero">{{ $registro->total_facturado }}</td>
-	                			<td class="numero">{{ $registro->total_pagado }}</td>
-	                			<td class="numero">{{ $registro->saldo }}</td>
-	                			<td>{{ $registro->facturas }}</td>
-	                			<td>{{ $registro->estado }}</td>
-                			</tr>
-        					@endforeach
-                		</tbody>
-    				</table>
+                	<div class="table-responsive">
+	                	<table class="table table-sm table-striped table-hover" id="tblPrincipal">
+	                		<thead>
+	                			<th># Admisión</th>
+	                			<th>Fecha</th>
+	                			<th>Creado</th>
+	                			<th>Paciente</th>
+	                			<th>Expediente</th>
+	                			<th>Tipo</th>
+	                			<th style="display: none;">Hospital</th>
+	                			<th style="display: none;">Procedimiento</th>
+	                			<th style="display: none;">Ingreso</th>
+	                			<th style="display: none;">Egreso</th>
+	                			<th>Cargos</th>
+	                			<th>Facturado</th>
+	                			<th>Pagado</th>
+	                			<th>Saldo</th>
+	                			<th>Facturas</th>
+	                			<th>Estado</th>
+	                		</thead>
+	                		<tbody>
+	                			@foreach($registros as $registro)
+	                			<tr style="font-size: 12px;">
+		                			<td class="numero">{{ $registro->admision }}</td>
+		                			<td>{{ \Carbon\Carbon::parse($registro->fecha)->format('d/m/Y') }}</td>
+	                				<td>{{ $registro->username }}</td>
+	                				<td>{{ $registro->nombre_completo }}</td>
+	                				<td class="numero">{{ $registro->expediente_no }}</td>
+	                				<td>{{ $registro->tipo_admision }}</td>
+	                				<td style="display: none;">{{ $registro->hospital_nombre }}</td>
+		                			<td style="display: none;">{{ $registro->procedimiento_nombre }}</td>
+		                			<td style="display: none;"></td>
+		                			<td style="display: none;"></td>
+		                			<td class="numero">{{ $registro->total_cargos }}</td>
+		                			<td class="numero">{{ $registro->total_facturado }}</td>
+		                			<td class="numero">{{ $registro->total_pagado }}</td>
+		                			<td class="numero">{{ $registro->saldo }}</td>
+		                			<td>{{ $registro->facturas }}</td>
+		                			<td>{{ $registro->estado }}</td>
+	                			</tr>
+	        					@endforeach
+	                		</tbody>
+	    				</table>
+	    			</div>
                 </div>
             </div>
         </div>
@@ -171,16 +167,6 @@
     <!-- /Modal Config-->
 @endsection
 @section('js')
-	<script src="{{ asset('plugins/code.jquery.com_jquery-3.7.0.js') }}"></script>
-    <script src="{{ asset('plugins/bootstrap-4.6.2-dist/js/bootstrap.min.js') }}"></script>
-    <script src="{{ asset('plugins/jquery.dataTables_1.13.6.min.js') }}"></script>
-    <script src="{{ asset('plugins/dataTables.buttons_2.4.2.min.js') }}"></script>
-    <script src="{{ asset('plugins/ajax_libs_jszip_3.10.1.min.js') }}"></script>
-    <script src="{{ asset('plugins/pdfmake_0.1.53.min.js') }}"></script>
-    <script src="{{ asset('plugins/pdfmake_0.1.53_vfs_fonts.js') }}"></script>
-    <script src="{{ asset('plugins/dataTables.buttons_2.4.2.min.js') }}"></script>
-    <script src="{{ asset('plugins/datatables_buttons.html5.min.js') }}"></script>
-    <script src="{{ asset('plugins/buttons_2.4.2_js_buttons.print.min.js') }}"></script>
     <script type="text/javascript">
     	$(function () {
 			$('#tblPrincipal').DataTable({
