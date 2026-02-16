@@ -1,7 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 @endsection
 @section('title', 'Roles')
@@ -10,7 +9,7 @@
 @endsection
 @section('content')
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header" style="background-color: #E1E8ED;">
                     <div class="row">
@@ -19,14 +18,16 @@
                         </div>
                         <div class="col-md-3" style="text-align: right;">
                             <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" data-toggle="modal" data-target="#roleModal" title="Crear nuevo Role"><i class="fas fa-plus-circle"></i></button>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
                 <form class="form-horizontal">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-8 offset-md-2">
+                            <div class="col-lg-8 offset-lg-2">
                                 <table class="table table-sm table-striped text-center" id="tblprincipal" style="font-size: 12px;">
                                     <thead>
                                         <tr>
@@ -52,7 +53,7 @@
         </div>
     </div>
 
-        <!-- Modal -->
+    <!-- Modal -->
     <div class="modal fade" data-backdrop="static" data-keyboard="false" id="roleModal" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -61,10 +62,10 @@
                     <div class="card">
                         <div class="card-header" style="background-color: #E1E8ED">
                             <div class="row">
-                                <div class="col-md-9">
+                                <div class="col-lg-9">
                                     <h6>Nuevo Role</h6>
                                 </div>
-                                <div class="col-md-3" style="text-align: right;">
+                                <div class="col-lg-3" style="text-align: right;">
                                     <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
                                     <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar"> <i class="fas fa-sign-out-alt"></i></button>    
                                 </div>
@@ -88,21 +89,21 @@
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
-                
                 setTimeout(function() {
-                    swal({
-                        title: "Trabajo Finalizado",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "success", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-success'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
@@ -111,19 +112,22 @@
         @if(Session::has('message'))
             <script>
                 setTimeout(function() {
-                    swal({
-                        title: "Error",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
     @endif
+
     <script type="text/javascript">
         $(function () {
             $('#tblprincipal').DataTable({
@@ -161,28 +165,5 @@
                 ]
             });
         });
-
-        function confirma_salida(){
-            swal({
-                title: 'Confirmación',
-                text: 'Seguro de Salir, si ha realizado cambios estos no seran guardados ?',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('home') }}";
-                                    } 
-                    else { 
-                        swal("Cancelled", "Your imaginary file is safe :)", "error"); 
-                        }
-            });
-        }
     </script>
 @endsection

@@ -27,29 +27,17 @@ class permisosController extends Controller
         $this->middleware('auth');
     }
     
+    // *************************************************************************************** //
+    // *********************************** Roles ********************************************* //
+    // *************************************************************************************** //
     public function role_index(){
         $listado = Role::get();
         return view('permisos.role_index', compact('listado'));
     }
 
-    public function permiso_index(){
-        $listado = Permission::get();
-        return view('permisos.permiso_index', compact('listado'));
-    }
-
-    public function usuario_index(){
-        // $listado = User::select('id', 'username', 'name', 'estado')->get();
-        $listado = DB::table('users as u')
-                   ->join('model_has_roles as mhr', 'u.id', 'mhr.model_id')
-                   ->join('roles as r', 'mhr.role_id', 'r.id')
-                   ->select('u.id', 'u.username', 'u.name', 'u.estado', 'r.name as role_name')
-                   ->get();
-        return view('permisos.usuario_index', compact('listado'));
-    }
-
     public function role_store(Request $request){
         $validData = $request->validate([
-            'name' => 'required'
+            'name' => 'required|unique:roles'
         ]);
 
         $registro = new Role();
@@ -59,7 +47,12 @@ class permisosController extends Controller
         //Session::flash('success', 'Admisión Guardada con exito !!!' );
 
         //return redirect::route('roles_listado');
-        return redirect()->back()->with(['success' => 'Role Guardado con exito !!!']);
+        $message = array(
+            'message' => '! Role guardado con exito !',
+            'type'    => 'success'
+        );
+
+        return redirect()->back()->with($message);
     }
 
     public function role_edit($id){
@@ -94,7 +87,7 @@ class permisosController extends Controller
         }
 
         $message = array(
-            'message' => 'Role grabado con exito !!!',
+            'message' => '! Role actualizado con exito !',
             'type'    => 'success'
         );
 
@@ -102,12 +95,13 @@ class permisosController extends Controller
         
     }
 
-    public function trae_permiso(){
-        $id = $_REQUEST['id'];
+    // *************************************************************************************** //
+    // *********************************** Permisos ****************************************** //
+    // *************************************************************************************** //
 
-        $permiso = Permission::findOrFail($id);
-
-        return response::json($permiso);
+    public function permiso_index(){
+        $listado = Permission::get();
+        return view('permisos.permiso_index', compact('listado'));
     }
 
     public function permiso_store(Request $request){
@@ -132,7 +126,6 @@ class permisosController extends Controller
     }
 
     public function permiso_update(Request $request){
-
         $validData = $request->validate([
             'editid'   => 'required',
             'editname' => 'required'
@@ -155,37 +148,58 @@ class permisosController extends Controller
         return redirect()->back()->with($message);
     }
 
+    public function trae_permiso(){
+        $id = $_REQUEST['id'];
+
+        $permiso = Permission::findOrFail($id);
+
+        return response::json($permiso);
+    }
+
+    // *************************************************************************************** //
+    // *********************************** Usuarios ****************************************** //
+    // *************************************************************************************** //
+
+    public function usuario_index(){
+        // $listado = User::select('id', 'username', 'name', 'estado')->get();
+        $listado = DB::table('users as u')
+                   ->join('model_has_roles as mhr', 'u.id', 'mhr.model_id')
+                   ->join('roles as r', 'mhr.role_id', 'r.id')
+                   ->select('u.id', 'u.username', 'u.name', 'u.estado', 'r.name as role_name')
+                   ->get();
+        return view('permisos.usuario_index', compact('listado'));
+    }
 
     public function usuario_create(){
         $empresas     = Empresa::all();
-        $cajas        = Caja::all();
         $salas        = Sala::where('empresa_id', Auth::user()->empresa_id)->get();
         $roles        = Role::all();
         $salas_x_usuario = [];
         $roles_x_usuario = [];
         //$documentos   = Documento::where('estado',1)->get();
 
-        return view('permisos.usuario_create', compact('empresas', 'cajas', 'salas', 'roles', 'salas_x_usuario', 'roles_x_usuario'));   
+        return view('permisos.usuario_create', compact('empresas', 'salas', 'roles', 'salas_x_usuario', 'roles_x_usuario'));   
     }
 
     public function usuario_store(Request $request){
-        $messages = [
-            'username.unique' => 'El usuario ya está registrado. Por favor elige otro.',
-        ];
-
         $validData = $request->validate([
-            'name'       => 'required',
-            'username'   => 'required|unique:users,username',
+            'name'     => 'required',
+            'username' => 'required|unique:users,username',
             'empresa_id' => 'required'
-        ], $messages);
+        ], [
+            'username.unique' => 'El usuario ya está registrado. Por favor elige otro.',
+            'username.required' => 'El campo usuario es obligatorio.',
+            'name.required' => 'El nombre es obligatorio.'
+        ]);
 
         $registro = new User();
-        $registro->name           = $validData['name'];
-        $registro->username       = $validData['username'];
-        $registro->empresa_id     = $validData['empresa_id'];
-        $registro->caja_id        = $request->caja_id;
-        $registro->password       = md5('123456');
-        $registro->estado         = 1;
+        $registro->name              = $validData['name'];
+        $registro->username          = $validData['username'];
+        $registro->empresa_id        = $validData['empresa_id'];
+        $registro->caja_id           = ($request->caja_id == 'null' || !$request->caja_id) ? null : $request->caja_id;
+        $registro->sala_principal_id = ($request->sala_principal_id == 'null' || !$request->sala_principal_id) ? null : $request->sala_principal_id;
+        $registro->password          = md5('123456');
+        $registro->estado            = 1;
         $registro->save();
 
         $salas = $request->callbacks;
@@ -216,7 +230,7 @@ class permisosController extends Controller
     }
 
     public function usuario_edit($id){
-        $registro = User::where('id',$id)->select('id', 'name', 'username', 'empresa_id', 'caja_id', 'estado')->first();
+        $registro = User::where('id',$id)->select('id', 'name', 'username', 'empresa_id', 'caja_id', 'sala_principal_id', 'estado')->first();
         $empresas     = Empresa::all();
         $cajas        = Caja::where('empresa_id', $registro->empresa_id)->get();
         $salas        = Sala::where('empresa_id', $registro->empresa_id)->get();

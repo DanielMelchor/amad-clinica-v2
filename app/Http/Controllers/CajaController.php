@@ -259,7 +259,7 @@ class CajaController extends Controller
         $empresa = $_REQUEST['empresa_id'];
 
         $listado = Caja::where('empresa_id', $empresa)
-                   ->where('estado','A')
+                   ->where('estado', 1)
                    ->select('id', 'nombre_maquina')
                    ->get();
 

@@ -174,7 +174,8 @@ class SalaController extends Controller
         $empresa_id = $_REQUEST['empresa_id'];
 
         $listado = Sala::where('empresa_id', $empresa_id)
-                   ->where('estado', 'A')
+                   ->where('estado', 1)
+                   ->select('id', 'sala_nombre')
                    ->get();
 
         return Response::json($listado);

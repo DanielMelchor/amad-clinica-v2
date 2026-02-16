@@ -1,7 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 @endsection
 @section('title', 'Permisos')
@@ -19,7 +18,9 @@
                         </div>
                         <div class="col-md-3" style="text-align: right;">
                             <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" data-toggle="modal" data-target="#permisoModal" title="Crear nuevo Permiso"><i class="fas fa-plus-circle"></i></button>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -124,21 +125,21 @@
     <!-- /Editar Permiso Modal -->
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
-                
                 setTimeout(function() {
-                    swal({
-                        title: "Trabajo Finalizado",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "success", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-success'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
@@ -147,15 +148,17 @@
         @if(Session::has('message'))
             <script>
                 setTimeout(function() {
-                    swal({
-                        title: "Error",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
@@ -232,7 +235,6 @@
                 success: function(response){
                     document.getElementById('editid').value = response.id;
                     document.getElementById('editname').value = response.name;
-                    jQuery.noConflict()
                     $('#editarPermisoModal').modal('show')
                 },
                 error: function(error){

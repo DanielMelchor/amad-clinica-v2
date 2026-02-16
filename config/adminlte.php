@@ -771,13 +771,14 @@ return [
                 [
                     'type' => 'css',
                     'asset' => true,
-                    'location' => 'assets/select2-bootstrap4-theme/select2-bootstrap4.min.css',
+                    'location' => 'assets/select2/css/select2.min.css',
                 ],
                 [
                     'type' => 'css',
                     'asset' => true,
-                    'location' => 'assets/select2/css/select2.min.css',
+                    'location' => 'assets/select2-bootstrap4-theme/select2-bootstrap4.min.css',
                 ],
+                
                 [
                     'type' => 'js',
                     'asset' => true,

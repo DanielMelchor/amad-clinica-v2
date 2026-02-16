@@ -19,7 +19,7 @@ class Sala extends Model
 
     protected $table = 'salas';
     
-    protected $fillable = ['empresa_id', 'sala_nombre', 'maximo_regisros', 'minutos_por_regisro', 'hora_inicio', 'estado'];
+    protected $fillable = ['id', 'empresa_id', 'sala_nombre', 'maximo_regisros', 'minutos_por_regisro', 'hora_inicio', 'estado'];
     
-    protected $hidden = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
+    protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

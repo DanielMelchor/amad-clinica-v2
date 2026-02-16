@@ -616,10 +616,15 @@ use Illuminate\Support\Facades\Route;
             'middleware' => ['role:Super Admin']
         ], function () {
             Route::get('listado', [permisosController::class, 'role_index'])->name('roles_listado');
-            Route::get('listado_permisos', [permisosController::class, 'permiso_index'])->name('permiso_listado');
             Route::post('grabar', [permisosController::class, 'role_store'])->name('role_grabar');
             Route::get('editar_role/{permiso_id}', [permisosController::class, 'role_edit'])->name('role_editar');
             Route::post('actualizar_role/{role_id}', [permisosController::class, 'role_update'])->name('role_actualizar');
+
+            Route::get('listado_permisos', [permisosController::class, 'permiso_index'])->name('permiso_listado');
+            Route::post('grabar_permiso', [permisosController::class, 'permiso_store'])->name('permiso_grabar');
+            Route::post('trae_permiso', [permisosController::class, 'trae_permiso'])->name('trae_permiso');
+            Route::post('actualizar_permiso', [permisosController::class, 'permiso_update'])->name('permiso_actualizar');
+            
             Route::get('listado_usuarios', [permisosController::class, 'usuario_index'])->name('usuario_listado');
             Route::get('crear_usuario', [permisosController::class, 'usuario_create'])->name('usuario_agregar');
             Route::post('grabar_usuario', [permisosController::class, 'usuario_store'])->name('usuario_grabar');

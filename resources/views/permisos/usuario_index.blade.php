@@ -19,7 +19,9 @@
                         </div>
                         <div class="col-md-3" style="text-align: right;">
                             <a href="{{ route('usuario_agregar') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Usuario"><i class="fas fa-plus-square"></i></a>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -124,29 +126,6 @@
                 ]
             });
         });
-
-        function confirma_salida(){
-            swal({
-                title: 'Confirmación',
-                text: 'Seguro de Salir, si ha realizado cambios estos no seran guardados ?',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('home') }}";
-                                    } 
-                    else { 
-                        swal("Cancelled", "Your imaginary file is safe :)", "error"); 
-                        }
-            });
-        }
 
         function fnEditarUsuario($id){
             var url = "{{ route('usuario_editar', ['user_id' => 0]) }}";
