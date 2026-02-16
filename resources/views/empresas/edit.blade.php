@@ -1,11 +1,8 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('plugins/select2/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
     <style type="text/css">
         .nav-pills .nav-link.active,
         .show>.nav-pills .nav-link{
@@ -29,6 +26,26 @@
             max-width: 100%; /* Ajusta el ancho según tus necesidades */
             overflow-x: auto; /* Permite el desplazamiento horizontal */
         }
+
+        .select2-container {
+            width: 100% !important;
+        }
+
+        /* Fuerza a Select2 a ocupar el 100% real del espacio del input-group */
+        .select2-container--bootstrap4 {
+            flex: 1 1 auto;
+            width: auto !important;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: calc(1.5em + 0.5rem + 2px) !important; /* Ajuste para input-group-sm */
+        }
+
+        /* Evita que el contenedor se desborde */
+        .input-group > .select2-container--bootstrap4 {
+            width: 0 !important;
+            flex: 1 1 auto !important;
+        }
     </style>
 @endsection
 @section('title', 'Empresas')
@@ -38,7 +55,6 @@
 @section('content')
     <div class="row">
         <div class="col-md-10 offset-md-1">
-            <!-- form start -->
             <form role="form" method="POST" action="{{route('actualizar_empresa', $id )}}" enctype="multipart/form-data">
                 @csrf
                 <div class="card">
@@ -48,12 +64,13 @@
                                 <h6>Edición de Empresa</h6>
                             </div>
                             <div class="col-md-3" style="text-align: right;">
-                                <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Grabar"><i class="fas fa-save"></i></button>
-                                <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Regresar a lista de Empresas" onclick="confirma_salida();"><i class="fas fa-sign-out-alt"></i></a> 
+                                <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
+                                <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
+                        <input type="hidden" name="form_token" value="{{ csrf_token() }}">
                         <ul class="nav nav-pills nav-justified">
                             <li class="nav-item">
                                 <a class="nav-link active" href="#generales" data-toggle="tab">Generales</a>
@@ -65,7 +82,6 @@
                         <div class="tab-content">
                             <div class="tab-pane active" id="generales">
                                 <br>
-                                <input type="hidden" name="form_token" value="{{ csrf_token() }}">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="row">
@@ -95,7 +111,7 @@
                                                 <div class="input-group-prepend">
                                                     <label class="input-group-text" for="email">Email</label>
                                                 </div>
-                                                <input type="mail" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="email" name="email" value="{{ $empresa->email }}" required>
+                                                <input type="mail" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="email" name="email" value="{{ $empresa->email }}">
                                             </div>
                                         </div>
                                         <div class="row">
@@ -133,7 +149,7 @@
                                                 <div class="input-group-prepend">
                                                     <label class="input-group-text" for="afiliacion_iva">Afiliación</label>
                                                 </div>
-                                                <input type="text" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="afiliacion_iva" name="afiliacion_iva" value="{{ $empresa->afiliacion_iva }}" required>
+                                                <input type="text" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="afiliacion_iva" name="afiliacion_iva" value="{{ $empresa->afiliacion_iva }}">
                                             </div>
                                             <div class="input-group input-group-sm mb-1 col-md-6">
                                                 <div class="input-group-prepend">
@@ -162,7 +178,7 @@
                                                         <div class="input-group-prepend">
                                                             <label class="input-group-text" for="pais_id">País</label>
                                                         </div>
-                                                        <select class="custom-select select2 select2bs4" id="pais_id" name="pais_id" required>
+                                                        <select class="custom-select select2bs4" id="pais_id" name="pais_id" required>
                                                             <option value="" selected>Seleccionar...</option>
                                                             @foreach($paises as $p)
                                                                 <option value="{{ $p->id }}" @if($empresa->pais_id == $p->id) selected @endif>{{ $p->nombre }}</option>
@@ -175,7 +191,7 @@
                                                         <div class="input-group-prepend">
                                                             <label class="input-group-text" for="departamento_id">Departamento</label>
                                                         </div>
-                                                        <select class="custom-select select2 select2bs4" id="departamento_id" name="departamento_id" required>
+                                                        <select class="custom-select select2bs4" id="departamento_id" name="departamento_id" required>
                                                             <option value="" selected>Seleccionar...</option>
                                                             @foreach($departamentos as $d)
                                                                 <option value="{{ $d->id }}" @if($empresa->departamento_id == $d->id) selected @endif>{{ $d->nombre }}</option>
@@ -188,7 +204,7 @@
                                                         <div class="input-group-prepend">
                                                             <label class="input-group-text" for="municipio_id">Municipio</label>
                                                         </div>
-                                                        <select class="custom-select select2 select2bs4" id="municipio_id" name="municipio_id" required>
+                                                        <select class="custom-select select2bs4" id="municipio_id" name="municipio_id" required>
                                                             <option value="" selected>Seleccionar...</option>
                                                             @foreach($municipios as $m)
                                                                 <option value="{{ $m->id }}" @if($empresa->municipio_id == $m->id) selected @endif>{{ $m->nombre }}</option>
@@ -213,13 +229,13 @@
                                                         <div class="input-group-prepend">
                                                             <label class="input-group-text">Firma</label>
                                                         </div>
-                                                        <input type="text" class="form-control" placeholder="Firma" aria-label="Username" aria-describedby="basic-addon1" placeholder="llave_firma" id="llave_firma" name="llave_firma" value="{{ $empresa->llave_firma }}">
+                                                        <input type="text" class="form-control" placeholder="Firma" aria-label="Username" aria-describedby="basic-addon1" placeholder="llave_firma" id="llave_firma" name="llave_firma" value="{{ old('llave_firma')}}">
                                                     </div>
                                                     <div class="input-group input-group-sm mb-1 col-md-6">
                                                         <div class="input-group-prepend">
                                                             <label class="input-group-text">Certificación</label>
                                                         </div>
-                                                        <input type="text" class="form-control" placeholder="Llave Certificación" aria-label="Username" aria-describedby="basic-addon1" placeholder="llave_certificacion" id="llave_certificacion" name="llave_certificacion" value="{{ $empresa->llave_certifica }}">
+                                                        <input type="text" class="form-control" placeholder="Llave Certificación" aria-label="Username" aria-describedby="basic-addon1" placeholder="llave_certificacion" id="llave_certificacion" name="llave_certificacion" value="{{ old('llave_certificacion')}}">
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -227,13 +243,13 @@
                                                         <div class="input-group-prepend">
                                                             <label class="input-group-text" for="alias">Alias</label>
                                                         </div>
-                                                        <input type="text" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="alias" name="alias" value="{{ $empresa->alias }}">
+                                                        <input type="text" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="alias" name="alias" value="{{ old('alias')}}">
                                                     </div>
                                                     <div class="input-group input-group-sm mb-1 col-md-6">
                                                         <div class="input-group-prepend">
                                                             <label class="input-group-text" for="formato">Impresión</label>
                                                         </div>
-                                                        <input type="number" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="formato" name="formato" value="{{ $empresa->formato }}" step="1" min="1">
+                                                        <input type="number" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="formato" name="formato" value="{{ old('formato')}}" step="1" min="1">
                                                     </div>
                                                 </div>
                                             </div>
@@ -241,10 +257,11 @@
                                     </div>
                                 </div>
                                 <br>
+                                <br>
                                 <div class="row">
                                     <div class="form-group offset-md-1">
                                         <div class="custom-control custom-control-sm custom-switch custom-switch-off-danger custom-switch-on-success">
-                                            <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A" @if($empresa->estado == 'A') checked @endif>
+                                            <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A" @if($empresa->estado == 1) checked @endif>
                                             <label class="custom-control-label" for="estado">Activar</label>
                                         </div>
                                     </div>
@@ -274,21 +291,44 @@
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
+    {{-- Capturar Errores de Validación (como el unique:username) --}}
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Revisar Formulario',
+                // Unimos todos los mensajes de error en una lista
+                html: `
+                    <ul style="text-align: left;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonText: "Aceptar",
+                confirmButtonColor: "#dc3545",
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                buttonsStyling: false
+            });
+        </script>
+    @endif
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
-                
                 setTimeout(function() {
-                    swal({
-                        title: "Trabajo Finalizado",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "success", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-success'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
@@ -297,88 +337,60 @@
         @if(Session::has('message'))
             <script>
                 setTimeout(function() {
-                    swal({
-                        title: "Error",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
     @endif
     <script type="text/javascript">
-        $("#pais_id").change(function(){
-            var pais_id = document.getElementById('pais_id').value;
-            if (pais_id.length > 0) {
-                var html = '<option value="" selected>Seleccionar...</option>'
-                $.ajax({
-                    url: "{{ route('departamentos_x_pais') }}",
-                    type: "POST",
-                    async: true,
-                    data: {"_token": "{{ csrf_token() }}", 
-                           pais_id : pais_id},
-                    success: function(response){
-                        for (var i = 0; i < response.length; i++) {
-                            console.log(response[i]);
-                            html += '<option value="'+response[i]['id']+'">'+response[i]['nombre']+'</option>'
-                        }
-                        $("#departamento_id").empty().append(html);
-                        $("#municipio_id").empty();
-                    },
-                    error: function(error){
-                        console.log(error);
-                    }
-                });
-            }
+        $(document).ready(function() {
+            $('.select2bs4').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                placeholder: "Seleccionar...",
+                allowClear: true,
+                // SI ESTÁS EN UN MODAL, añade esta línea:
+                // dropdownParent: $('#nombre_de_tu_modal') 
+            });
+
+            // Truco para corregir el bug de falta de foco en el buscador
+            $(document).on('select2:open', () => {
+                document.querySelector('.select2-search__field').focus();
+            });
         });
 
-        $("#departamento_id").change(function(){
-            var departamento_id = document.getElementById('departamento_id').value;
-            if (departamento_id.length > 0) {
-                var html = '<option value="" selected>Seleccionar...</option>'
-                $.ajax({
-                    url: "{{ route('municipios_x_departamento') }}",
-                    type: "POST",
-                    async: true,
-                    data: {"_token": "{{ csrf_token() }}", 
-                           departamento_id : departamento_id},
-                    success: function(response){
-                        for (var i = 0; i < response.length; i++) {
-                            html += '<option value="'+response[i]['id']+'">'+response[i]['nombre']+'</option>'
-                        }
-                        $("#municipio_id").empty().append(html);
-                    },
-                    error: function(error){
-                        console.log(error);
-                    }
-                });
-            }
-        });
-
+        //=======================================================================
+        // Confirmar Salida de pantalla
+        //=======================================================================
         function confirma_salida(){
-            swal({
+            Swal.fire({
                 title: 'Confirmación',
-                text: 'Seguro de Salir, si ha realizado cambios estos no seran guardados ?',
-                type: 'warning',
+                text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
                 confirmButtonText: 'Si',
                 cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
+                // Esto es clave:
+                buttonsStyling: false, 
+                customClass: {
+                    confirmButton: 'btn btn-success mx-2', // Agregamos 'btn' y margen
+                    cancelButton: 'btn btn-danger mx-2'
                 },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('empresas') }}";
-                                    } 
-                    else { 
-                        swal("Cancelled", "Your imaginary file is safe :)", "error"); 
-                        }
+                allowEscapeKey: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('empresas') }}";
+                }
             });
         }
     </script>

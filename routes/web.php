@@ -197,19 +197,7 @@ use Illuminate\Support\Facades\Route;
             Route::post('resolucion_utilizada',[CajaController::class, 'resolucion_registros_utilizados'])->name('resolucion_registros_utilizados');
             Route::post('cajas_por_empresa',[CajaController::class, 'cajas_x_empresa'])->name('cajas_por_empresa');
         });
-
-        // Correlativos
-        Route::group(['prefix' => 'correlativos',
-                      'middleware' => ['permission:ver-correlativos']
-        ], function () {
-            Route::get('listado',[CorrelativoController::class, 'index'])->name('correlativos');
-            Route::get('agregar',[CorrelativoController::class, 'create'])->name('crear_correlativo_1');
-            Route::post('grabar',[CorrelativoController::class, 'store'])->name('grabar_correlativo_1');
-            Route::get('editar/{correlativo_id}',[CorrelativoController::class, 'edit'])->name('editar_correlativo_1');
-            Route::post('actualizar',[CorrelativoController::class, 'update'])->name('actualizar_correlativo_1');
-            Route::post('trae_correlaivo',[CorrelativoController::class, 'trae_correlativo'])->name('trae_correlativo');
-        });
-
+        
         // Departamentos
         Route::group(['prefix' => 'departamentos',
                       'middleware' => ['permission:ver-departamento']
@@ -624,7 +612,7 @@ use Illuminate\Support\Facades\Route;
             Route::post('grabar_permiso', [permisosController::class, 'permiso_store'])->name('permiso_grabar');
             Route::post('trae_permiso', [permisosController::class, 'trae_permiso'])->name('trae_permiso');
             Route::post('actualizar_permiso', [permisosController::class, 'permiso_update'])->name('permiso_actualizar');
-            
+
             Route::get('listado_usuarios', [permisosController::class, 'usuario_index'])->name('usuario_listado');
             Route::get('crear_usuario', [permisosController::class, 'usuario_create'])->name('usuario_agregar');
             Route::post('grabar_usuario', [permisosController::class, 'usuario_store'])->name('usuario_grabar');

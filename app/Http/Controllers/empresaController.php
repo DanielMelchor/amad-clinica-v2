@@ -6,16 +6,19 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 use DB;
+use App\Models\Correlativo;
 use App\Models\Departamento;
 use App\Models\Empresa;
 use App\Models\Municipio;
 use App\Models\user;
 use App\Models\userStamps;
 use App\Models\Pais;
+use Intervention\Image\Laravel\Facades\Image;
 
 class empresaController extends Controller
 {
@@ -49,10 +52,17 @@ class empresaController extends Controller
                 'departamento_id'     => 'required',
                 'pais_id'             => 'required',
                 'codigo_postal'       => 'required',
-                'email'               => 'required|email',
                 'telefonos'           => 'required',
-                'afiliacion_iva'      => 'required',
-                'porcentaje_impuesto' => 'required'
+                'porcentaje_impuesto' => 'required',
+                'correlativo_pacientes'  => 'required',
+                'correlativo_admisiones' => 'required'
+            ],[
+                'razon_social'     => 'La Razón Social es de caracter obligatorio.',
+                'nombre_comercial' => 'El Nombre Comercial es de caracter obligatorio.',
+                'direccion'        => 'La Dirección es de caracter obligatorio.',
+                'codigo_postal'    => 'El Codigo Postal es de caracter obligatorio.',
+                'telefonos'        => 'El Telefono es de caracter obligatorio.',
+                'porcentaje_impuesto' => 'El Porcentaje de Impuesto es de caracter obligatorio.'
             ]);
 
             $empresa = new Empresa();
@@ -63,9 +73,9 @@ class empresaController extends Controller
             $empresa->departamento_id     = $validData['departamento_id'];
             $empresa->pais_id             = $validData['pais_id'];
             $empresa->codigo_postal       = $validData['codigo_postal'];
-            $empresa->email               = $validData['email'];
+            $empresa->email               = $request->email;
             $empresa->telefonos           = $validData['telefonos'];
-            $empresa->afiliacion_iva      = $validData['afiliacion_iva'];
+            $empresa->afiliacion_iva      = $request->afiliacion_iva;
             $empresa->porcentaje_impuesto = $validData['porcentaje_impuesto'];
             $empresa->nit_empresa         = $request->nit_empresa;
             $empresa->igss_empresa        = $request->igss_empresa;
@@ -75,12 +85,25 @@ class empresaController extends Controller
             $empresa->llave_firma         = $request->llave_firma;
             $empresa->llave_certifica     = $request->llave_certifica;
 
-            if (!empty($request->logo_empresa))
-            //if ($request->hasFile('logo_empresa')) 
-            {
-                $logo = $request->file('logo_empresa')->getClientOriginalName();
-                $request->file('logo_empresa')->move('logos', $logo);
-                $empresa->ruta_logo = 'logos/' . $logo;
+            $file = $request->logo_empresa;
+
+            if ($file) {
+                $nombreHashed = time() . '_' . $file->hashName();
+                $path = storage_path('app/public/logos/');
+
+                if (!File::isDirectory($path)) {
+                    File::makeDirectory($path, 0777, true, true);
+                }
+
+                $img = Image::read($file);
+                $img->scale(width: 1000); 
+
+                // 5. GUARDAR FÍSICAMENTE
+                $img->save($path . $nombreHashed);
+
+                // $logo = $request->file('logo_empresa')->getClientOriginalName();
+                // $request->file('logo_empresa')->move('logos', $logo);
+                $empresa->ruta_logo = $nombreHashed;
             }
             
             if (isset($request->estado)) {
@@ -89,42 +112,72 @@ class empresaController extends Controller
                 $empresa->estado = 0;
             }
 
-            DB::commit();
-            
-            $saved = $empresa->save();
-            // return Redirect::route('empresas')->with('message','Empresa grabada con exito');
-            if ($saved) {
-                $message = array(
-                    'message' => 'Registro almacenado con exito !!!',
-                    'type'    => 'success'
-                );
-            }else{
-                DB::rollBack();
-                $message = array(
-                    'message' => 'Error al almacenar la información !!!',
-                    'type'    => 'error'
-                );
+            $empresa->save();
+
+            // **************************************************************** //
+            // ************************* Correlativos ************************* //
+            // **************************************************************** //
+            $tipos = [
+                'P' => $request->correlativo_pacientes,
+                'A' => $request->correlativo_admisiones
+            ];
+
+            foreach ($tipos as $tipo => $valor) {
+                $correlativo = new Correlativo();
+                $correlativo->empresa_id = $empresa->id; // Ahora el ID ya existe
+                $correlativo->tipo = $tipo;
+                $correlativo->correlativo = $valor;
+                $correlativo->save();
             }
+
+            DB::commit();
+
+            $idEncriptado = Crypt::encrypt($empresa->id);
+
+            $message = array(
+                'message' => 'Registro almacenado con exito !!!',
+                'type'    => 'success'
+            );
+            
         }catch (\Exception $e) {
             DB::rollBack();
             $message = array(
-                'message' => 'Error al almacenar la información !!!',
+                'message' => '! Error al almacenar la información ! '. $e->getMessage(),
                 'type'    => 'error'
             );
         }
 
-        // return redirect()->back()->with($message);
-        return redirect()->route('empresas')->with($message);
+        return redirect()->route('editar_empresa', [$idEncriptado])->with($message);
+        // return redirect()->route('empresas')->with($message);
     }
 
     public function edit($id)
     {
-        $empresaId = decrypt($id);
-        $empresa = Empresa::findOrFail($empresaId);
-        $paises = Pais::where('estado', 1)->get();
-        $departamentos = Departamento::where('pais_id', $empresa->pais_id)->get();
-        $municipios = Municipio::where('departamento_id', $empresa->departamento_id)->get();
-        return view('empresas.edit', compact('empresa', 'paises', 'departamentos', 'municipios', 'id'));
+        try {
+            // Intentamos desencriptar
+            $realId = Crypt::decrypt($id);
+            $empresa = Empresa::findOrFail($realId);
+
+            $paises = Pais::where('estado', 1)->get();
+            $departamentos = Departamento::where('pais_id', $empresa->pais_id)->get();
+            $municipios = Municipio::where('departamento_id', $empresa->departamento_id)->get();
+
+            return view('empresas.edit', compact('empresa', 'paises', 'departamentos', 'municipios', 'id'));
+            
+            // ... resto de tu lógica
+        } catch (DecryptException $e) {
+            // Si el payload es inválido o fue alterado, redirigimos con un mensaje
+            return redirect()->route('empresas')->with([
+                'message' => 'El identificador del registro es inválido.',
+                'type' => 'error'
+            ]);
+        }
+        // $empresaId = decrypt($id);
+        // $empresa = Empresa::findOrFail($empresaId);
+        // $paises = Pais::where('estado', 1)->get();
+        // $departamentos = Departamento::where('pais_id', $empresa->pais_id)->get();
+        // $municipios = Municipio::where('departamento_id', $empresa->departamento_id)->get();
+        // return view('empresas.edit', compact('empresa', 'paises', 'departamentos', 'municipios', 'id'));
     }
 
     public function update(REQUEST $request, $id)

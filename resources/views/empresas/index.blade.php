@@ -1,8 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         .btn-guardar{
@@ -25,52 +23,59 @@
     <br>
 @endsection
 @section('content')
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <div class="card">
-                <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <h6>Empresas</h6>
-                        </div>
-                        <div class="col-md-3" style="text-align: right;">
-                            <a href="{{ route('crear_empresa', ['P', '0'])}}" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Nuevo Registro"><i class="fas fa-plus-circle"></i></a>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+    <div class="container-fluid"> {{-- Usar container-fluid para mejor aprovechamiento de espacio --}}
+        <div class="row">
+            {{-- En móvil ocupa col-12, en escritorio col-10 y se centra con offset --}}
+            <div class="col-12 col-md-10 offset-md-1">
+                <div class="card shadow-sm">
+                    <div class="card-header" style="background-color: #E1E8ED;">
+                        <div class="row align-items-center">
+                            <div class="col-8">
+                                <h6 class="mb-0">Empresas</h6>
+                            </div>
+                            <div class="col-4 text-right">
+                                <a href="{{ route('crear_empresa', ['P', '0'])}}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2" title="Nuevo Registro">
+                                    <i class="fas fa-plus-circle"></i>
+                                </a>
+                                <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-10 offset-md-1">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped table-hover text-center" id="tblprincipal">
-                                    <thead class="thead-primary">
-                                            <tr style="font-size: 12px;">
-                                                <th scope="col" class="text-center">Nombre Comercial</th>
-                                                <th scope="col" class="text-center">Dirección</th>
-                                                <th scope="col" class="text-center">Teléfonos</th>
-                                                <th scope="col" class="text-center">Estado</th>
-                                                <th>&nbsp;</th>
-                                            </tr>   
-                                        </thead>
-                                    <tbody>
-                                        @foreach($listado as $l)
-                                            <tr class="text-center" style="font-size: 12px;">
-                                                <td>{{ $l->nombre_comercial}}</td>
-                                                <td>{{ $l->direccion }}</td>
-                                                <td>{{ $l->telefonos }}</td>
-                                                @if($l->estado == 1)
-                                                    <td>Alta</td>
-                                                @else
-                                                    <td>Baja</td>
-                                                @endif
-                                                @php $Id= Crypt::encrypt($l->id); @endphp
-                                                <td><a href="{{route('editar_empresa' , $Id )}}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Empresa"><i class="fas fa-edit"></i></a></td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div class="card-body px-2 px-md-4"> {{-- Menos padding en móvil --}}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover" id="tblprincipal" style="width:100%">
+                                <thead class="thead-light">
+                                    <tr style="font-size: 13px;">
+                                        <th>Nombre Comercial</th>
+                                        <th class="d-none d-md-table-cell">Dirección</th> {{-- Ocultar en móvil para ganar espacio --}}
+                                        <th>Teléfonos</th>
+                                        <th>Estado</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>   
+                                </thead>
+                                <tbody style="font-size: 12px;">
+                                    @foreach($listado as $l)
+                                        <tr>
+                                            <td>{{ $l->nombre_comercial}}</td>
+                                            <td class="d-none d-md-table-cell">{{ $l->direccion }}</td>
+                                            <td>{{ $l->telefonos }}</td>
+                                            <td>
+                                                <span class="badge {{ $l->estado == 1 ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $l->estado == 1 ? 'Alta' : 'Baja' }}
+                                                </span>
+                                            </td>
+                                            @php $Id= Crypt::encrypt($l->id); @endphp
+                                            <td class="text-center">
+                                                <a href="{{route('editar_empresa' , $Id )}}" class="btn btn-xs btn-warning rounded-circle shadow-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -79,7 +84,6 @@
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
@@ -119,61 +123,29 @@
         $(function () {
             $('#tblprincipal').DataTable({
                 "paging": true,
-                "lengthChange": true,
+                "lengthChange": false, // Desactivado en móvil para simplicidad
                 "searching": true,
                 "ordering": true,
                 "info": true,
                 "autoWidth": false,
-                "pageLength": 25,  // Esto establece que por defecto se muestren 25 registros
-                "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],  // Esto establece las opciones en el dropdown
+                "responsive": true, // Activamos el modo responsivo nativo
+                "pageLength": 25,
                 "language": {
-                    "sProcessing": "Procesando...",
-                    "sLengthMenu": "Mostrar _MENU_ registros",
-                    "sZeroRecords": "No se encontraron resultados",
-                    "sEmptyTable": "Ningún dato disponible en esta tabla =(",
-                    "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-                    "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-                    "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-                    "sSearch": "Buscar:",
-                    "oPaginate": {
-                        "sFirst": "Primero",
-                        "sLast": "Último",
-                        "sNext": "Siguiente",
-                        "sPrevious": "Anterior"
-                    }
+                    "sSearch": "", // Quitamos el texto "Buscar" para ganar espacio
+                    "searchPlaceholder": "Buscar...",
+                    "sLengthMenu": "_MENU_",
+                    // ... resto de tus traducciones ...
                 },
-                "dom": '<"row"<"col-sm-4"l><"col-sm-4 text-center"B><"col-sm-4"f>>rtip', // Ajuste para disposición
+                // Ajuste del DOM para que en móvil los elementos se apilen
+                "dom": '<"row"<"col-12 col-md-6"B><"col-12 col-md-6"f>>rt<"row"<"col-12"i><"col-12"p>>',
                 "buttons": [
                     {
                         extend: 'excelHtml5',
-                        text: 'Excel',
-                        className: 'btn btn-md btn-default'
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-sm btn-default'
                     }
                 ]
             });
         });
-
-        function confirma_salida(){
-            swal({
-                title: 'Confirmación',
-                text: 'Seguro de Salir, si ha realizado cambios estos no seran guardados ?',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('home') }}";
-                                    } 
-                    else { 
-                        swal("Cancelled", "Your imaginary file is safe :)", "error"); 
-                        }
-            });
-        }
     </script>
 @endsection

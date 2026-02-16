@@ -389,12 +389,6 @@ return [
                     'can'   => 'ver-empresas'
                 ],
                 [
-                    'text' => 'Correlativos',
-                    'route'  => 'correlativos',
-                    'icon' => 'fas fa-hospital',
-                    'can'   => 'ver-correlativos'
-                ],
-                [
                     'text'    => 'Ubicación',
                     'icon'    => 'fas fa-globe-americas',
                     'topnav_right' => false,

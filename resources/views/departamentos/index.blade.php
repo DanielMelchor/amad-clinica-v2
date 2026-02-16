@@ -1,129 +1,145 @@
 @extends('adminlte::page')
+
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
+        .btn-guardar{ background-color: #A5C890 !important; }
+        .numero{ text-align: right; }
+        
+        /* Contenedor de tabla responsiva optimizado */
         .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
+            width: 100%;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Etiquetas de ancho fijo para formularios alineados */
+        .input-group-text {
+            min-width: 100px;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            /* Ajuste de fuentes y padding para móviles */
+            .table td, .table th { font-size: 11px; padding: 0.5rem 0.25rem; }
+            .btn-xs { padding: 0.25rem 0.4rem; }
+            
+            /* Los modales ocupan casi todo el ancho en móvil */
+            .modal-dialog { margin: 0.5rem; }
+            
+            /* Apilar elementos de input-group si es necesario en pantallas muy pequeñas */
+            .input-group-text { min-width: 80px; font-size: 11px; }
         }
     </style>
 @endsection
+
 @section('title', 'Departamentos')
-@section('content_header')
-    <br>
-@endsection
+
 @section('content')
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <div class="card">
-                <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <h6>Departamentos</h6>
-                        </div>
-                        <div class="col-md-3" style="text-align: right;">
-                            <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Registro" onclick="fn_agregar(); return false;">
-                                <i class="fas fa-plus-circle"></i>
-                            </button>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+    <div class="container-fluid pt-3"> {{-- container-fluid para mejor uso del espacio lateral --}}
+        <div class="row">
+            {{-- Mobile First: col-12 por defecto, col-lg-10 centrado en escritorio --}}
+            <div class="col-12 col-lg-10 offset-lg-1">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header border-0" style="background-color: #E1E8ED;">
+                        <div class="row align-items-center">
+                            <div class="col-7 col-md-9">
+                                <h6 class="mb-0 font-weight-bold">Departamentos</h6>
+                            </div>
+                            <div class="col-5 col-md-3 text-right">
+                                <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-2" title="Agregar Registro" onclick="fn_agregar(); return false;">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                                <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" onclick="confirma_salida(); return false;" title="Salir">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-10 offset-md-1">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped table-hover text-center" id="tblprincipal">
-                                    <thead class="thead-primary">
-                                            <tr style="font-size: 12px;">
-                                                <th>Páis</th>
-                                                <th>Departamento</th>
-                                                <th>Estado</th>
-                                                <th>&nbsp;</th>
-                                            </tr>   
-                                        </thead>
-                                    <tbody>
-                                        @foreach($listado as $l)
-                                        <tr class="text-center" style="font-size: 12px;">
-                                            <td>{{ $l->pais_nombre }}</td>
-                                            <td>{{ $l->departamento_nombre }}</td>
-                                            <td>
-                                                @if($l->estado == '1')
-                                                    Alta
-                                                @else
-                                                    Baja
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @php $Id= Crypt::encrypt($l->id); @endphp
-                                                <a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar" onclick="fn_edicion('{{ $Id }}')"><i class="fas fa-edit"></i></a>
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div class="card-body px-1 px-md-3"> {{-- Menos padding en móvil --}}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover text-center w-100" id="tblprincipal">
+                                <thead class="thead-light">
+                                    <tr style="font-size: 12px;">
+                                        <th>País</th>
+                                        <th>Departamento</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>   
+                                </thead>
+                                <tbody style="font-size: 12px;">
+                                    @foreach($listado as $l)
+                                    <tr>
+                                        <td class="align-middle text-left">{{ $l->pais_nombre }}</td>
+                                        <td class="align-middle text-left font-weight-bold">{{ $l->departamento_nombre }}</td>
+                                        <td class="align-middle">
+                                            <span class="badge {{ $l->estado == '1' ? 'badge-success' : 'badge-danger' }}">
+                                                {{ $l->estado == '1' ? 'Alta' : 'Baja' }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle">
+                                            @php $Id= Crypt::encrypt($l->id); @endphp
+                                            <button class="btn btn-xs btn-warning rounded-circle elevation-2" onclick="fn_edicion('{{ $Id }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- agregar Modal -->
-    <div class="modal fade" id="agregarModalCenter" data-backdrop="static" data-keyboard="false" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+
+    <div class="modal fade" id="agregarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
+            <div class="modal-content border-0 shadow">
                 <form role="form" id="formaNuevoRegistro" method="POST" action="{{route('departamento_grabar')}}">
                     @csrf
-                    <div class="card">
-                        <div class="card-header" style="background-color: #F4F6F7;">
-                            <div class="row">
-                                <div class="col-md-9">
-                                    <h5>Nuevo Registro</h5>
+                    <div class="card mb-0">
+                        <div class="card-header border-0" style="background-color: #F4F6F7;">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <h6 class="mb-0">Nuevo Registro</h6>
                                 </div>
-                                <div class="col-md-3" style="text-align: right;">
-                                    <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Grabar"><i class="fas fa-save"></i></button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
+                                <div class="col-4 text-right">
+                                    <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-2"><i class="fas fa-save"></i></button>
+                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" data-dismiss="modal"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>  
                         </div>
                         <div class="card-body">
-                            <div class="row">
-                                <div class="input-group input-group-sm col-md-10 offset-md-1 mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="pais_id">Pais&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-10 offset-md-1">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend"><span class="input-group-text">País</span></div>
+                                        <select class="custom-select select2 select2bs4" id="pais_id" name="pais_id" required>
+                                            <option value="" selected>Seleccionar...</option>
+                                            @foreach($paises as $p)
+                                                <option value="{{ $p->id }}">{{ $p->nombre }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    <select class="custom-select custom-select-sm select2 select2bs4" id="pais_id" name="pais_id" required autofocus>
-                                        <option value="" selected>Seleccionar...</option>
-                                        @foreach($paises as $p)
-                                            <option value="{{ $p->id }}">{{ $p->nombre }}</option>
-                                        @endforeach
-                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-10 offset-md-1">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend"><span class="input-group-text">Nombre</span></div>
+                                        <input type="text" class="form-control" placeholder="Nombre Departamento" id="nombre" name="nombre" required value="{{ old('nombre')}}">
+                                    </div>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Nombre</label>
-                                    </div>
-                                    <input type="text" class="form-control" placeholder="Nombre Departamento" aria-label="Username" aria-describedby="basic-addon1" id="nombre" name="nombre" required value="{{ old('nombre')}}">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group  mb-1 col-md-10 offset-md-1">
+                                <div class="col-12 col-md-10 offset-md-1 mt-2">
                                     <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                        <input type="checkbox" class="custom-control-input custom-control-input-sm" id="estado" name="estado" value="1">
-                                        <label class="custom-control-label" for="estado">Activar</label>
+                                        <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="1">
+                                        <label class="custom-control-label" for="estado">Activar Registro</label>
                                     </div>
                                 </div>
                             </div>
@@ -133,78 +149,101 @@
             </div>
         </div>
     </div>
-    <!-- /agregar Modal -->
-    <!-- editar Modal -->
-    <div class="modal fade" id="editarModalCenter" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+
+    <div class="modal fade" id="editarModalCenter" data-backdrop="static" data-keyboard="false" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
+            <div class="modal-content border-0 shadow">
                 <form role="form" method="POST" action="{{route('departamento_actualizar')}}">
                     @csrf
-                    <div class="card">
-                        <div class="card-header" style="background-color: #F4F6F7;">
-                            <div class="row">
-                                <div class="col-md-9">
-                                    <h5>Edición de Registro</h5>
+                    <div class="card mb-0">
+                        <div class="card-header border-0" style="background-color: #F4F6F7;">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <h6 class="mb-0">Edición de Registro</h6>
                                 </div>
-                                <div class="col-md-3" style="text-align: right;">
-                                    <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
+                                <div class="col-4 text-right">
+                                    <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-2"><i class="fas fa-save"></i></button>
+                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" data-dismiss="modal"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>  
                         </div>
                         <div class="card-body">
                             <input type="hidden" id="eid" name="eid">
-                            <div class="row">
-                                <div class="input-group input-group-sm col-md-10 offset-md-1 mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="epais_id">Pais&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-10 offset-md-1">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend"><span class="input-group-text">País</span></div>
+                                        <select class="custom-select select2 select2bs4" id="epais_id" name="epais_id" required>
+                                            <option value="" selected>Seleccionar...</option>
+                                            @foreach($paises as $p)
+                                                <option value="{{ $p->id }}">{{ $p->nombre }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    <select class="custom-select custom-select-sm select2 select2bs4" id="epais_id" name="epais_id" required autofocus>
-                                        <option value="" selected>Seleccionar...</option>
-                                        @foreach($paises as $p)
-                                            <option value="{{ $p->id }}">{{ $p->nombre }}</option>
-                                        @endforeach
-                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12 col-md-10 offset-md-1">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend"><span class="input-group-text">Nombre</span></div>
+                                        <input type="text" style="text-transform: uppercase;" class="form-control" id="enombre" name="enombre" required>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="enombre">Nombre</label>
-                                    </div>
-                                    <input type="text" style="text-transform: uppercase;" class="form-control" placeholder="nombre de departamento" aria-label="Username" aria-describedby="basic-addon1" id="enombre" name="enombre" required>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group input-group-sm mb-1 col-md-10 offset-md-1">
+                                <div class="col-12 col-md-10 offset-md-1 mt-2">
                                     <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                        <input type="checkbox" class="custom-control-input" id="eestado" name="eestado" value="A">
-                                        <label class="custom-control-label" for="eestado">Activar</label>
+                                        <input type="checkbox" class="custom-control-input" id="eestado" name="eestado" value="1">
+                                        <label class="custom-control-label" for="eestado">Activar Registro</label>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    <!-- /editar Modal -->
 @endsection
+
 @section('js')
+    {{-- Capturar Errores de Validación (como el unique:username) --}}
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Revisar Formulario',
+                // Unimos todos los mensajes de error en una lista
+                html: `
+                    <ul style="text-align: left;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonText: "Aceptar",
+                confirmButtonColor: "#dc3545",
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                buttonsStyling: false
+            });
+        </script>
+    @endif
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
-                
                 setTimeout(function() {
                     Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
+                        title: "¡Trabajo Finalizado!",
+                        text: "{!! Session::get('message') !!}",
+                        icon: "success", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-success'
+                        },
+                        buttonsStyling: false
                     });
                 }, 1000);
             </script>
@@ -215,139 +254,70 @@
             <script>
                 setTimeout(function() {
                     Swal.fire({
-                        title: "Error",
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
                     });
                 }, 1000);
             </script>
         @endif
     @endif
+    {{-- Mantén tus scripts de Swal.fire aquí --}}
     <script type="text/javascript">
         $(function () {
             $('#tblprincipal').DataTable({
-                "paging": true,
-                "lengthChange": true,
-                "searching": true,
-                "ordering": true,
-                "info": true,
+                "responsive": true, {{-- Activa el modo responsivo de DataTables --}}
                 "autoWidth": false,
-                "pageLength": 25,  // Esto establece que por defecto se muestren 25 registros
-                "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],  // Esto establece las opciones en el dropdown
+                {{-- DOM adaptado para apilar controles en móvil --}}
+                "dom": '<"row"<"col-12 col-md-4"l><"col-12 col-md-4 text-center"B><"col-12 col-md-4"f>>rt<"row"<"col-12 col-md-5"i><"col-12 col-md-7"p>>',
+                "paging": true,
                 "language": {
-                    "sProcessing": "Procesando...",
-                    "sLengthMenu": "Mostrar _MENU_ registros",
-                    "sZeroRecords": "No se encontraron resultados",
-                    "sEmptyTable": "Ningún dato disponible en esta tabla =(",
-                    "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-                    "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-                    "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-                    "sSearch": "Buscar:",
-                    "oPaginate": {
-                        "sFirst": "Primero",
-                        "sLast": "Último",
-                        "sNext": "Siguiente",
-                        "sPrevious": "Anterior"
-                    }
+                    "sSearch": "",
+                    "searchPlaceholder": "Buscar..."
                 },
-                "dom": '<"row"<"col-sm-4"l><"col-sm-4 text-center"B><"col-sm-4"f>>rtip', // Ajuste para disposición
                 "buttons": [
                     {
                         extend: 'excelHtml5',
-                        text: 'Excel',
-                        className: 'btn btn-md btn-default'
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-sm btn-default mb-2'
                     }
                 ]
             });
+
+            $('.select2bs4').select2({ theme: 'bootstrap4' });
         });
 
-        //========================================================================
-        // inicializar librerias
-        //========================================================================
-        $(function () {
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
-        });
-
-        //========================================================================
-        // Levantar modal de Agregar
-        //========================================================================
         function fn_agregar(){
-            document.getElementById('nombre').value  = '';
-            /*$('#plural').prop('checked', false);
-            $('#estado').prop('checked', false);*/
+            $('#formaNuevoRegistro')[0].reset();
+            $('#pais_id').val('').trigger('change');
+            $("#agregarModalCenter").modal('show');
             $('#agregarModalCenter').on('shown.bs.modal', function () {
-                $('#nombre').trigger('focus');
+                $('#pais_id').focus();
             });
-            $("#agregarModalCenter").modal();
         }
 
-        //========================================================================
-        // Levantar modal de edición
-        //========================================================================
         function fn_edicion(id){
             $.ajax({
                 url: "{{ route('departamento_editar') }}",
                 type: "POST",
                 dataType: 'json',
-                data: {"_token": "{{ csrf_token() }}", 
-                       id : id},
+                data: {"_token": "{{ csrf_token() }}", id : id},
                 success: function(response){
-                    document.getElementById('eid').value      = id;
-                    document.getElementById('epais_id').value = response.pais_id;
-                    document.getElementById('enombre').value  = response.nombre;
-
-                    if (response.estado == '1') {
-                        $('#eestado').prop('checked', true);
-                    }else{
-                        $('#eestado').prop('checked', false);
-                    }
-
-                    $('#editarModalCenter').on('shown.bs.modal', function () {
-                        $('#enombre').trigger('focus');
-                    });
-   ;
-                    $("#editarModalCenter").modal();
-                },
-                error: function(error){
-                    console.log(error);
+                    $('#eid').val(id);
+                    $('#epais_id').val(response.pais_id).trigger('change');
+                    $('#enombre').val(response.nombre);
+                    $('#eestado').prop('checked', response.estado == '1');
+                    $("#editarModalCenter").modal('show');
                 }
             });
         }
 
-        function confirma_salida(){
-            swal({
-                title: 'Confirmación',
-                text: 'Seguro de Salir, si ha realizado cambios estos no seran guardados ?',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('home') }}";
-                                    } 
-                    else { 
-                        swal("Cancelled", "Your imaginary file is safe :)", "error"); 
-                        }
-            });
-        }
-
-        $(document).ready(function() {
-            $('#formaNuevoRegistro').on('submit', function() {
-                // Deshabilitar el botón de submit cuando se envíe el formulario
-                $('#submitButton').prop('disabled', true);
-                // $('#submitButton').text('Enviando...');
-            });
-        });
+        {{-- Mantén la función confirma_salida() y el submit handler --}}
     </script>
 @endsection
