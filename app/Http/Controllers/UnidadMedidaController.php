@@ -71,11 +71,12 @@ class UnidadMedidaController extends Controller
         }
         $unidadmedida->save();
 
-        //Session::flash('success', 'Se editó el medico con éxito.');
+        $message = array(
+            'message' => '! Registro almacenado con exito !',
+            'type'    => 'success'
+        );
 
-        //return Redirect::route('unidadmedidas')->with('message','Unidad de medida grabada con exito');
-        Session::flash('success', 'Unidad de Médida Guardada con exito !!!' );
-        return redirect(route('unidadmedidas'));
+        return redirect()->back()->with($message);
     }
 
     /**
@@ -135,11 +136,12 @@ class UnidadMedidaController extends Controller
         }
         $unidadmedida->save();
 
-        //Session::flash('success', 'Se editó el medico con éxito.');
+        $message = array(
+            'message' => '! Registro actualizado con exito !',
+            'type'    => 'success'
+        );
 
-        //return Redirect::route('unidadmedidas')->with('message','Unidad de medida grabada con exito');
-        Session::flash('success', 'Unidad de Médida Actualizada con exito !!!' );
-        return redirect(route('unidadmedidas'));
+        return redirect()->back()->with($message);
     }
 
     /**

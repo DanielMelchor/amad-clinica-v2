@@ -1,10 +1,5 @@
 @extends('adminlte::page')
 @section('css')
-    <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         .numero{
             text-align: right;
@@ -12,26 +7,6 @@
         .moneda:after {
             content: attr(data-numero);
         }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
-        }
-        .dataTables_wrapper .row {
-            display: flex;
-            align-items: center; /* Alinea verticalmente los elementos */
-            justify-content: flex-start; /* Ajusta los elementos a la izquierda */
-        }
-
-        .dataTables_wrapper .row .col-auto {
-            display: flex;
-            justify-content: flex-start; /* Alinea los elementos dentro de las columnas */
-        }
-
-        .dataTables_wrapper .row .col {
-            display: flex;
-            justify-content: flex-start;
-        }
-
         .nav-pills .nav-link.active,
         .show>.nav-pills .nav-link{
             background: #7FB3D5 !important;
@@ -43,167 +18,210 @@
         }
     </style>
 @endsection
-@section('title', 'Proveedores')
-
 @section('content_header')
     <br>
 @endsection
 @section('content')
-	<div class="row">
-        <div class="col-md-10 offset-md-1">
-        	<form class="form-horizontal" id="proveedorForm" name="proveedorForm" action="#">
-        		@csrf
-        		<div class="card">
-	                <div class="card-header" style="background-color: #E1E8ED;">
-	                    <div class="row">
-	                        <div class="col-md-9">
-	                            <h6>Nuevo Proveedor</h6>
-	                        </div>
-	                        <div class="col-md-3" style="text-align: right;">
-	                            <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Agregar Registro"><i class="fas fa-save"></i></button>
-								<a href="{{ route('proveedores') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
-	                        </div>
-	                    </div>
-	                </div>
-	                <form class="form-horizontal">
-	                    <div class="card-body">
-	                    	<div class="row">
-								<div class="input-group input-group-sm mb-1 col-md-5 offset-md-1">
-			                        <div class="input-group-prepend">
-			                            <label class="input-group-text">Razón Social</label>
-			                        </div>
-			                        <input type="text" class="form-control form-control-sm" id="razon_social" name="razon_social" required value="{{ old('razon_social') }}" autofocus>
-			                    </div>
-			                    <div class="input-group input-group-sm mb-1 col-md-5">
-			                        <div class="input-group-prepend">
-			                            <label class="input-group-text">Nombre Comercial</label>
-			                        </div>
-			                        <input type="text" class="form-control form-control-sm" id="nombre_comercial" name="nombre_comercial" required value="{{ old('nombre_comercial') }}">
-			                    </div>
-							</div>
-							<div class="row">
-								<div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-			                        <div class="input-group-prepend">
-			                            <label class="input-group-text">Dirección</label>
-			                        </div>
-			                        <input type="text" class="form-control form-control-sm" id="direccion" name="direccion" value="{{ old('direccion') }}">
-			                    </div>
-							</div>
-							<div class="row">
-								<div class="input-group input-group-sm mb-1 col-md-5 offset-md-1">
-			                        <div class="input-group-prepend">
-			                            <label class="input-group-text">Teléfonos</label>
-			                        </div>
-			                        <input type="text" class="form-control form-control-sm" id="telefonos" name="telefonos" value="{{ old('telefonos') }}">
-			                    </div>
-			                    <div class="input-group input-group-sm mb-1 col-md-5">
-			                        <div class="input-group-prepend">
-			                            <label class="input-group-text">Correo Electrónico</label>
-			                        </div>
-			                        <input type="email" class="form-control form-control-sm" id="email" name="email" value="{{ old('email') }}">
-			                    </div>
-							</div>
-							<div class="row">
-		                        <div class="form-group form-group-sm mb-1 form-control-sm clearfix col-md-5 offset-md-1">
-		                            <label for="masculino">Condición de pago</label>
-		                            &nbsp;&nbsp;
-		                            <div class="icheck-primary d-inline">
-		                                <input type="radio" id="contado" name="condicion" value="0" checked>
-		                                <label for="contado">Contado</label>
-		                            </div>
-		                            <div class="icheck-primary d-inline">
-		                                <input type="radio" id="credito" name="condicion" value="1">
-		                                <label for="credito">Crédito</label>
-		                            </div>
-		                        </div>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-11 col-lg-10">
+                <form role="form" id="formaNuevoRegistro" method="POST" action="{{route('grabar_proveedor')}}">
+                    @csrf
+                    <div class="card shadow-sm">
+                        <div class="card-header" style="background-color: #E1E8ED;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Nuevo Proveedor</h6>
+                                <div class="btn-group-xs">
+                                    <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-2" title="Agregar Registro">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                    <a href="{{ route('proveedores') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
 
-		                        <div class="input-group input-group-sm mb-1 col-md-3">
-			                        <div class="input-group-prepend">
-			                            <label class="input-group-text">Dias Crédito</label>
-			                        </div>
-			                        <input type="number" class="form-control form-control-sm" id="dias_credito" name="dias_credito" required value="{{ old('dias_credito') }}" placeholder="0" min="0" disabled style="text-align: right;">
-			                    </div>
-							</div>
-							<div class="row">
-		                        <div class="form-group form-group-sm mb-1 offset-md-1">
-						            <div class="custom-control custom-control-sm custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	&nbsp;<input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A">
-						          		<label class="custom-control-label" for="estado">Activar</label>
-						        	</div>
-						      	</div>
-							</div>
-							<hr>
-							<div class="row">
-								<div class="col-md-12">
-									<ul class="nav nav-pills nav-justified flex-column flex-sm-row">
-					        			<li class="nav-item">
-					                        <a class="nav-link active" href="#contactos" data-toggle="tab">Contactos</a>
-					                    </li>
-					                    <li class="nav-item">
-					                        <a class="nav-link" href="#productos" data-toggle="tab">Productos</a>
-					                    </li>
-					        		</ul>
-					        		<div class="tab-content">
-				                    	<div class="tab-pane active" id="contactos">
-				                    		<div class="row">
-				                    			<div class="col-md-1 offset-md-11" style="text-align: right;">
-				                    				<a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Contacto" onclick="nuevoContacto(); return false;">
-				                    					<i class="fas fa-plus-circle"></i>
-				                    				</a>
-				                    			</div>
-				                    		</div>
-				                    		<br>
-				                    		<div class="row">
-				                    			<div class="col-md-10 offset-md-1">
-				                    				<table class="table table-sm table-striped" id="tblcontactos">
-				                    					<thead>
-				                    						<tr style="text-align: center; font-size: 12px;">
-				                    							<th>Linea</th>
-				                    							<th>Contacto</th>
-				                    							<th>Teléfonos</th>
-				                    							<th>Correo</th>
-				                    							<th>Estado</th>
-				                    							<th>&nbsp;</th>
-				                    						</tr>
-				                    					</thead>
-				                    					<tbody></tbody>
-				                    				</table>
-				                    			</div>
-				                    		</div>
-				                    	</div>
-				                    	<div class="tab-pane" id="productos">
-				                    	</div>
-				                    </div>
-				                </div>
-				            </div>
-	                    </div>
-	                </form>
-	            </div>
-        	</form>
+                        <div class="card-body p-2 p-md-4">
+                            <div class="row">
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Razón Social</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="razon_social" name="razon_social" required value="{{ old('razon_social') }}" autofocus>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Nombre Comercial</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="nombre_comercial" name="nombre_comercial" required value="{{ old('nombre_comercial') }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Dirección</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="direccion" name="direccion" value="{{ old('direccion') }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Teléfonos</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="telefonos" name="telefonos" value="{{ old('telefonos') }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Correo Electrónico</label>
+                                        </div>
+                                        <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row align-items-center mb-2">
+                                <div class="col-12 col-md-7 mb-2 mb-md-0">
+                                    <div class="p-2 border rounded bg-light d-flex align-items-center justify-content-around">
+                                        <small class="font-weight-bold">Pago:</small>
+                                        <div class="icheck-primary d-inline">
+                                            <input type="radio" id="contado" name="condicion" value="0" checked>
+                                            <label for="contado">Contado</label>
+                                        </div>
+                                        <div class="icheck-primary d-inline">
+                                            <input type="radio" id="credito" name="condicion" value="1">
+                                            <label for="credito">Crédito</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-5">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Días Crédito</label>
+                                        </div>
+                                        <input type="number" class="form-control text-right" id="dias_credito" name="dias_credito" required value="{{ old('dias_credito') }}" placeholder="0" min="0" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success my-2">
+                                        <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A" title="Activar Proveedor">
+                                        <label class="custom-control-label" for="estado">Activar</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <ul class="nav nav-pills nav-justified flex-column flex-sm-row mb-3" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active py-2" data-toggle="tab" href="#contactos">Contactos</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link py-2 disabled" data-toggle="tab" href="#productos">Productos</a>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content border rounded p-2 bg-white">
+                                        <div class="tab-pane fade show active" id="contactos">
+                                            <div class="d-flex justify-content-end mb-2">
+                                                <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-2" onclick="nuevoContacto(); return false;">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-striped w-100" id="tblcontactos">
+                                                    <thead class="thead-light">
+                                                        <tr class="small text-center">
+                                                            <th>Línea</th>
+                                                            <th>Contacto</th>
+                                                            <th>Teléfonos</th>
+                                                            <th>Correo</th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="small"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="productos">
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> </div>
+                </form>
+            </div>
         </div>
     </div>
 @endsection
 @section('js')
-	<script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-	<script type="text/javascript">
-		var nLinea = 0;
+    @if(Session::get('type') == 'success')
+        @if(Session::has('message'))
+            <script>
+                setTimeout(function() {
+                    Swal.fire({
+                        title: "Trabajo Finalizado",
+                        text: "{{ Session::get('message') }}",
+                        icon: 'success', // En v2 es 'icon', no 'type'
+                        confirmButtonColor: '#28a745', // Color success de AdminLTE
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }, 1000);
+            </script>
+        @endif
+    @endif
+    @if(Session::get('type') == 'error')
+        @if(Session::has('message'))
+            <script>
+                setTimeout(function() {
+                    Swal.fire({
+                        title: "Error",
+                        text: "{!! Session::get('message') !!}",
+                        icon: 'error', // En v2 es 'icon', no 'type'
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }, 1000);
+            </script>
+        @endif
+    @endif
+    <script type="text/javascript">
+        var nLinea = 0;
 
-		//========================================================================
+        //========================================================================
         // cuando cambia la condicion de contado a credito habilita campo de dias de credito
         //========================================================================
-		$(document).ready(function(){
-			$("input[name=condicion]").click(function () {    
-		        if ($(this).val() == 0) {
-		        	$("#dias_credito").attr('disabled','disabled'); 
-		        	$('#dias_credito').removeAttr("required");
-		        }else{
-		        	$("#dias_credito").removeAttr('disabled'); 
-		        	$('#dias_credito').prop("required", true);
-		        }
-		    });
-	 	});
+        $(document).ready(function(){
+            $("input[name=condicion]").click(function () {    
+                if ($(this).val() == 0) {
+                    $("#dias_credito").attr('disabled','disabled'); 
+                    $('#dias_credito').removeAttr("required");
+                }else{
+                    $("#dias_credito").removeAttr('disabled'); 
+                    $('#dias_credito').prop("required", true);
+                }
+            });
+        });
 
-		function nuevoContacto(){
+        function nuevoContacto(){
             event.preventDefault();
             var html = '';
             html += '<tr>';
@@ -227,12 +245,7 @@
             html += '</td>';
             html += '<td>';
             html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="contactos['+nLinea+'][contacto_email]" name="contactos['+nLinea+'][contacto_email]"/>';
-            html += '</div>';
-            html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1 text-center">'
-            html += ' <input style="width:30px;" type="checkbox" id="contactos['+nLinea+'][contacto_estado]" name="contactos['+nLinea+'][contacto_estado]" class="icheck-primary" aria-label="Checkbox for following text input">';
+            html += '<input type="text" class="form-control" id="contactos['+nLinea+'][contacto_email]" name="contactos['+nLinea+'][contacto_email]" required/>';
             html += '</div>';
             html += '</td>';
             html += '<td style="text-align: right">';
@@ -252,55 +265,11 @@
         }
 
         $(document).ready(function() {
-            $('#proveedorForm').on('submit', function() {
-                // Deshabilitar el botón de submit cuando se envíe el formulario
-                $('#submitButton').prop('disabled', true);
-                // $('#submitButton').text('Enviando...');
-            });
-        });
-
-        $(function(){
-            $("#proveedorForm").submit(function(){
-                event.preventDefault(); // Evita el envío normal del formulario
-                $('#submitButton').prop('disabled', true);
-            	var formData = new FormData(this); // Serializa los datos del formulario
-            	var csrfToken = $('meta[name="csrf-token"]').attr('content');
-            	formData.append('_token', csrfToken);
-
-                $.ajax({
-					url: "{{route('grabar_proveedor')}}",
-					type: 'POST',
-					headers: {
-				        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-				    },
-				    data: formData,
-                	contentType: false,  // Impide que jQuery configure el tipo de contenido
-                	processData: false,
-					success: function(response){
-		                swal({
-	                        title: 'Buen Trabajo',
-	                        text: response.message,
-	                        type: 'success',
-	                        },
-	                        function(){
-	                            return window.location.href = "{{route('proveedores')}}";
-	                        }
-	                    );
-					},
-					error: function(error){
-						console.log(error);
-					}	
-				});
-            });
-        });
-
-        $(document).ready(function() {
             $('#formaNuevoRegistro').on('submit', function() {
                 // Deshabilitar el botón de submit cuando se envíe el formulario
                 $('#submitButton').prop('disabled', true);
                 // $('#submitButton').text('Enviando...');
             });
         });
-
-	</script>
+    </script>
 @endsection

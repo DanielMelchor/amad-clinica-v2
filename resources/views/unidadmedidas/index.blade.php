@@ -1,9 +1,5 @@
 @extends('adminlte::page')
 @section('css')
-	<meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-	<link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-	<link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 	<style type="text/css">
         .btn-guardar{
             background-color: #A5C890 !important;
@@ -42,187 +38,100 @@
 @endsection
 
 @section('content')
-	<div class="row">
-		<div class="col-md-10 offset-md-1">
-			<div class="card">
-				<div class="card-header" style="background-color: #E1E8ED;">
-					<div class="row">
-						<div class="col-md-9">
-							<h6>Unidad de Medida</h6>
-						</div>
-						<div class="col-md-3" style="text-align: right;">
-							<button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Registro" onclick="fn_agregar(); return false;">
-								<i class="fas fa-plus-circle"></i>
-							</button>
-							<a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></a>
-						</div>
-					</div>
-				</div>
-				<form class="form-horizontal">
-					<div class="card-body">
-						<div class="row">
-							<div class="col-md-10 offset-md-1">
-								<div class="table-responsive">
-									<table class="table table-sm table-striped table-hover" id="tblprincipal">
-										<thead class="thead-primary text-center">
-											<tr style="font-size: 12px;">
-												<th>Descripción</th>
-												<th>Abreviatura</th>
-												<th>Estado</th>
-												<th></th>
-											</tr>	
-										</thead>
-										<tbody>
-											@foreach($pUnidadmedidas as $pUnidadmedida)
-												<tr class="text-center" style="font-size: 12px;">
-													<td>{{ $pUnidadmedida->descripcion}}</td>
-													<td>{{ $pUnidadmedida->siglas}}</td>
-													@if($pUnidadmedida->estado == 1)
-														<td>Alta</td>
-													@else
-														<td>Baja</td>
-													@endif
-													<td>
-														@php $Id= Crypt::encrypt($pUnidadmedida->id); @endphp
-														<a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar" onclick="fn_edicion('{{ $Id }}')"><i class="fas fa-edit"></i></a>
-													</td>
-												</tr>
-											@endforeach
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
+	<div class="container-fluid">
+	    <div class="row">
+	        <div class="col-12 col-lg-10 offset-lg-1">
+	            <div class="card shadow-sm">
+	                <div class="card-header py-2" style="background-color: #E1E8ED;">
+	                    <div class="d-flex justify-content-between align-items-center">
+	                        <h6 class="mb-0 font-weight-bold text-secondary">Unidades de Medida</h6>
+	                        <div class="d-flex">
+	                            <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mr-2" title="Agregar Registro" onclick="fn_agregar(); return false;">
+	                                <i class="fas fa-plus-circle"></i>
+	                            </button>
+	                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Cerrar Ventana">
+	                                <i class="fas fa-sign-out-alt"></i>
+	                            </a>
+	                        </div>
+	                    </div>
+	                </div>
+
+	                <div class="card-body p-0 p-md-3">
+	                    <div class="table-responsive">
+	                        <table class="table table-sm table-striped table-hover mb-0" id="tblprincipal">
+	                            <thead class="bg-light">
+	                                <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
+	                                    <th class="text-left pl-3">Descripción</th>
+	                                    <th>Siglas</th>
+	                                    <th class="d-none d-sm-table-cell">Estado</th>
+	                                    <th style="width: 50px;"></th>
+	                                </tr>	
+	                            </thead>
+	                            <tbody>
+	                                @foreach($pUnidadmedidas as $pUnidadmedida)
+	                                    <tr class="text-center" style="font-size: 12px;">
+	                                        <td class="text-left pl-3 align-middle font-weight-md-normal">
+	                                            {{ $pUnidadmedida->descripcion }}
+	                                        </td>
+	                                        <td class="align-middle text-uppercase">
+	                                            {{ $pUnidadmedida->siglas }}
+	                                        </td>
+	                                        <td class="align-middle d-none d-sm-table-cell">
+	                                            @if($pUnidadmedida->estado == 1 || $pUnidadmedida->estado == 'A')
+	                                                <span class="badge badge-success px-2">Alta</span>
+	                                            @else
+	                                                <span class="badge badge-danger px-2">Baja</span>
+	                                            @endif
+	                                        </td>
+	                                        <td class="align-middle text-right pr-3">
+	                                            @php $Id= Crypt::encrypt($pUnidadmedida->id); @endphp
+	                                            <button type="button" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar" onclick="fn_edicion('{{ $Id }}')">
+	                                                <i class="fas fa-edit"></i>
+	                                            </button>
+	                                        </td>
+	                                    </tr>
+	                                @endforeach
+	                            </tbody>
+	                        </table>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
 	</div>
-	<!-- agregar Modal -->
-	<div class="modal fade" id="agregarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-  		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    		<div class="modal-content">
-      			<form role="form" id="formaNuevoRegistro" method="POST" action="{{route('unidadmedida_grabar')}}">
-	      			@csrf
-	      			<div class="card">
-	      				<div class="card-header" style="background-color: #F4F6F7;">
-	      					<div class="row">
-		        				<div class="col-md-9">
-		        					<h6>Nuevo Registro</h6>
-		        				</div>
-		        				<div class="col-md-3" style="text-align: right;">
-		        					<button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-		        					<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
-		        				</div>
-		        			</div>	
-	      				</div>
-	      				<div class="card-body">
-	      					<div class="row text-center">
-							    <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-							  		<div class="input-group-prepend">
-								    	<label class="input-group-text">Descripción</label>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="Descripción a mostrar" id="descripcion" name="descripcion" autofocus required value="{{ old('descripcion')}}">
-								</div>
-							</div>
-							<div class="row">
-								<div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-							  		<div class="input-group-prepend">
-								    	<label class="input-group-text">Siglas&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="Siglas" id="siglas" name="siglas" required value="{{ old('siglas')}}">
-								</div>
-					    	</div>
-					    	<div class="row">
-								<div class="form-group input-group-sm offset-md-1 col-md-5">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="aplica_receta" name="aplica_receta" value="S">
-						          		<label class="custom-control-label" for="aplica_receta">Utilizado en receta</label>
-						        	</div>
-						      	</div>
-								<div class="form-group">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A">
-						          		<label class="custom-control-label" for="estado">Activar</label>
-						        	</div>
-						      	</div>
-							</div>
-	      				</div>
-	      			</div>
-      			</form>
-    		</div>
-  		</div>
-	</div>
-	<!-- /agregar Modal -->
-	<!-- editar Modal -->
-	<div class="modal fade" id="editarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="editarModalCenterTitle" aria-hidden="true">
-  		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    		<div class="modal-content">
-      			<form role="form" method="POST" action="{{route('unidadmedida_actualizar')}}">
-	      			@csrf
-	      			<div class="card">
-	      				<div class="card-header" style="background-color: #F4F6F7;">
-	      					<div class="row">
-		        				<div class="col-md-9">
-		        					<h6>Edición de Registro</h6>
-		        				</div>
-		        				<div class="col-md-3" style="text-align: right;">
-		        					<button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-		        					<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
-		        				</div>
-		        			</div>	
-	      				</div>
-	      				<div class="card-body">
-	      					<input type="hidden" id="eid" name="eid">
-	      					<div class="row text-center">
-							    <div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-							  		<div class="input-group-prepend">
-								    	<label class="input-group-text">Descripción</label>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="Descripción a mostrar" id="edescripcion" name="edescripcion" autofocus required>
-								</div>
-							</div>
-							<div class="row">
-								<div class="input-group input-group-sm mb-1 col-md-10 offset-md-1">
-							  		<div class="input-group-prepend">
-								    	<label class="input-group-text">Siglas&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="Siglas" id="esiglas" name="esiglas" required>
-								</div>
-					    	</div>
-					    	<div class="row">
-								<div class="form-group input-group-sm offset-md-1 col-md-5">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="eaplica_receta" name="eaplica_receta" value="S">
-						          		<label class="custom-control-label" for="eaplica_receta">Utilizado en receta</label>
-						        	</div>
-						      	</div>
-								<div class="form-group">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="eestado" name="eestado" value="A">
-						          		<label class="custom-control-label" for="eestado">Activar</label>
-						        	</div>
-						      	</div>
-							</div>
-	      				</div>
-	      			</div>
-      			</form>
-    		</div>
-  		</div>
-	</div>
-	<!-- /editar Modal -->
+	@include('unidadmedidas.partials.modals_unidadmedidas')
 @endsection
 @section('js')
-	<script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-	@if(Session::has('success'))
-        <script>
-            swal("Trabajo Finalizado", "{!! Session::get('success') !!}", "success")
-        </script>
+    @if(Session::get('type') == 'success')
+        @if(Session::has('message'))
+            <script>
+                setTimeout(function() {
+                    Swal.fire({
+                        title: "Trabajo Finalizado",
+                        text: "{{ Session::get('message') }}",
+                        icon: 'success', // En v2 es 'icon', no 'type'
+                        confirmButtonColor: '#28a745', // Color success de AdminLTE
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }, 1000);
+            </script>
+        @endif
     @endif
-    @if(Session::has('error'))
-        <script>
-            swal("Error !!!", "{!! Session::get('error') !!}", "error")
-        </script>
+    @if(Session::get('type') == 'error')
+        @if(Session::has('message'))
+            <script>
+                setTimeout(function() {
+                    Swal.fire({
+                        title: "Error",
+                        text: "{!! Session::get('message') !!}",
+                        icon: 'error', // En v2 es 'icon', no 'type'
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }, 1000);
+            </script>
+        @endif
     @endif
     <script type="text/javascript">
     	$(function () {
@@ -271,7 +180,7 @@
         	$('#agregarModalCenter').on('shown.bs.modal', function () {
 		  		$('#descripcion').trigger('focus');
 			});
-			jQuery.noConflict();
+			
 			$("#agregarModalCenter").modal();
 		}
 
@@ -306,7 +215,7 @@
 	            	$('#editarModalCenter').on('shown.bs.modal', function () {
 				  		$('#enombre').trigger('focus');
 					});
-					jQuery.noConflict();
+					
 					$("#editarModalCenter").modal();
 	            },
 	            error: function(error){

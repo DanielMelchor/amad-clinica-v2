@@ -790,6 +790,16 @@ return [
         //         ],
         //     ],
         // ],
+        'icheck-bootstrap' => [
+                'active' => true,
+                'files'  => [
+                    [
+                        'type' => 'css', // <--- Agrega este bloque para el estilo
+                        'asset' => true,
+                        'location' => 'assets/icheck-bootstrap/icheck-bootstrap.min.css',
+                    ],
+                ]
+        ],
         'Sweetalert2' => [
             'active' => true,
             'files' => [

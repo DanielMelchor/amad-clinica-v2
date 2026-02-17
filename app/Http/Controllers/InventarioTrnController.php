@@ -44,8 +44,12 @@ class InventarioTrnController extends Controller
 
         $transaccion->save();
 
-        Session::flash('success', 'Transacción Guardada con exito !!!' );
-        return redirect(route('invtransacciones'));
+        $message = array(
+            'message' => '! Registro almacenado con exito !',
+            'type'    => 'success'
+        );
+
+        return redirect()->back()->with($message);
 
     }
 
@@ -75,7 +79,11 @@ class InventarioTrnController extends Controller
 
         $transaccion->save();
 
-        Session::flash('success', 'Transacción Actualizada con exito !!!' );
-        return redirect(route('invtransacciones'));
+        $message = array(
+            'message' => '! Registro actualizado con exito !',
+            'type'    => 'success'
+        );
+
+        return redirect()->back()->with($message);
     }
 }

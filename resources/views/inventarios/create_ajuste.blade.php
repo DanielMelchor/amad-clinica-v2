@@ -1,11 +1,5 @@
 @extends('adminlte::page')
 @section('css')
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-    <link rel="stylesheet" href="{{ asset('assets/select2/css/select2.min.css')}}">
-    <link rel="stylesheet" href="{{ asset('assets/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         .btn-guardar{
             background-color: #A5C890 !important;
@@ -53,123 +47,138 @@
     <br>
 @endsection
 @section('content')
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <form class="form-horizontal" id="FormaAjuste" action="#">
-                @csrf
-                <div class="card">
-                    <div class="card-header" style="background-color: #E1E8ED;">
-                        <div class="row">
-                            <div class="col-md-9">
-                                <h6>Nuevo Ajuste</h6>
-                            </div>
-                            <div class="col-md-3" style="text-align: right;">
-                                <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-                                <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir" onclick="confirma_salida();"><i class="fas fa-sign-out-alt"></i></a>
+    <div class="container-fluid">
+        <form role="form" id="FormaAjuste" method="POST" action="{{route('grabar_ajuste')}}">
+            @csrf
+            <div class="row">
+                <div class="col-12 col-lg-10 offset-lg-1">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header py-2" style="background-color: #E1E8ED;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 font-weight-bold text-secondary">Nuevo Ajuste</h6>
+                                <div class="d-flex">
+                                    <button type="submit" id="submitButton" class="btn btn-sm btn-outline-success rounded-circle mr-2 shadow-sm" title="Guardar">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                    <a href="#" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" title="Salir" onclick="confirma_salida();">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3 offset-md-1 input-group input-group-sm mb-1">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">Fecha</label>
+
+                        <div class="card-body p-3">
+                            <div class="row mb-3">
+                                <div class="col-12 col-md-4 mb-2">
+                                    <label class="small font-weight-bold text-muted">Fecha</label>
+                                    <input type="date" class="form-control form-control-sm" id="fecha_transaccion" name="fecha_transaccion" value="{{ $hoy }}" readonly>
                                 </div>
-                                <input type="date" class="form-control form-control-sm" placeholder="DD/MM/AAAA" id="fecha_transaccion" name="fecha_transaccion" value="{{ $hoy }}" readonly>
-                            </div>
-                            <div class="col-md-5 input-group input-group-sm mb-1">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon1">Bodega</span>
+                                <div class="col-12 col-md-6 mb-2">
+                                    <label class="small font-weight-bold text-muted">Bodega</label>
+                                    <select class="custom-select custom-select-sm select2bs4" id="bodega_id" name="bodega_id" required>
+                                        <option value="" selected>Seleccionar...</option>
+                                        @foreach($bodegas as $b)
+                                            <option value="{{ $b->id }}">{{ $b->descripcion }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                                <select class="custom-select custom-select-sm select2 select2bs4" id="bodega_id" name="bodega_id" required>
-                                    <option value="" selected>Seleccionar...</option>
-                                    @foreach($bodegas as $b)
-                                        <option value="{{ $b->id }}">{{ $b->descripcion }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="col-12 col-md-2 d-flex align-items-end justify-content-end mb-2">
+                                    <button type="button" class="btn btn-sm btn-primary btn-block d-md-none" onclick="agregarFila();">
+                                        <i class="fas fa-plus mr-1"></i> Agregar Artículo
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary rounded-circle d-none d-md-inline elevation-2" onclick="agregarFila();" title="Agregar Artículo">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col-md-1 offset-md-1" style="text-align: right;">
-                                <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" onclick="agregarFila(); return false;" title="Agregar Artículo"><i class="fas fa-plus-circle"></i></a>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="row text-center">
-                            <div class="col-md-12">
-                                <table id="tblDetalle" class="table table-sm table-striped table-hovver text-center">
-                                    <thead>
-                                        <tr style="font-size: 12px;">
+
+                            <hr class="my-3">
+
+                            <div class="table-responsive">
+                                <table id="tblDetalle" class="table table-sm table-hover">
+                                    <thead class="bg-light d-none d-md-table-header-group">
+                                        <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
                                             <th style="width: 30%;">Artículo</th>
-                                            <th style="width: 20%;">Caracteristica</th>
-                                            <th style="width: 20%;">U. Medida</th>
+                                            <th style="width: 20%;">Característica</th>
+                                            <th style="width: 15%;">U. Medida</th>
                                             <th style="width: 15%;">Cantidad</th>
-                                            <th style="width: 10%;">Motivo</th>
-                                            <th style="width: 5%;">&nbsp;</th>
+                                            <th style="width: 15%;">Motivo</th>
+                                            <th style="width: 5%;"></th>
                                         </tr>
                                     </thead>
-                                    <tbody></tbody>
-                                    <tfoot>
-                                        <tr>
-                                        </tr>
-                                    </tfoot>
+                                    <tbody id="tbodyDetalle">
+                                        </tbody>
                                 </table>
                             </div>
-                            <br>
                         </div>
                     </div>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-    <script src="{{ asset('assets/select2/js/select2.full.min.js')}}"></script>
     <script type="text/javascript">
         //========================================================================
         // declaracion de variables
         //========================================================================
         nFila  = 1;
         nLinea = 0;
-        var productos_db = [];
+        const productos_db = @json($productos);
 
         //========================================================================
         // inicializar librerias
         //========================================================================
-        $(function () {
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
+        $(document).ready(function() {
+            // Inicialización robusta para Bootstrap 4
+            $('.select2bs4').each(function() {
+                $(this).select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    placeholder: "Seleccionar...",
+                    allowClear: true,
+                    // Si el select está dentro de un modal, descomenta la siguiente línea:
+                    // dropdownParent: $(this).parent() 
+                });
+            });
+
+            // Corrección de bug de foco en el buscador de Select2
+            $(document).on('select2:open', () => {
+                let searchField = document.querySelector('.select2-search__field');
+                if (searchField) {
+                    searchField.focus();
+                }
+            });
         });
 
         //========================================================================
         // al cargar la pagina trae los productos
         //========================================================================
-        document.addEventListener("DOMContentLoaded",function(event){
-            //FUNCION
-            $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('trae_productos') }}",
-                method: "POST",
-                success: function(response){
-                    for (var i = 0; i < response.length; i++) {
-                        var linea = {
-                            linea                     : nLinea,
-                            articulo_id               : response[i]['id'],
-                            articulo_descripcion      : response[i]['descripcion'],
-                            medida_minima_id          : response[i]['medida_id'],
-                            medida_minima_descripcion : response[i]['medida_descripcion']
-                        }
-                        productos_db.push(linea);
-                    }
-                },
-                error: function(error){
-                    console.log(error);
-                }
-            });
-        });
+        // document.addEventListener("DOMContentLoaded",function(event){
+        //     //FUNCION
+        //     $.ajax({
+        //         headers: {
+        //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        //         },
+        //         url: "{{ route('trae_productos') }}",
+        //         method: "POST",
+        //         success: function(response){
+        //             for (var i = 0; i < response.length; i++) {
+        //                 var linea = {
+        //                     linea                     : nLinea,
+        //                     articulo_id               : response[i]['id'],
+        //                     articulo_descripcion      : response[i]['descripcion'],
+        //                     medida_minima_id          : response[i]['medida_id'],
+        //                     medida_minima_descripcion : response[i]['medida_descripcion']
+        //                 }
+        //                 productos_db.push(linea);
+        //             }
+        //         },
+        //         error: function(error){
+        //             console.log(error);
+        //         }
+        //     });
+        // });
 
         //========================================================================
         // funcion para ordenar detalle
@@ -201,9 +210,9 @@
             html += '<td style="width: 30%;">'
             html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][articulo_id]" name="productos['+nLinea+'][articulo_id]" onchange="actualizarMedidas('+nLinea+');">'
             html += '<option value="">Seleccionar....</option>'
-            for (var i = 0; i < productos_db.length; i++) {
-                html += '<option value="'+productos_db[i]['articulo_id']+'">'+productos_db[i]['articulo_descripcion']+'</option>'
-            }
+            productos_db.forEach(function(p, index) {
+                html += `<option value="${p.id}">${p.descripcion}</option>`;
+            });
             html += '</select>'
             html += '</td>'
             html += '<td style="width: 20%;">'
@@ -233,10 +242,11 @@
             $('.eliminar').on('click',eliminar);
             nFila += 1;
             nLinea += 1;
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
+            // $('.select2').select2()
+            // $('.select2bs4').select2({
+            //   theme: 'bootstrap4'
+            // })
+            (`#productos\\[${nLinea}\\]\\[articulo_id\\]`).select2({ theme: 'bootstrap4' });
         }
 
         function eliminar(){
@@ -249,38 +259,38 @@
         // actualizar unidad de medida en base a producto seleccionado
         //========================================================================
         function actualizarMedidas(id){
-            
+            console.log('entre con '+id)
             var producto_id = document.getElementById("productos["+id+"][articulo_id]").value;
             var select      = document.getElementById("productos["+id+"][unidad_medida_id]"); 
             var caracteristica = document.getElementById("productos["+id+"][articulo_caracteristica_id]"); 
             
-            $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('trae_caracteristicas_x_producto') }}",
-                method: "POST",
-                data: {producto_id: producto_id},
-                success: function(response) {
-                    caracteristica.innerHTML = '';
-                    var opt = response.length;
-                    var el1 = document.createElement("option");
-                    el1.textContent = 'Seleccionar...';
-                    el1.value = null;
-                    caracteristica.appendChild(el1);
-                    for (var i = 0; i < response.length; i++) {
-                        var opt = response.length;
-                        var el1 = document.createElement("option");
-                        el1.textContent = response[i]['descripcion'];
-                        el1.value = response[i]['id'];
-                        caracteristica.appendChild(el1);
-                    }
-                },
-                error: function() {
-                    // Este bloque se ejecuta si hay un error con la solicitud
-                    console.error('Error en la solicitud AJAX:');
-                }
-            });
+            // $.ajax({
+            //     headers: {
+            //         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            //     },
+            //     url: "{{ route('trae_caracteristicas_x_producto') }}",
+            //     method: "POST",
+            //     data: {producto_id: producto_id},
+            //     success: function(response) {
+            //         caracteristica.innerHTML = '';
+            //         var opt = response.length;
+            //         var el1 = document.createElement("option");
+            //         el1.textContent = 'Seleccionar...';
+            //         el1.value = null;
+            //         caracteristica.appendChild(el1);
+            //         for (var i = 0; i < response.length; i++) {
+            //             var opt = response.length;
+            //             var el1 = document.createElement("option");
+            //             el1.textContent = response[i]['descripcion'];
+            //             el1.value = response[i]['id'];
+            //             caracteristica.appendChild(el1);
+            //         }
+            //     },
+            //     error: function() {
+            //         // Este bloque se ejecuta si hay un error con la solicitud
+            //         console.error('Error en la solicitud AJAX:');
+            //     }
+            // });
 
             $.ajax({
                 headers: {
@@ -306,44 +316,9 @@
 
         }
 
-        //========================================================================
-        // Guardar Ajuste
-        //========================================================================
-        $(function(){
-            $("#FormaAjuste").submit(function(event){
-                event.preventDefault(); // Evita el envío normal del formulario
-                $('#submitButton').prop('disabled', true);
-                var formData = new FormData(this); // Serializa los datos del formulario
-                // console.log(formData);
-                $.ajax({
-                    url: "{{ route('grabar_ajuste') }}",
-                    type: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    data: formData,
-                    contentType: false,  // Impide que jQuery configure el tipo de contenido
-                    processData: false,
-                    success: function(response){
-                        swal({
-                            title: 'Trabajo Finalizado',
-                            text: response.message,
-                            type: 'success',
-                            },
-                            function(){
-                                return window.location.href = "{{route('lista_ajustes')}}";
-                            }
-                        );
-                    },
-                    error: function(error){
-                        console.log(error);
-                    }
-                });
-            })
-        });
 
         $(document).ready(function() {
-            $('#formaNuevoRegistro').on('submit', function() {
+            $('#FormaAjuste').on('submit', function() {
                 // Deshabilitar el botón de submit cuando se envíe el formulario
                 $('#submitButton').prop('disabled', true);
                 // $('#submitButton').text('Enviando...');
@@ -354,73 +329,22 @@
         // Confirmar salida de pantalla
         //===================================================================
         function confirma_salida(){
-            event.preventDefault(); // Evita el envío normal del formulario
-            swal({
+            Swal.fire({
                 title: 'Confirmación',
-                Swal.fire({
-
-                title: 'Confirmación',
-
                 text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
-
-text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
                 icon: 'warning',
-
                 showCancelButton: true,
-
-                confirmButtonClass: 'btn-success',
-
-                cancelButtonClass: 'btn-danger',
-
-                confirmButtonText: 'Si',
-
+                confirmButtonColor: '#28a745', // Color success de AdminLTE
+                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
+                confirmButtonText: 'Si, Salir',
                 cancelButtonText: 'No',
-
-                closeOnConfirm: false,
-
-                allowEscapeKey: true
-
-                },
-
-                function(isConfirm) {
-
-                    if (isConfirm) { 
-
-                        if (origen == 'P') {
-
-                            window.location.href = "{{ route('pacientes') }}";
-
-                        }
-
-                        if (origen == 'A') {
-
-                            window.location.href = "{{ route('nueva_agenda') }}";
-
-                        }
-
-                        // history.back();
-
-                        
-
-                    } 
-
-                }
-
-            );
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('lista_ajustes') }}";
-                    } 
-                }
-            );
+                allowEscapeKey: true,
+                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+            }).then((result) => {
+                if (result.isConfirmed) { 
+                    window.location.href = "{{ route('productos') }}";
+                } 
+            });
         }
     </script>
 @endsection

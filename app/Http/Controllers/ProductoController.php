@@ -46,7 +46,7 @@ class ProductoController extends Controller
     {
         $pUnidades       = UnidadMedida::where('estado', 1)->where('aplica_receta', 'N')->get();
         $proveedores     = Proveedor::where('empresa_id', Auth::user()->empresa_id)->get();
-        $familias        = InvFamilia::where('empresa_id', Auth::user()->empresa_id)->get();
+        $familias        = InvFamilia::where('empresa_id', Auth::user()->empresa_id)->where('estado', 1)->get();
         $medidas         = UnidadMedida::where('estado', 1)->where('aplica_receta', 'N')->get();
         $dosis           = UnidadMedida::where('estado', 1)->where('aplica_receta', 'S')->get();
         $clasificaciones = InvClasificacion::where('estado', 1)->get();
@@ -130,7 +130,7 @@ class ProductoController extends Controller
             'type'    => 'success'
         );
 
-        return redirect()->back()->with($message);
+        return redirect()->route('editar_producto', [$producto->id])->with($message);
     }
 
     public function edit($id){

@@ -1,9 +1,5 @@
 @extends('adminlte::page')
 @section('css')
-	<meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-	<link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 	<style type="text/css">
         .btn-guardar{
             background-color: #A5C890 !important;
@@ -40,73 +36,77 @@
     <br>
 @endsection
 @section('content')
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <div class="card">
-                <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <h5>Listado de Ajustes</h5>
-                        </div>
-                        <div class="col-md-3" style="text-align: right;">
-                            <a href="{{ route('crear_ajuste') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Nueva Compra"><i class="fas fa-plus-circle"></i></a>
-                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <form class="form-horizontal">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="table-responsive">
-                                    <table id="tblprincipal" class="table table-sm table-striped table-hover">
-                                        <thead  class="thead-primary text-center" style="font-size: 12px;">
-                                            <tr>
-                                                <th>Transacción</th>
-                                                <th>Número</th>
-                                                <th>Fecha</th>
-                                                <th>&nbsp;</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($lista as $l)
-                                                <tr style="font-size: 12px;">
-                                                    <td>{{ $l->transaccion_descripcion }}</td>
-                                                    <td>{{ $l->correlativo}} - {{ $l->anio }}</td>
-                                                    <td>{{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}</td>
-                                                    <td>
-                                                        @php $Id= Crypt::encrypt($l->id); @endphp
-                                                        <a href="{{ route('editar_ajuste', $Id) }}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Compra"> <i class="fas fa-edit"></i></a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-lg-10 offset-lg-1">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header py-2" style="background-color: #E1E8ED;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 font-weight-bold text-secondary">Listado de Ajustes</h6>
+                            <div class="d-flex">
+                                <a href="{{ route('crear_ajuste') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
+                                    <i class="fas fa-plus-circle"></i>
+                                </a>
+                                <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                </form>
+
+                    <div class="card-body p-0 p-md-3">
+                        <div class="table-responsive">
+                            <table id="tblprincipal" class="table table-sm table-striped table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
+                                        <th class="text-left pl-3">Transacción / Número</th>
+                                        <th class="d-none d-sm-table-cell">Fecha</th>
+                                        <th style="width: 50px;">Acción</th>
+                                    </tr>   
+                                </thead>
+                                <tbody>
+                                    @foreach($lista as $l)
+                                        <tr class="text-center" style="font-size: 12px;">
+                                            <td class="text-left pl-3 align-middle">
+                                                <div class="font-weight-bold text-dark">{{ $l->transaccion_descripcion }}</div>
+                                                <small class="text-muted">{{ $l->correlativo }} - {{ $l->anio }}</small>
+                                                <div class="d-block d-sm-none mt-1">
+                                                    <i class="far fa-calendar-alt mr-1"></i>{{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
+                                                </div>
+                                            </td>
+                                            <td class="align-middle d-none d-sm-table-cell">
+                                                {{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
+                                            </td>
+                                            <td class="align-middle pr-3">
+                                                @php $Id= Crypt::encrypt($l->id); @endphp
+                                                <a href="{{ route('editar_ajuste', $Id) }}" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar Compra">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
-                
                 setTimeout(function() {
-                    swal({
+                    Swal.fire({
                         title: "Trabajo Finalizado",
-                        text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        text: "{{ Session::get('message') }}",
+                        icon: 'success', // En v2 es 'icon', no 'type'
+                        confirmButtonColor: '#28a745', // Color success de AdminLTE
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
                 }, 1000);
             </script>
         @endif
@@ -115,15 +115,13 @@
         @if(Session::has('message'))
             <script>
                 setTimeout(function() {
-                    swal({
+                    Swal.fire({
                         title: "Error",
                         text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: 'error', // En v2 es 'icon', no 'type'
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
                 }, 1000);
             </script>
         @endif

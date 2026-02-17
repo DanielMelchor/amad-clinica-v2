@@ -30,8 +30,8 @@ class ProveedorController extends Controller
     }
 
     public function store(Request $Request){
-        // dd('entre '.$Request->condicion);
-        $proveedor = new Proveedor;
+        // dd('entre '.$Request);
+        $proveedor = new Proveedor();
         $proveedor->empresa_id       = Auth::user()->empresa_id;
         $proveedor->razon_social     = $Request->razon_social;
         $proveedor->nombre_comercial = $Request->nombre_comercial;
@@ -71,11 +71,11 @@ class ProveedorController extends Controller
         }
 
         $message = array(
-            'message' => 'Registro almacenado con exito !!!',
+            'message' => '! Registro almacenado con exito !',
             'type'    => 'success'
         );
 
-        return response()->json($message);
+        return redirect()->route('editar_proveedor', [$proveedor->id])->with($message);
     }
 
     public function edit($id){
@@ -102,6 +102,7 @@ class ProveedorController extends Controller
     }
 
     public function update(Request $request){
+        // dd($request);
         $validData = $request->validate([
             'proveedor_id' => 'required',
             'razon_social' => 'required',
@@ -124,65 +125,27 @@ class ProveedorController extends Controller
         }
         $proveedor->save();
 
-        $contactos = (array) $_POST['contactos'];
-        $totalRegistros = count($contactos);
+        LineaMedicaContacto::where('proveedor_id', $proveedor_id)->update(['estado' => 0]);
 
-        $registroActual = LineaMedicaContacto::where('proveedor_id', $proveedor_id)
-                          ->where('estado', 1)
-                          ->get();
-
-        foreach ($registroActual as $key => $registro) {
-            $contactoEncontrado = false;
+        if (isset($_POST['contactos'])) {
+            $contactos = (array) $_POST['contactos'];
+            // dd($contactos);
             foreach ($contactos as $contacto) {
-                if ($registro->proveedor_id == $proveedor_id && $registro->lineamedica_id == $contacto['lineamedica_id']) {
-                    $contactoEncontrado = true;
-                }
-            }
-            if (!$contactoEncontrado) {
-                $eliminar = LineaMedicaContacto::findOrFail($registro->id);
-                $eliminar->estado = 0;
-                $eliminar->save();
-            }
-        }
-
-        for ($i=0; $i < $totalRegistros ; $i++) {
-            $existe_registro = LineaMedicaContacto::where('proveedor_id', $proveedor_id)
-                               ->where('lineamedica_id', intval($contactos[$i]['lineamedica_id']))
-                               ->count();
-            if ($existe_registro == 0) {
-                $contacto = new LineaMedicaContacto;
-                $contacto->proveedor_id    = $proveedor->id;
-                $contacto->lineamedica_id  = intval($contactos[$i]['lineamedica_id']);
-                $contacto->nombre_contacto = $contactos[$i]['nombre_contacto'];
-                $contacto->telefonos       = $contactos[$i]['contacto_telefonos'];
-                $contacto->email           = $contactos[$i]['contacto_email'];
-                if (isset($contactos[$i]['contacto_estado'])) {
-                    $contacto->estado          = 1;
-                }else{
-                    $contacto->estado          = 0;
-                }
-                $contacto->save();
-            }else{
-                print_r($contactos);
-                $contacto = LineaMedicaContacto::where('proveedor_id', $proveedor_id)
-                                                ->where('lineamedica_id', intval($contactos[$i]['lineamedica_id']))
-                                                ->first();
-
-                $contacto->lineamedica_id  = intval($contactos[$i]['lineamedica_id']);
-                $contacto->nombre_contacto = $contactos[$i]['nombre_contacto'];
-                $contacto->telefonos       = $contactos[$i]['contacto_telefonos'];
-                $contacto->email           = $contactos[$i]['contacto_email'];
-                if (isset($contactos[$i]['contacto_estado'])) {
-                    $contacto->estado          = 1;
-                }else{
-                    $contacto->estado          = 0;
-                }
-                $contacto->save();
+                $registro = LineaMedicaContacto::updateOrCreate(
+                                [
+                                    'proveedor_id'   => $proveedor_id,       // Campo de búsqueda 1
+                                    'lineamedica_id' => $contacto['lineamedica_id']  // Campo de búsqueda 2
+                                ],
+                                [
+                                    'nombre_contacto' => $contacto['nombre_contacto'],    // Campo a actualizar/insertar
+                                    'telefonos'       => $contacto['contacto_telefonos'],  // Campo a actualizar/insertar
+                                    'email'           => $contacto['contacto_email'],
+                                    'estado'          => 1               // Campo a actualizar/insertar
+                                ]
+                            );
             }
         }
 
-        // $respuesta = array('parametro' => 0,'respuesta' => 'Proveedor Actualizado con exito !!!'); 
-        // return Response::json($respuesta);
         $message = array(
             'message' => 'Registro actualizado con exito !!!',
             'type'    => 'success'

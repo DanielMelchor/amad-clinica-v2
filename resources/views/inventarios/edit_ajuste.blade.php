@@ -1,11 +1,5 @@
 @extends('adminlte::page')
 @section('css')
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-    <link rel="stylesheet" href="{{ asset('assets/select2/css/select2.min.css')}}">
-    <link rel="stylesheet" href="{{ asset('assets/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         .btn-guardar{
             background-color: #A5C890 !important;
@@ -46,6 +40,10 @@
             padding: 5px; /* Ajusta el padding para que la altura se reduzca */
             font-size: 0.875rem; /* Ajusta el tamaño de la fuente para que todo el conjunto se vea más pequeño */
         }*/
+
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: calc(1.8125rem + 2px) !important; /* Altura de un form-control-sm */
+        }
     </style>
 @endsection
 @section('title', 'Ajustes')
@@ -53,118 +51,142 @@
     <br>
 @endsection
 @section('content')
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <form class="form-horizontal" id="FormaAjuste" action="#">
-                @csrf
-                <div class="card">
-                    <div class="card-header" style="background-color: #E1E8ED;">
-                        <div class="row">
-                            <div class="col-md-9">
-                                <h6>Edición de Ajuste</h6>
-                            </div>
-                            <div class="col-md-3" style="text-align: right;">
-                                <button type="submit" id="btn_guardar_admision" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-                                <a href="" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir" onclick="confirma_salida();"><i class="fas fa-sign-out-alt"></i></a>
+    <div class="container-fluid">
+        <form role="form" id="FormaAjuste" method="POST" action="{{route('actualizar_ajuste')}}">
+            @csrf
+            <div class="row">
+                <div class="col-12 col-lg-10 offset-lg-1">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header py-2" style="background-color: #E1E8ED;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 font-weight-bold text-secondary">Edición de Ajuste</h6>
+                                <div class="d-flex">
+                                    <button type="submit" id="btn_guardar_admision" class="btn btn-sm btn-outline-success rounded-circle mr-2 shadow-sm" title="Guardar">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                    <a href="#" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" title="Salir" onclick="confirma_salida();">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <input type="hidden" id="compra_id" name="compra_id" value="{{ $encabezado->id }}">
-                        <div class="row">
-                            <div class="col-md-3 offset-md-1 input-group input-group-sm mb-1">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">Fecha</label>
+
+                        <div class="card-body p-3">
+                            <input type="hidden" id="maestro_id" name="maestro_id" value="{{ $encabezado->id }}">
+                            
+                            <div class="row mb-3">
+                                <div class="col-12 col-md-4 mb-2">
+                                    <label class="small font-weight-bold text-muted">Fecha</label>
+                                    <input type="date" class="form-control form-control-sm" id="fecha_transaccion" name="fecha_transaccion" value="{{ $encabezado->fecha_emision }}" readonly>
                                 </div>
-                                <input type="date" class="form-control form-control-sm" placeholder="DD/MM/AAAA" id="fecha_transaccion" name="fecha_transaccion" value="{{ $encabezado->fecha_emision }}" readonly>
-                            </div>
-                            <div class="col-md-5 input-group input-group-sm mb-1">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="basic-addon1">Bodega</span>
+                                <div class="col-12 col-md-6 mb-2">
+                                    <label class="small font-weight-bold text-muted">Bodega</label>
+                                    <select class="custom-select custom-select-sm select2 select2bs4" id="bodega_id" name="bodega_id" required>
+                                        <option value="">Seleccionar...</option>
+                                        @foreach($bodegas as $b)
+                                            <option value="{{ $b->id }}" {{ $b->id == $encabezado->bodega_origen_id ? 'selected' : '' }}>
+                                                {{ $b->descripcion }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                                <select class="custom-select custom-select-sm select2 select2bs4" id="bodega_id" name="bodega_id" required>
-                                    <option value="" selected>Seleccionar...</option>
-                                    @foreach($bodegas as $b)
-                                        <option value="{{ $b->id }}" @if($b->id == $encabezado->bodega_origen_id) selected @endif>{{ $b->descripcion }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="col-12 col-md-2 d-flex align-items-end mb-2">
+                                    <button type="button" class="btn btn-sm btn-primary btn-block d-md-none shadow-sm" onclick="agregarFila();">
+                                        <i class="fas fa-plus-circle mr-1"></i> Agregar Ítem
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary rounded-circle d-none d-md-inline elevation-2 ml-auto" onclick="agregarFila();" title="Agregar Artículo">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col-md-1 offset-md-1" style="text-align: right;">
-                                <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" onclick="agregarFila(); return false;" title="Agregar Artículo"><i class="fas fa-plus-circle"></i></a>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="row text-center">
-                            <div class="col-md-12">
-                                <table id="tblDetalle" class="table table-sm table-striped table-hovver text-center">
-                                    <thead>
-                                        <tr style="font-size: 12px;">
-                                            <th style="width: 30%;">Artículo</th>
-                                            <th style="width: 20%;">Caracteristica</th>
-                                            <th style="width: 20%;">U. Medida</th>
+
+                            <hr class="my-3">
+
+                            <div class="table-responsive" style="overflow-x: hidden;">
+                                <table id="tblDetalle" class="table table-sm table-hover border-0">
+                                    <thead class="bg-light">
+                                        <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
+                                            <th style="width: 50%;">Artículo</th>
+                                            <th style="width: 15%;">U. Medida</th>
                                             <th style="width: 15%;">Cantidad</th>
-                                            <th style="width: 10%;">Motivo</th>
-                                            <th style="width: 5%;">&nbsp;</th>
+                                            <th style="width: 15%;">Motivo</th>
+                                            <th style="width: 5%;"></th>
                                         </tr>
                                     </thead>
-                                    <tbody></tbody>
-                                    <tfoot>
-                                        <tr>
-                                        </tr>
-                                    </tfoot>
+                                    <tbody id="tbodyDetalle">
+                                    </tbody>
                                 </table>
                             </div>
-                            <br>
                         </div>
                     </div>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-    <script src="{{ asset('assets/select2/js/select2.full.min.js')}}"></script>
     <script type="text/javascript">
         //========================================================================
         // declaracion de variables
         //========================================================================
         nFila  = 1;
         nLinea = 0;
-        var productos_db = [];
+
+        const productos_db = @json($productos);
+        // console.log(productos_db);
 
         //========================================================================
         // inicializar librerias
         //========================================================================
-        $(function () {
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
+        $(document).ready(function() {
+            // Inicialización robusta para Bootstrap 4
+            $('.select2bs4').each(function() {
+                $(this).select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    placeholder: "Seleccionar...",
+                    allowClear: true,
+                    // Si el select está dentro de un modal, descomenta la siguiente línea:
+                    // dropdownParent: $(this).parent() 
+                });
+            });
+
+            // Corrección de bug de foco en el buscador de Select2
+            $(document).on('select2:open', () => {
+                let searchField = document.querySelector('.select2-search__field');
+                if (searchField) {
+                    searchField.focus();
+                }
+            });
+
+            // $('#bodega_id').select2({
+            //     theme: 'bootstrap4',
+            //     width: '100%' // Esto evita que el span de Select2 se vea pequeño o roto
+            // });
         });
 
         //========================================================================
         // al cargar la pagina trae los productos
         //========================================================================
         document.addEventListener("DOMContentLoaded",function(event){
-            //FUNCION
+            let maestroId = $('#maestro_id').val();
+
             $.ajax({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
-                url: "{{ route('trae_productos') }}",
+                url: "{{ route('trae_detalle_ajuste') }}",
                 method: "POST",
+                data: {"_token": "{{ csrf_token() }}",
+                   ajuste_id: maestroId},
                 success: function(response){
-                    for (var i = 0; i < response.length; i++) {
-                        var linea = {
-                            linea                     : nLinea,
-                            articulo_id               : response[i]['id'],
-                            articulo_descripcion      : response[i]['descripcion'],
-                            medida_minima_id          : response[i]['medida_id'],
-                            medida_minima_descripcion : response[i]['medida_descripcion']
-                        }
-                        productos_db.push(linea);
-                    }
+                    response.forEach(function(p, index) {
+                        agregarFila(p);
+                        // $(`#productos\\[${index}\\]\\[producto_id\\]`).val(response[index]['producto_id']);
+                        $(`#productos\\[${index}\\]\\[producto_id\\]`).val(response[index]['producto_id']).trigger('change');
+                        $(`#productos\\[${index}\\]\\[unidad_medida_id\\]`).val(response[index]['unidad_medida_id']);
+                        $(`#productos\\[${index}\\]\\[cantidad\\]`).val(response[index]['cantidad']);
+                    });
                 },
                 error: function(error){
                     console.log(error);
@@ -189,25 +211,25 @@
             return comparacion;
         }
 
-        function agregarFila(){
-            // var productos_db = JSON.parse(localStorage.productos_db);
-            productos_db.sort(compare);
+        function agregarFila(datos = null){
             html = '';
-            html += '<tr>'
-            html += '<input type="hidden" class="form-control" id="productos['+nLinea+'][id]" name="productos['+nLinea+'][id]" value="'+nLinea+'">'
+            html += `<tr id="fila_${nLinea}">`;
+            html += `<input type="hidden" id="productos[${nLinea}][id]" name="productos[${nLinea}][id]" value="${nLinea}">`;
             html += '<td style="width: 30%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][articulo_id]" name="productos['+nLinea+'][articulo_id]" onchange="actualizarMedidas('+nLinea+');">'
+            html += `<select class="custom-select custom-select-sm select2 select2bs4" id="productos[${nLinea}][producto_id]" name="productos[${nLinea}][producto_id]" onchange="actualizarMedidas(${nLinea});" required>`;
             html += '<option value="">Seleccionar....</option>'
-            for (var i = 0; i < productos_db.length; i++) {
-                html += '<option value="'+productos_db[i]['articulo_id']+'">'+productos_db[i]['articulo_descripcion']+'</option>'
-            }
+            productos_db.forEach(function(p) {
+                // let selected = (datos && datos.producto_id == p.id) ? 'selected' : '';
+                // html += `<option value="${p.id}" ${selected}>${p.descripcion}</option>`;
+                html += `<option value="${p.id}">${p.descripcion}</option>`;
+            });
             html += '</select>'
             html += '</td>'
-            html += '<td style="width: 20%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][articulo_caracteristica_id]" name="productos['+nLinea+'][articulo_caracteristica_id]">'
-            html += '<option value="">Seleccionar....</option>'
-            html += '</select>'
-            html += '</td>'
+            // html += '<td style="width: 20%;">'
+            // html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][articulo_caracteristica_id]" name="productos['+nLinea+'][articulo_caracteristica_id]">'
+            // html += '<option value="">Seleccionar....</option>'
+            // html += '</select>'
+            // html += '</td>'
             html += '<td style="width: 20%;">'
             html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][unidad_medida_id]" name="productos['+nLinea+'][unidad_medida_id]">'
             html += '</select>'
@@ -246,38 +268,38 @@
         // actualizar unidad de medida en base a producto seleccionado
         //========================================================================
         function actualizarMedidas(id){
-            
-            var producto_id = document.getElementById("productos["+id+"][articulo_id]").value;
+            console.log('enttre con '+id)
+            var producto_id = document.getElementById("productos["+id+"][producto_id]").value;
             var select      = document.getElementById("productos["+id+"][unidad_medida_id]"); 
             var caracteristica = document.getElementById("productos["+id+"][articulo_caracteristica_id]"); 
             
-            $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('trae_caracteristicas_x_producto') }}",
-                method: "POST",
-                data: {producto_id: producto_id},
-                success: function(response) {
-                    caracteristica.innerHTML = '';
-                    var opt = response.length;
-                    var el1 = document.createElement("option");
-                    el1.textContent = 'Seleccionar...';
-                    el1.value = null;
-                    caracteristica.appendChild(el1);
-                    for (var i = 0; i < response.length; i++) {
-                        var opt = response.length;
-                        var el1 = document.createElement("option");
-                        el1.textContent = response[i]['descripcion'];
-                        el1.value = response[i]['id'];
-                        caracteristica.appendChild(el1);
-                    }
-                },
-                error: function() {
-                    // Este bloque se ejecuta si hay un error con la solicitud
-                    console.error('Error en la solicitud AJAX:');
-                }
-            });
+            // $.ajax({
+            //     headers: {
+            //         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            //     },
+            //     url: "{{ route('trae_caracteristicas_x_producto') }}",
+            //     method: "POST",
+            //     data: {producto_id: producto_id},
+            //     success: function(response) {
+            //         caracteristica.innerHTML = '';
+            //         var opt = response.length;
+            //         var el1 = document.createElement("option");
+            //         el1.textContent = 'Seleccionar...';
+            //         el1.value = null;
+            //         caracteristica.appendChild(el1);
+            //         for (var i = 0; i < response.length; i++) {
+            //             var opt = response.length;
+            //             var el1 = document.createElement("option");
+            //             el1.textContent = response[i]['descripcion'];
+            //             el1.value = response[i]['id'];
+            //             caracteristica.appendChild(el1);
+            //         }
+            //     },
+            //     error: function() {
+            //         // Este bloque se ejecuta si hay un error con la solicitud
+            //         console.error('Error en la solicitud AJAX:');
+            //     }
+            // });
 
             $.ajax({
                 headers: {
@@ -303,134 +325,26 @@
 
         }
 
-        //========================================================================
-        // Guardar Compra
-        //========================================================================
-        $(function(){
-            $("#FormaCompra").submit(function(){
-                var total_documento = parseFloat(document.getElementById('total').value);
-                total_documento = total_documento.toFixed(2);
-                var total           = 0;
-                var filas=document.querySelectorAll("#tblDetalle tbody tr");
-                filas.forEach(function(e) {
-                    var columnas = e.querySelectorAll("td");
-                    if (!isNaN(parseFloat($(columnas[5]).find('input').val())) ) {
-                        total += parseFloat($(columnas[5]).find('input').val());
-                    }
-                });
-                total = total.toFixed(2);
-                if (total_documento == total) {
-                    event.preventDefault(); // Evita el envío normal del formulario
-                    var formData = new FormData(this); // Serializa los datos del formulario
-                    var csrfToken = $('meta[name="csrf-token"]').attr('content');
-                    formData.append('_token', csrfToken);
-                    // console.log(formData);
-                    // alert('revisar');
-                    $.ajax({
-                        url: "{{ route('actualizar_ajuste') }}",
-                        type: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        data: formData,
-                        contentType: false,  // Impide que jQuery configure el tipo de contenido
-                        processData: false,
-                        success: function(response){
-                            swal({
-                                title: 'Trabajo Finalizado',
-                                text: response.message,
-                                type: 'success',
-                                },
-                                function(){
-                                    return window.location.href = "{{route('lista_compras')}}";
-                                }
-                            );
-                        },
-                        error: function(error){
-                            console.log(error);
-                        }
-                    });
-                }else{
-                    swal({
-                        title: 'Error',
-                        text: 'Para continuar el total de productos debe coincidir con el valor del documento de compra',
-                        type: 'error'
-                    });
-                }
-            })
-        });
-
         //===================================================================
         // Confirmar salida de pantalla
         //===================================================================
         function confirma_salida(){
-            event.preventDefault(); // Evita el envío normal del formulario
-            swal({
+            Swal.fire({
                 title: 'Confirmación',
-                Swal.fire({
-
-                title: 'Confirmación',
-
                 text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
-
-text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
                 icon: 'warning',
-
                 showCancelButton: true,
-
-                confirmButtonClass: 'btn-success',
-
-                cancelButtonClass: 'btn-danger',
-
-                confirmButtonText: 'Si',
-
+                confirmButtonColor: '#28a745', // Color success de AdminLTE
+                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
+                confirmButtonText: 'Si, Salir',
                 cancelButtonText: 'No',
-
-                closeOnConfirm: false,
-
-                allowEscapeKey: true
-
-                },
-
-                function(isConfirm) {
-
-                    if (isConfirm) { 
-
-                        if (origen == 'P') {
-
-                            window.location.href = "{{ route('pacientes') }}";
-
-                        }
-
-                        if (origen == 'A') {
-
-                            window.location.href = "{{ route('nueva_agenda') }}";
-
-                        }
-
-                        // history.back();
-
-                        
-
-                    } 
-
-                }
-
-            );
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('lista_ajustes') }}";
-                    } 
-                }
-            );
+                allowEscapeKey: true,
+                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+            }).then((result) => {
+                if (result.isConfirmed) { 
+                    window.location.href = "{{ route('productos') }}";
+                } 
+            });
         }
     </script>
 @endsection

@@ -19,7 +19,7 @@ class Proveedor extends Model
 
     protected $table = 'proveedores';
     
-    protected $fillable = ['empresa_id', 'razon_social', 'nombre_comercial', 'direccion', 'telefonos', 'email', 'condicion', 'dias_credito', 'estado', 'id'];
+    protected $fillable = ['id', 'empresa_id', 'razon_social', 'nombre_comercial', 'direccion', 'telefonos', 'email', 'condicion', 'dias_credito', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

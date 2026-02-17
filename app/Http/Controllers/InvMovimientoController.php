@@ -39,7 +39,6 @@ class InvMovimientoController extends Controller
     }
 
     public function index_ajustes(){
-        dd('entre');
         $lista = DB::table('maestro_movimientos as mm')
                  ->join('inventario_transacciones as it', 'mm.inventario_transaccion_id', 'it.id')
                  ->where('mm.empresa_id', Auth::user()->empresa_id)
@@ -63,9 +62,16 @@ class InvMovimientoController extends Controller
     }
 
     public function create_ajuste(){
+        
         $hoy             = Carbon::now()->format('Y-m-d');
         $bodegas         = Bodega::where('empresa_id', Auth::user()->empresa_id)->where('estado', 1)->get();
-        return view('inventarios.create_ajuste', compact('bodegas', 'hoy'));
+        $productos = Producto::where('empresa_id', Auth::user()->empresa_id)
+                     ->where('estado', 1)
+                     ->whereIn('clasificacion', [9, 10, 12, 13])
+                     ->select('id', 'descripcion', 'medida_id')
+                     ->get();
+        return view('inventarios.create_ajuste', compact('bodegas', 'hoy', 'productos'));
+
     }
 
     public function store_compra(Request $request){
@@ -165,7 +171,7 @@ class InvMovimientoController extends Controller
         }
 
         $message = array(
-            'message' => 'Registro de Compra guardada con Exito !!!',
+            'message' => 'Registro de Compra almacenado con Exito !!!',
             'type'    => 'success'
         );
 
@@ -180,9 +186,7 @@ class InvMovimientoController extends Controller
             'fecha_transaccion' => 'required|date_format:Y-m-d',
             'bodega_id'         => 'required'
         ]);
-        // $fecha_emision   = $_POST['fecha_transaccion'];
-        // $bodega_id       = $_POST['bodega_id'];
-        // $tipo_ajuste     = $_POST['tipo_ajuste'];
+        
         $data            = (array) $request['productos'];
         $totalRegistros  = count($data);
 
@@ -191,7 +195,7 @@ class InvMovimientoController extends Controller
         $inv_transaccion = DB::table('inventario_transacciones as it')
                            ->where('it.empresa_id', Auth::user()->empresa_id)
                            ->where('it.tipo_transaccion', 'A')
-                           ->where('it.estado', 'A')
+                           ->where('it.estado', 1)
                            ->first();
 
         //$respuesta = array('error' => 0 , 'respuesta' => $inv_transaccion->descripcion. ' '.$inv_transaccion->signo);
@@ -249,7 +253,7 @@ class InvMovimientoController extends Controller
             }
 
             $message = array(
-                'message' => 'Registro de Compra guardada con Exito !!!',
+                'message' => 'Registro almacenado con Exito !!!',
                 'type'    => 'success'
             );
         }else{
@@ -259,8 +263,10 @@ class InvMovimientoController extends Controller
                 'type'    => 'error'
             );
         }
+
+        $ajusteId = Crypt::encrypt($ajuste->id);
         
-        return redirect()->back()->with($message);
+        return redirect()->route('editar_ajuste', [$ajusteId])->with($message);
 
     }
 
@@ -318,7 +324,7 @@ class InvMovimientoController extends Controller
         $encabezado      = MaestroMovimiento::findOrFail($registroId);
         $productos = Producto::where('empresa_id', Auth::user()->empresa_id)
                      ->where('estado', 1)
-                     ->where('clasificacion', 'PROD')
+                     ->whereIn('clasificacion', [9, 10, 12, 13])
                      ->select('id', 'descripcion', 'medida_id')
                      ->get();
 
