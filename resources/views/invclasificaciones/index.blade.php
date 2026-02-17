@@ -40,45 +40,49 @@
 @endsection
 
 @section('content')
-	<div class="row">
-        <div class="col-md-10 offset-md-1">
-        	<div class="card">
-				<div class="card-header" style="background-color: #E1E8ED;">
-					<div class="row">
-						<div class="col-md-9">
-							<h5>Clasificación de Insumos</h5>
-						</div>
-						<div class="col-md-3" style="text-align: right;">
-							<button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Registro" onclick="fn_agregar(); return false;"><i class="fas fa-plus-circle"></i></button>
-							<a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<div class="card shadow-sm">
+					<div class="card-header d-flex align-items-center" style="background-color: #E1E8ED;">
+						<h5 class="mb-0 flex-grow-1">Clasificación de Insumos</h5>
+						
+						<div class="ml-auto">
+							<button type="button" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" title="Agregar Registro" onclick="fn_agregar(); return false;">
+								<i class="fas fa-plus"></i>
+							</button>
+							<a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
+								<i class="fas fa-sign-out-alt"></i>
+							</a>
 						</div>
 					</div>
-				</div>
-				<form class="form-horizontal">
-					<div class="card-body">
+
+					<div class="card-body p-2 p-md-3">
 						<div class="row">
-							<div class="col-md-10 offset-md-1">
+							<div class="col-12">
 								<div class="table-responsive">
-									<table id="tblprincipal" class="table table-sm table-striped table-hover">
-										<thead class="thead-primary" style="font-size: 12px;">
+									<table id="tblprincipal" class="table table-sm table-striped table-hover w-100">
+										<thead class="thead-light" style="font-size: 13px;">
 											<tr>
-												<th scope="col" class="text-center">Nombre</th>
-												<th scope="col" class="text-center">Estado</th>
-												<th></th>
-											</tr>	
+												<th class="text-center">Nombre</th>
+												<th class="text-center">Estado</th>
+												<th class="text-right">Acciones</th>
+											</tr>   
 										</thead>
-										<tbody>
+										<tbody style="font-size: 13px;">
 											@foreach($registros as $registro)
-												<tr class="text-center" style="font-size: 12px;">
-													<td>{{ $registro->nombre}}</td>
-													@if($registro->estado == 1)
-														<td>Alta</td>
-													@else
-														<td>Baja</td>
-													@endif
-													<td>
+												<tr>
+													<td class="align-middle text-center">{{ $registro->nombre }}</td>
+													<td class="align-middle text-center">
+														<span class="badge {{ $registro->estado == 1 ? 'badge-success' : 'badge-danger' }}">
+															{{ $registro->estado == 1 ? 'Alta' : 'Baja' }}
+														</span>
+													</td>
+													<td class="align-middle text-right">
 														@php $Id= Crypt::encrypt($registro->id); @endphp
-														<a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar" onclick="fn_edicion('{{ $Id }}')"><i class="fas fa-edit"></i></a>
+														<button class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar" onclick="fn_edicion('{{ $Id }}')">
+															<i class="fas fa-edit"></i>
+														</button>
 													</td>
 												</tr>
 											@endforeach
@@ -88,133 +92,13 @@
 							</div>
 						</div>
 					</div>
-					<div class="card-footer">
-					</div>
-				</form>
+					<div class="card-footer d-none d-md-block">
+						</div>
+				</div>
 			</div>
-        </div>
-    </div>
-	<!-- agregar Modal -->
-	<div class="modal fade" id="agregarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="agregarModalCenterTitle" aria-hidden="true">
-  		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    		<div class="modal-content">
-      			<form role="form" id="formaNuevoRegistro" method="POST" action="{{route('inv_clasificacion_grabar')}}">
-	      			@csrf
-	      			<div class="card">
-	        			<div class="card-header" style="background-color: #F4F6F7;">
-	        				<div class="row">
-	        					<div class="col-md-9">
-	        						<h6>Nuevo Registro</h6>
-	        					</div>
-	        					<div class="col-md-3" style="text-align: right;">
-	        						<button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-	        						<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar"> <i class="fas fa-sign-out-alt"></i></button>	
-	        					</div>
-	        				</div>
-	      				</div>
-	      				<div class="card-body">
-	      					<div class="row">
-								<div class="input-group input-group-sm col-md-10 offset-md-1 mb-1">
-							  		<div class="input-group-prepend">
-								    	<span class="input-group-text">Nombre</span>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="nombre" aria-label="Username" aria-describedby="basic-addon1" id="nombre" name="nombre" autofocus required value="{{ old('nombre')}}">
-								</div>
-					    	</div>
-					    	<div class="row">
-					    		<div class="form-group offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="definir_caracteristica" name="definir_caracteristica" value="1">
-						          		<label class="custom-control-label" for="definir_caracteristica">Caracteristicas</label>
-						        	</div>
-						      	</div>
-					    		<div class="form-group offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="definir_medidas" name="definir_medidas" value="1">
-						          		<label class="custom-control-label" for="definir_medidas">Medidas</label>
-						        	</div>
-						      	</div>
-						      	<div class="form-group offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="definir_dosis" name="definir_dosis" value="1">
-						          		<label class="custom-control-label" for="definir_dosis">Dosis</label>
-						        	</div>
-						      	</div>
-					    		<div class="form-group offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A">
-						          		<label class="custom-control-label" for="estado">Activar</label>
-						        	</div>
-						      	</div>
-					    	</div>
-	      				</div>
-	      			</div>
-      			</form>
-    		</div>
-  		</div>
+		</div>
 	</div>
-	<!-- /agregar Modal -->
-	<!-- editar Modal -->
-	<div class="modal fade" id="editarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="editarModalCenterTitle" aria-hidden="true">
-  		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    		<div class="modal-content">
-      			<form role="form" method="POST" action="{{route('inv_clasificacion_actualizar')}}">
-	      			@csrf
-	      			<div class="card">
-	        			<div class="card-header" style="background-color: #F4F6F7;">
-	      					<div class="row">
-	        					<div class="col-md-9">
-	        						<h6>Edición de Registro</h6>
-	        					</div>
-	        					<div class="col-md-3" style="text-align: right;">
-	        						<button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-	        						<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar"> <i class="fas fa-sign-out-alt"></i></button>
-	        					</div>
-	        				</div>
-	      				</div>
-	      				<div class="card-body">
-	      					<input type="hidden" id="eid" name="eid">
-	      					<div class="row">
-								<div class="input-group input-group-sm col-md-10 offset-md-1 mb-1">
-							  		<div class="input-group-prepend">
-								    	<span class="input-group-text">Nombre</span>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="nombre" aria-label="Username" aria-describedby="basic-addon1" id="enombre" name="enombre" autofocus required>
-								</div>
-					    	</div>
-					    	<div class="row">
-					    		<div class="form-group offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="edefinir_caracteristica" name="edefinir_caracteristica" value="1">
-						          		<label class="custom-control-label" for="edefinir_caracteristica">Caracteristicas</label>
-						        	</div>
-						      	</div>
-					    		<div class="form-group input-group-sm offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="edefinir_medidas" name="edefinir_medidas" value="1">
-						          		<label class="custom-control-label" for="edefinir_medidas">Medidas</label>
-						        	</div>
-						      	</div>
-						      	<div class="form-group offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="edefinir_dosis" name="edefinir_dosis" value="1">
-						          		<label class="custom-control-label" for="edefinir_dosis">Dosis</label>
-						        	</div>
-						      	</div>
-						      	<div class="form-group offset-md-1">
-						            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-						              	<input type="checkbox" class="custom-control-input" id="eestado" name="eestado" value="A">
-						          		<label class="custom-control-label" for="eestado">Activar</label>
-						        	</div>
-						      	</div>
-					    	</div>
-	      				</div>
-	      			</div>
-      			</form>
-    		</div>
-  		</div>
-	</div>
-	<!-- /editar Modal -->
+	@include('invclasificaciones.partials.modals_invclasificaciones')
 @endsection
 @section('js')
     @if(Session::get('type') == 'success')

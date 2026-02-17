@@ -1,186 +1,89 @@
 @extends('adminlte::page')
+
 @section('css')
-	<meta name="csrf-token" content="{{ csrf_token() }}" />
-	<link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-	<link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-	<style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
-        }
-        .dataTables_wrapper .row {
-            display: flex;
-            align-items: center; /* Alinea verticalmente los elementos */
-            justify-content: flex-start; /* Ajusta los elementos a la izquierda */
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+    <style type="text/css">
+        /* Ajustes para pantallas pequeñas */
+        @media (max-width: 576px) {
+            .card-header h5 { font-size: 1.1rem; }
+            .btn-xs { padding: .25rem .4rem; font-size: .875rem; }
+            .input-group-text { width: 100% !important; border-radius: 0.25rem 0.25rem 0 0 !important; }
+            .input-group-prepend { width: 100%; }
         }
 
-        .dataTables_wrapper .row .col-auto {
-            display: flex;
-            justify-content: flex-start; /* Alinea los elementos dentro de las columnas */
-        }
-
-        .dataTables_wrapper .row .col {
-            display: flex;
-            justify-content: flex-start;
-        }
+        .btn-guardar { background-color: #A5C890 !important; }
+        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        
+        /* Centrado de controles de DataTable en móvil */
+        .dataTables_wrapper .row { display: flex; flex-wrap: wrap; justify-content: center; }
     </style>
 @endsection
+
 @section('title', 'Bodegas')
 
 @section('content_header')
-	<br>
+    <div class="mb-2"></div>
 @endsection
 
 @section('content')
-	<div class="row">
-		<div class="col-md-10 offset-md-1">
-			<div class="card">
-				<div class="card-header" style="background-color: #E1E8ED;">
-					<div class="row">
-						<div class="col-md-9">
-							<h5>Bodegas</h5>
-						</div>
-						<div class="col-md-3" style="text-align: right;">
-							<button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Registro" onclick="fn_agregar(); return false;"><i class="fas fa-plus-circle"></i></button>
-							<a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
-						</div>
-					</div>
-				</div>
-				<form class="form-horizontal">
-					<div class="card-body">
-						<div class="row">
-							<div class="col-md-10 offset-md-1">
-								<div class="table-responsive">
-									<table class="table table-sm table-striped table-hover text-center" id="tblprincipal">
-										<thead class="thead-primary">
-											<tr style="font-size: 12px;">
-												<th>Descripción</th>
-												<th>Estado</th>
-												<th>&nbsp;</th>
-											</tr>	
-										</thead>
-										<tbody>
-											@foreach($listado as $l)
-												<tr style="font-size: 12px;">
-													<td>{{ $l->descripcion }}</td>
-													<td>
-														@if($l->estado == 1)
-															Alta
-														@else
-															Baja
-														@endif
-													</td>
-													<td>
-														@php $Id= Crypt::encrypt($l->id); @endphp
-														<a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar" onclick="fn_edicion('{{ $Id }}')"><i class="fas fa-edit"></i></a>
-													</td>
-												</tr>
-											@endforeach
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-	<!-- agregar Modal -->
-	<div class="modal fade" id="agregarModalCenter" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-  		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    		<div class="modal-content">
-      			<form role="form" id="formaNuevoRegistro" method="POST" action="{{route('bodega_grabar')}}">
-	      			@csrf
-	      			<div class="card">
-	      				<div class="card-header" style="background-color: #F4F6F7;">
-	      					<div class="row">
-		        				<div class="col-md-9">
-		        					<h6>Nuevo Registro</h6>
-		        				</div>
-		        				<div class="col-md-3" style="text-align: right;">
-		        					<button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-		        					<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
-		        				</div>
-		        			</div>	
-	      				</div>
-	      				<div class="card-body">
-	      					<div class="row">
-								<div class="input-group mb-1 col-md-10 offset-md-1">
-							  		<div class="input-group-prepend">
-								    	<label class="input-group-text w-100">Nombre</label>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="nombre con el que se conocera la bodega" aria-label="Username" aria-describedby="basic-addon1" id="descripcion" name="descripcion" autofocus required value="{{ old('descripcion')}}">
-								</div>
-							</div>
-							<div class="row">
-                                <div class="form-group mb-1 col-md-10 offset-md-1">
-                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                        <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A">
-                                        <label class="custom-control-label" for="estado">Activar</label>
-                                    </div>
-                                </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-lg-10 offset-lg-1">
+                <div class="card shadow-sm">
+                    <div class="card-header" style="background-color: #E1E8ED;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Bodegas</h5>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" title="Agregar Registro" onclick="fn_agregar();">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
                             </div>
-	      				</div>
-	      			</div>
-      			</form>
-    		</div>
-  		</div>
-	</div>
-	<!-- /agregar Modal -->
-	<!-- editar Modal -->
-	<div class="modal fade" id="editarModalCenter" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-  		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    		<div class="modal-content">
-      			<form role="form" method="POST" action="{{route('bodega_actualizar')}}">
-	      			@csrf
-	      			<div class="card">
-	      				<div class="card-header" style="background-color: #F4F6F7;">
-	      					<div class="row">
-		        				<div class="col-md-9">
-		        					<h6>Edición de Registro</h6>
-		        				</div>
-		        				<div class="col-md-3" style="text-align: right;">
-		        					<button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-		        					<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
-		        				</div>
-		        			</div>	
-	      				</div>
-	      				<div class="card-body">
-	      					<input type="hidden" id="eid" name="eid">
-	      					<div class="row">
-								<div class="input-group mb-1 col-md-10 offset-md-1">
-							  		<div class="input-group-prepend">
-								    	<span class="input-group-text w-100">Descripción</span>
-								  	</div>
-								  	<input type="text" class="form-control" placeholder="Descripción" aria-label="Username" aria-describedby="basic-addon1" id="edescripcion" name="edescripcion" autofocus required value="{{ old('edescripcion')}}">
-								</div>
-							</div>
-							<div class="row">
-                                <div class="form-group mb-1 col-md-10 offset-md-1">
-                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                        <input type="checkbox" class="custom-control-input" id="eestado" name="eestado" value="A">
-                                        <label class="custom-control-label" for="eestado">Activar</label>
-                                    </div>
-                                </div>
-                            </div>
-	      				</div>
-	      				</div>
-	      			</div>
-      			</form>
-    		</div>
-  		</div>
-	</div>
-	<!-- /editar Modal -->
+                        </div>
+                    </div>
+                    
+                    <div class="card-body px-2 px-md-4">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover w-100" id="tblprincipal">
+                                <thead class="thead-light">
+                                    <tr style="font-size: 13px;">
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th class="text-right">Acciones</th>
+                                    </tr>	
+                                </thead>
+                                <tbody style="font-size: 13px;">
+                                    @foreach($listado as $l)
+                                        <tr>
+                                            <td>{{ $l->descripcion }}</td>
+                                            <td>
+                                                <span class="badge {{ $l->estado == 1 ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $l->estado == 1 ? 'Alta' : 'Baja' }}
+                                                </span>
+                                            </td>
+                                            <td class="text-right">
+                                                @php $Id= Crypt::encrypt($l->id); @endphp
+                                                <button class="btn btn-xs btn-warning rounded-circle elevation-2" onclick="fn_edicion('{{ $Id }}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Los modales se mantienen similares pero usamos clases de padding de Bootstrap 4 --}}
+    @include('bodegas.partials.modals_bodegas') {{-- Sugerencia: Mover modales a un partial para limpiar el index --}}
 @endsection
 @section('js')
 	@if(Session::get('type') == 'success')
