@@ -185,8 +185,9 @@ class AdmisionController extends Controller
         return $listado;
     }
 
-    public function store()
+    public function store(Request $request)
     {
+        var_dump($request); die;
         $agenda_id         = $_POST['agenda_id'];
         $fecha             = $_POST['fecha'];
         $paciente_id       = $_POST['paciente_id'];

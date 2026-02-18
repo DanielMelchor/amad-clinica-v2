@@ -128,35 +128,43 @@ class AgendaController extends Controller
 
     public function update_nuevo(Request $request)
     {
-        $cita_id         = $_POST['cita_id'];
-        $paciente_id     = $_POST['paciente_id'];
-        $nombre_completo = $_POST['nombre_completo'];
-        $telefonos       = $_POST['telefonos'];
-        $hospital_id     = $_POST['hospital_id'];
-        $medico_id       = $_POST['medico_id'];
-        $observaciones   = $_POST['observaciones'];
+        $validData = $request->validate([
+            'agenda_id'     => 'required',
+            'fecha_cita'            => 'required|date_format:Y-m-d\TH:i',
+            'edit_nombre_completo'  => 'required',
+            'edit_telefonos'        => 'required',
+            'edit_hospital_id'      => 'required|exists:hospitales,id',
+            'edit_medico_id'        => 'required|exists:medicos,id',
+        ]);
 
-        $agenda = Agenda::findOrFail($cita_id);
-        $agenda->empresa_id       = Auth::user()->empresa_id;
-        $agenda->medico_id        = $medico_id;
-        $agenda->hospital_id      = $hospital_id;
-        $agenda->nombre_completo  = $nombre_completo;
-        $agenda->telefonos        = $telefonos;
-        $agenda->observaciones    = $observaciones;
-        if (strlen($paciente_id) > 0) {
-            $agenda->paciente_id      = $paciente_id;
-        }else{
-            $agenda->paciente_id = null;
+        try {
+            return DB::transaction(function () use ($request, $validData) {
+                $agenda = Agenda::findOrFail($validData['agenda_id']);
+                $agenda->update([
+                            'medico_id'       => $validData['edit_medico_id'],
+                            'hospital_id'     => $validData['edit_hospital_id'],
+                            'nombre_completo' => $validData['edit_nombre_completo'],
+                            'telefonos'       => $validData['edit_telefonos'],
+                            'observaciones'   => $request->observaciones,
+                            'paciente_id'     => $request->edit_paciente_id ?: null,
+                            'estado'          => 'A',
+                        ]);
+
+                    // CAMBIO: Devolver JSON en lugar de redirect
+                    return response()->json([
+                        'message' => '¡Registro actualizado con éxito!',
+                        'type'    => 'success'
+                    ]);
+                });
+        } catch (\Exception $e) {
+            // Log::error("Error actualizando agenda ID {$request->context_agenda_id}: " . $e->getMessage());
+
+            // CAMBIO: Devolver JSON de error con código 500
+            return response()->json([
+                'message' => 'Hubo un problema al actualizar el registro. {$request->context_agenda_id}: ' . $e->getMessage(),
+                'type'    => 'error'
+            ], 500);
         }
-        $agenda->estado = 'A';
-        $agenda->save();
-
-        $message = array(
-            'message' => 'Registro actualizado con exito !!!',
-            'type'    => 'success'
-        );
-
-        return redirect()->back()->with($message);
     }
 
     public function marcar_cancelada_ajax(){
@@ -231,14 +239,15 @@ class AgendaController extends Controller
 
     public function confirmar_ingreso(){
         $cita_id = $_POST['cita_id'];
+        dd($cita_id);
         $registro = Agenda::findOrFail($cita_id);
         $registro->fecha_en_clinica = Carbon::now();
         $registro->paciente_en_clinica = 1;
         $registro->save();
 
         return response()->json([
-            'message' => '! Registro de asistencia, finalizado con éxito !',
-            'type'    => 'success'
-        ]);
+                        'message' => '! Registro de asistencia, finalizado con éxito !',
+                        'type'    => 'success'
+                    ]);
     }
 }

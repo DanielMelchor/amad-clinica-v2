@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasUserstamps;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Models\InventarioTransaccion;
 
 class MaestroMovimiento extends Model
 {
@@ -22,4 +23,16 @@ class MaestroMovimiento extends Model
     protected $fillable = ['empresa_id', 'inventario_transaccion_id', 'signo', 'correlativo', 'anio', 'maestro_documento_id', 'bodega_origen_id', 'bodega_destino_id', 'proveedor_id', 'nit', 'tipo_documento_id', 'serie', 'numero_documento', 'cxp_documento_afecto_id', 'fecha_emision', 'dias_credito', 'fecha_vencimiento', 'total', 'estado', 'id'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
+
+    public function transaccion()
+    {
+        // Relación asumiendo que inventario_transaccion_id es la llave foránea
+        return $this->belongsTo(InventarioTransaccion::class, 'inventario_transaccion_id');
+    }
+
+    public function detalles()
+    {
+        return $this->hasMany(DetalleMovimiento::class, 'maestro_movimiento_id')
+                    ->where('estado', '!=', 2);
+    }
 }

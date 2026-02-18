@@ -39,13 +39,22 @@ class InvMovimientoController extends Controller
     }
 
     public function index_ajustes(){
-        $lista = DB::table('maestro_movimientos as mm')
-                 ->join('inventario_transacciones as it', 'mm.inventario_transaccion_id', 'it.id')
-                 ->where('mm.empresa_id', Auth::user()->empresa_id)
-                 ->where('it.tipo_transaccion', 'A')
-                 ->select('mm.id','mm.correlativo', 'mm.anio', 'mm.created_at', 'it.descripcion as transaccion_descripcion')
-                 ->orderBy('mm.id','DESC')
+        // $lista = DB::table('maestro_movimientos as mm')
+        //          ->join('inventario_transacciones as it', 'mm.inventario_transaccion_id', 'it.id')
+        //          ->where('mm.empresa_id', Auth::user()->empresa_id)
+        //          ->where('it.tipo_transaccion', 'A')
+        //          ->select('mm.id','mm.correlativo', 'mm.anio', 'mm.created_at', 'it.descripcion as transaccion_descripcion')
+        //          ->orderBy('mm.id','DESC')
+        //          ->get();
+
+        $lista = MaestroMovimiento::with('transaccion') // Si existe la relación
+                 ->where('empresa_id', Auth::user()->empresa_id)
+                 ->whereHas('transaccion', function($q) {
+                     $q->where('tipo_transaccion', 'A'); // Filtramos por tipo 'A' desde la relación
+                 })
+                 ->latest()
                  ->get();
+
         return view('inventarios.index_ajustes', compact('lista'));
     }
 
@@ -184,33 +193,34 @@ class InvMovimientoController extends Controller
     public function store_ajuste(Request $request){
         $validData = $request->validate([
             'fecha_transaccion' => 'required|date_format:Y-m-d',
-            'bodega_id'         => 'required'
+            'bodega_id'         => 'required|exists:bodegas,id',
+            'productos'         => 'required|array|min:1',
+            'productos.*.articulo_id'      => 'required|exists:productos,id',
+            'productos.*.unidad_medida_id' => 'required',
+            'productos.*.cantidad'         => 'required|numeric|min:0.01',
         ]);
+
+        $inv_transaccion = DB::table('inventario_transacciones')
+                            ->where('empresa_id', Auth::user()->empresa_id)
+                            ->where('tipo_transaccion', 'A')
+                            ->where('estado', 1)
+                            ->first();
         
-        $data            = (array) $request['productos'];
-        $totalRegistros  = count($data);
+        if (!$inv_transaccion) {
+            return back()->with(['message' => 'Tipo de Transacción no localizada', 'type' => 'error']);
+        }
 
-        // dd($totalRegistros);
-
-        $inv_transaccion = DB::table('inventario_transacciones as it')
-                           ->where('it.empresa_id', Auth::user()->empresa_id)
-                           ->where('it.tipo_transaccion', 'A')
-                           ->where('it.estado', 1)
-                           ->first();
-
-        //$respuesta = array('error' => 0 , 'respuesta' => $inv_transaccion->descripcion. ' '.$inv_transaccion->signo);
-
-        if (isset($inv_transaccion)) {
+        DB::beginTransaction();
+        try {
             $anio = Carbon::now()->format('Y');
 
-            $correlativo = DB::table('maestro_movimientos as mm')
-                           ->where('mm.empresa_id', Auth::user()->empresa_id)
-                           ->where('mm.inventario_transaccion_id', $inv_transaccion->id)
-                           ->where('mm.anio', $anio)
-                           ->select(DB::raw('IFNULL(MAX(correlativo),0) as ultimo_correlativo'))
-                           ->first();
-            
-            $nuevo_correlativo = $correlativo->ultimo_correlativo + 1;
+            $ultimo_correlativo = DB::table('maestro_movimientos')
+                                ->where('empresa_id', Auth::user()->empresa_id)
+                                ->where('inventario_transaccion_id', $inv_transaccion->id)
+                                ->where('anio', $anio)
+                                ->max('correlativo') ?? 0;
+
+            $nuevo_correlativo = $ultimo_correlativo + 1;
 
             $ajuste = new MaestroMovimiento();
             $ajuste->empresa_id                = Auth::user()->empresa_id;
@@ -223,51 +233,43 @@ class InvMovimientoController extends Controller
             $ajuste->estado                    = 1;
             $ajuste->save();
 
-            if ($totalRegistros > 0) {
-                for ($i=0; $i < $totalRegistros ; $i++) {
-                    $producto = producto::findOrFail(intval($data[$i]['articulo_id']));
-                    $producto_medida = ProductoMedida::where('producto_id', $data[$i]['articulo_id'])
-                                       ->where('unidad_medida_id', $data[$i]['unidad_medida_id'])
-                                       ->first();
-                    $detalle = new DetalleMovimiento();
-                    $detalle->maestro_movimiento_id = $ajuste->id;
-                    $detalle->producto_id        = $data[$i]['articulo_id'];
-                    $detalle->descripcion        = $producto->descripcion_a_mostrar;
-                    $detalle->unidad_medida_id   = $data[$i]['unidad_medida_id'];
-                    $detalle->producto_caracteristica_id = $data[$i]['articulo_caracteristica_id'];
-                    $detalle->cantidad           = $data[$i]['cantidad'] * $data[$i]['signo'];
-                    $detalle->cantidad_medida    = $producto_medida->cantidad;
-                    $detalle->cantidad_x_medida  = $detalle->cantidad * $producto_medida->cantidad;
-                    $detalle->precio_unitario    = 0;
-                    $detalle->precio_bruto       = 0;
-                    $detalle->descuento          = 0;
-                    $detalle->recargo            = 0;
-                    $detalle->precio_base        = 0;
-                    $detalle->precio_impuesto    = 0;
-                    $detalle->precio_total       = 0;
-                    $detalle->precio_cliente     = 0;
-                    $detalle->precio_aseguradora = 0;
-                    $detalle->estado           = 1;
-                    $detalle->save();
-                }
+            foreach ($request->productos as $item) {
+                $producto = producto::find($item['articulo_id']);
+                $producto_medida = ProductoMedida::where('producto_id', $item['articulo_id'])
+                                    ->where('unidad_medida_id', $item['unidad_medida_id'])
+                                    ->firstOrFail();
+
+                $detalle = new DetalleMovimiento();
+                $detalle->maestro_movimiento_id = $ajuste->id;
+                $detalle->producto_id        = $item['articulo_id'];
+                $detalle->descripcion        = $producto->descripcion_a_mostrar;
+                $detalle->unidad_medida_id   = $item['unidad_medida_id'];
+                $detalle->signo              = $item['signo'] ?? $ajuste->signo;
+                $detalle->cantidad           = $item['cantidad'];
+                $detalle->cantidad_medida    = $producto_medida->cantidad;
+                $detalle->cantidad_x_medida  = $item['cantidad'] * $producto_medida->cantidad;
+                $detalle->precio_unitario    = 0;
+                $detalle->precio_bruto       = 0;
+                $detalle->descuento          = 0;
+                $detalle->recargo            = 0;
+                $detalle->precio_base        = 0;
+                $detalle->precio_impuesto    = 0;
+                $detalle->precio_total       = 0;
+                $detalle->precio_cliente     = 0;
+                $detalle->precio_aseguradora = 0;
+                $detalle->estado             = 1;
+                $detalle->save();
             }
-
-            $message = array(
-                'message' => 'Registro almacenado con Exito !!!',
-                'type'    => 'success'
-            );
-        }else{
-            // $respuesta = array('error' => 1 , 'respuesta' => 'Tipo de Transacción no localizada !!!');
-            $message = array(
-                'message' => 'Tipo de Transacción no localizada !!!',
-                'type'    => 'error'
-            );
-        }
-
-        $ajusteId = Crypt::encrypt($ajuste->id);
+            DB::commit();
         
-        return redirect()->route('editar_ajuste', [$ajusteId])->with($message);
+            $ajusteId = Crypt::encrypt($ajuste->id);
+            return redirect()->route('editar_ajuste', [$ajusteId])
+                             ->with(['message' => '¡Registro almacenado con éxito!', 'type' => 'success']);
 
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with(['message' => 'Error al guardar: ' . $e->getMessage(), 'type' => 'error']);
+        }
     }
 
     public function edit_compra($id){
@@ -321,14 +323,24 @@ class InvMovimientoController extends Controller
         $registroId      = Crypt::decrypt($id);
         $bodegas         = Bodega::where('empresa_id', Auth::user()->empresa_id)->where('estado', 1)->get();
 
-        $encabezado      = MaestroMovimiento::findOrFail($registroId);
+        $encabezado = MaestroMovimiento::with(['detalles.unidadMedida'])->findOrFail($registroId);
+
+        $esSoloLectura = !Auth::user()->hasAnyRole(['Administrador', 'Super Admin']);
+
+        // $detalle         = DB::table('detalle_movimientos as dm')
+        //                    ->join('unidad_medidas as um', 'dm.unidad_medida_id', 'um.id')
+        //                    ->where('dm.maestro_movimiento_id', $registroId)
+        //                    ->where('dm.estado', '!=', 2)
+        //                    ->select('dm.id', 'dm.producto_id', 'dm.descripcion as producto_descripcion', 'dm.unidad_medida_id', 'um.descripcion as unidad_medida_descripcion', 'dm.cantidad', 'dm.producto_caracteristica_id', 'signo')
+        //                    ->get();
+
         $productos = Producto::where('empresa_id', Auth::user()->empresa_id)
                      ->where('estado', 1)
                      ->whereIn('clasificacion', [9, 10, 12, 13])
                      ->select('id', 'descripcion', 'medida_id')
                      ->get();
 
-        return view('inventarios.edit_ajuste', compact('bodegas', 'encabezado', 'productos'));
+        return view('inventarios.edit_ajuste', compact('bodegas', 'encabezado', 'productos', 'esSoloLectura'));
     }
 
     public function update_compra(Request $request){
@@ -442,74 +454,88 @@ class InvMovimientoController extends Controller
         return redirect()->back()->with($message);
     }
 
-    public function update_ajuste(){
+    public function update_ajuste(Request $request){
+        if (!Auth::user()->hasAnyRole(['Administrador', 'Super Admin'])) {
+            return back()->with(['message' => 'No tiene permisos para modificar este registro.', 'type' => 'error']);
+        }
+        
         $validData = $request->validate([
-            'ajuste_id'         => 'required',
+            'maestro_id'        => 'required',
             'fecha_transaccion' => 'required|date_format:Y-m-d',
-            'bodega_id'         => 'required'
+            'bodega_id'         => 'required|exists:bodegas,id',
+            'productos'         => 'required|array|min:1',
+            'productos.*.articulo_id'      => 'required|exists:productos,id',
+            'productos.*.unidad_medida_id' => 'required',
+            'productos.*.cantidad'         => 'required|numeric|min:0.01',
         ]);
 
-        $data            = (array) $request['productos'];
-        $totalRegistros  = count($data);
-
-        $ajuste = MaestroMovimiento::findOrFail($validData['ajuste_id']);
-        $ajuste->bodega_origen_id          = $bodega_id;
-        $ajuste->estado                    = 1;
-        $ajuste->save();
-
-        //==========================================================================================
-        // Se da de baja a los registros que no se encuentran en el nuevo detalle
-        //==========================================================================================
-        $registrosActutales = DetalleMovimiento::where('maestro_movimiento_id', $validData['ajuste_id'])->get();
-        foreach ($registrosActutales as $key => $registro) {
-            $productoEncontrado = false;
-             foreach ($data as $producto) {
-                if ($registro->producto_id == $producto['articulo_id'] && $registro->unidad_medida_id == $producto['unidad_medida_id']){
-                    $productoEncontrado = true;
-                }
-             }
-
-             if (!$productoEncontrado) {
-                $eliminar = DetalleMovimiento::findOrFail($registro->id);
-                $eliminar->estado = 2;
-                $eliminar->save();
-            }
+        $inv_transaccion = DB::table('inventario_transacciones')
+                            ->where('empresa_id', Auth::user()->empresa_id)
+                            ->where('tipo_transaccion', 'A')
+                            ->where('estado', 1)
+                            ->first();
+        
+        if (!$inv_transaccion) {
+            return back()->with(['message' => 'Tipo de Transacción no localizada', 'type' => 'error']);
         }
 
-        if (isset($inv_transaccion)) {
+        DB::beginTransaction();
+        try {
+            $ajuste = MaestroMovimiento::findOrFail($validData['maestro_id']);
+            $ajuste->fecha_emision             = $validData['fecha_transaccion'];
+            $ajuste->bodega_origen_id          = $validData['bodega_id'];
+            $ajuste->save();
 
-            $totalRegistros  = count($data_agregar);
-            if ($totalRegistros > 0) {
-                for ($i=0; $i < $totalRegistros ; $i++) {
-                    $producto = Producto::findOrFail(intval($data_agregar[$i]['producto_id']));
-                    $producto_medida = ProductoMedida::where('producto_id', $producto->id)->where('unidad_medida_id', intval($data_agregar[$i]['unidad_medida_id']))->first();
+            $idsMantener = collect($request->productos)->pluck('id')->filter()->toArray();
 
-                    $movimiento = new DetalleMovimiento();
-                    $movimiento->maestro_movimiento_id = $ajuste->id;
-                    $movimiento->producto_id        = intval($data_agregar[$i]['producto_id']);
-                    $movimiento->descripcion        = $producto->descripcion;
-                    $movimiento->unidad_medida_id   = intval($data_agregar[$i]['unidad_medida_id']);
-                    $movimiento->cantidad           = floatval($data_agregar[$i]['cantidad']);
-                    $movimiento->cantidad_medida    = $producto_medida->cantidad;
-                    $movimiento->cantidad_x_medida  = $movimiento->cantidad * $movimiento->cantidad_medida;
-                    $movimiento->precio_unitario    = 0;
-                    $movimiento->precio_bruto       = 0;
-                    $movimiento->descuento          = 0;
-                    $movimiento->recargo            = 0;
-                    $movimiento->precio_base        = 0;
-                    $movimiento->precio_impuesto    = 0;
-                    $movimiento->precio_total       = 0;
-                    $movimiento->precio_cliente     = 0;
-                    $movimiento->precio_aseguradora = 0;
-                    $movimiento->estado             = 'A';
-                    $movimiento->save();
-                }
+            DetalleMovimiento::where('maestro_movimiento_id', $ajuste->id)->whereNotIn('id', $idsMantener)->update(['estado' => 2]);
+
+            foreach ($request->productos as $item) {
+                $producto = producto::find($item['articulo_id']);
+                $producto_medida = ProductoMedida::where('producto_id', $item['articulo_id'])
+                                    ->where('unidad_medida_id', $item['unidad_medida_id'])
+                                    ->firstOrFail();
+
+                $detalle = DetalleMovimiento::updateOrCreate(
+                    // 1. Condición de búsqueda: si existe un registro con estos datos, lo actualiza
+                    [
+                        'maestro_movimiento_id' => $ajuste->id,
+                        'producto_id'           => $item['articulo_id'],
+                        'unidad_medida_id'      => $item['unidad_medida_id']
+                    ],
+                    // 2. Datos a llenar o actualizar
+                    [
+                        'descripcion'        => $producto->descripcion_a_mostrar,
+                        'signo'              => $item['signo'] ?? $ajuste->signo,
+                        'cantidad'           => $item['cantidad'],
+                        'cantidad_medida'    => $producto_medida->cantidad,
+                        'cantidad_x_medida'  => $item['cantidad'] * $producto_medida->cantidad,
+                        'precio_unitario'    => 0,
+                        'precio_bruto'       => 0,
+                        'descuento'          => 0,
+                        'recargo'            => 0,
+                        'precio_base'        => 0,
+                        'precio_impuesto'    => 0,
+                        'precio_total'       => 0,
+                        'precio_cliente'     => 0,
+                        'precio_aseguradora' => 0,
+                        'estado'             => 1,
+                    ]
+                );
+                $detalle->save();
             }
-            $respuesta = array('error' => 0 , 'respuesta' => 'Ajuste guardado con exito !!!');
-        }else{
-            $respuesta = array('error' => 1 , 'respuesta' => 'Tipo de Transacción no localizada !!!');
+            DB::commit();
+        
+            $ajusteId = Crypt::encrypt($ajuste->id);
+            return redirect()->route('editar_ajuste', [$ajusteId])
+                             ->with(['message' => '¡Registro actualizado con éxito!', 'type' => 'success']);
+
+
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with(['message' => 'Error al guardar: ' . $e->getMessage(), 'type' => 'error']);
         }
-        return Response::json($respuesta);
+
     }
 
     public function trae_detalle_compra(){

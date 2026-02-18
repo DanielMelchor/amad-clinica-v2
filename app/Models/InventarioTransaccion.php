@@ -7,7 +7,7 @@ use App\Traits\HasUserstamps;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
-class Inventario_Transaccion extends Model
+class InventarioTransaccion extends Model
 {
     use LogsActivity, HasUserstamps;
     

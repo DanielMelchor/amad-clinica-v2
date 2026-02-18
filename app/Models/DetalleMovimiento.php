@@ -19,7 +19,13 @@ class DetalleMovimiento extends Model
 
     protected $table = 'detalle_movimientos';
     
-    protected $fillable = ['id', 'maestro_movimiento_id', 'admision_id', 'maestro_protocolo_id', 'maestro_documento_id', 'producto_id', 'descripcion', 'unidad_medida_id', 'producto_caracteristica_id', 'cantidad', 'cantidad_medida', 'cantidad_x_medida', 'precio_unitario', 'precio_bruto', 'descuento', 'recargo', 'precio_neto', 'precio_base', 'precio_impuesto', 'precio_total', 'copago', 'deducible', 'precio_cliente', 'precio_aseguradora', 'estado'];
+    protected $fillable = ['id', 'maestro_movimiento_id', 'admision_id', 'maestro_protocolo_id', 'maestro_documento_id', 'producto_id', 'descripcion', 'unidad_medida_id', 'producto_caracteristica_id', 'cantidad', 'cantidad_medida', 'cantidad_x_medida', 'precio_unitario', 'precio_bruto', 'descuento', 'recargo', 'precio_neto', 'precio_base', 'precio_impuesto', 'precio_total', 'copago', 'deducible', 'precio_cliente', 'precio_aseguradora', 'estado', 'signo'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
+
+    public function unidadMedida()
+    {
+        // El segundo parámetro debe ser la llave foránea en tu tabla detalle_movimientos
+        return $this->belongsTo(UnidadMedida::class, 'unidad_medida_id');
+    }
 }
