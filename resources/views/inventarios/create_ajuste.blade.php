@@ -263,5 +263,24 @@
                 } 
             });
         }
+
+        $('#FormaAjuste').on('submit', function(e) {
+            e.preventDefault(); // Evita que la página se recargue
+            
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    Swal.fire("Éxito", "Guardado correctamente", "success")
+                        .then(() => window.location.href = "{{ route('lista_ajustes') }}");
+                },
+                error: function(xhr) {
+                    // Si el controlador devuelve un error (catch)
+                    let mensaje = xhr.responseJSON.message || "Error desconocido";
+                    Swal.fire("Error", mensaje, "error");
+                }
+            });
+        });
     </script>
 @endsection

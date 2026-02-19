@@ -67,7 +67,13 @@ class InvMovimientoController extends Controller
                            ->where('it.empresa_id', Auth::user()->empresa_id)
                            ->select('td.id', 'td.descripcion')
                            ->get();
-        return view('inventarios.create_compra', compact('proveedores', 'bodegas', 'hoy', 'tipo_documentos'));  
+        $productos = Producto::where('empresa_id', Auth::user()->empresa_id)
+                     ->where('estado', 1)
+                     ->whereIn('clasificacion', [9, 10, 12, 13])
+                     ->select('id', 'descripcion', 'medida_id')
+                     ->get();
+
+        return view('inventarios.create_compra', compact('proveedores', 'bodegas', 'hoy', 'tipo_documentos', 'productos'));  
     }
 
     public function create_ajuste(){
@@ -261,14 +267,17 @@ class InvMovimientoController extends Controller
                 $detalle->save();
             }
             DB::commit();
-        
+
             $ajusteId = Crypt::encrypt($ajuste->id);
             return redirect()->route('editar_ajuste', [$ajusteId])
                              ->with(['message' => '¡Registro almacenado con éxito!', 'type' => 'success']);
 
         }catch (\Exception $e) {
             DB::rollBack();
-            return back()->with(['message' => 'Error al guardar: ' . $e->getMessage(), 'type' => 'error']);
+            return response()->json([
+                'message' => 'Error al guardar: ' . $e->getMessage()
+            ], 500);
+            //return back()->withInput()->with(['message' => 'Error al guardar: ' . $e->getMessage(), 'type' => 'error']);
         }
     }
 
