@@ -1,510 +1,423 @@
-<!-- <!DOCTYPE html>
-<html lang="es"> -->
-<!-- <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Software Médico | Demo Gratis</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .hero {
-            background: linear-gradient(to right, #00a8ff, #0062ff);
-            color: white;
-            padding: 60px 0;
-            text-align: center;
-        }
-        .cta-button {
-            background-color: #ffffff;
-            color: #0062ff;
-            border: none;
-            padding: 15px 30px;
-            font-weight: bold;
-            font-size: 18px;
-            border-radius: 5px;
-        }
-        .features i {
-            font-size: 40px;
-            margin-bottom: 10px;
-            color: #0062ff;
-        }
-        .form-section {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        }
-        footer {
-            text-align: center;
-            padding: 20px 0;
-            font-size: 12px;
-            color: #888;
-        }
-    </style>
-</head> -->
-<!-- <body> -->
-
-    <!-- Hero -->
-    <!-- <section class="hero">
-        <div class="container">
-            <h1 class="display-4">El Software Ideal para Médicos</h1>
-            <p class="lead">Agenda, historial clínico, facturación y más... todo en un solo lugar.</p>
-            <a href="#formulario" class="btn cta-button mt-3">Solicita tu Demo Gratis</a>
-        </div>
-    </section> -->
-
-    <!-- Características -->
-    <!-- <section class="features py-5">
-        <div class="container text-center">
-            <div class="row">
-                <div class="col-md-4">
-                    <i class="bi bi-calendar2-check"></i>
-                    <h5 class="mt-2">Agenda Inteligente</h5>
-                    <p>Organiza tus citas y turnos de forma automática.</p>
-                </div>
-                <div class="col-md-4">
-                    <i class="bi bi-file-earmark-text"></i>
-                    <h5 class="mt-2">Historial Clínico</h5>
-                    <p>Accede a fichas y evolución médica desde cualquier lugar.</p>
-                </div>
-                <div class="col-md-4">
-                    <i class="bi bi-cash-coin"></i>
-                    <h5 class="mt-2">Facturación Electrónica</h5>
-                    <p>Emite boletas y facturas en segundos.</p>
-                </div>
-            </div>
-        </div>
-    </section> -->
-
-    <!-- Formulario -->
-    <!-- <section class="py-5" id="formulario">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 form-section">
-                    <h3 class="text-center mb-4">Solicita tu Demo</h3>
-                    <form action="#" method="post">
-                        <div class="mb-3">
-                            <label for="nombre" class="form-label">Nombre completo</label>
-                            <input type="text" class="form-control" id="nombre" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="especialidad" class="form-label">Especialidad médica</label>
-                            <input type="text" class="form-control" id="especialidad">
-                        </div>
-                        <div class="mb-3">
-                            <label for="correo" class="form-label">Correo electrónico</label>
-                            <input type="email" class="form-control" id="correo" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="telefono" class="form-label">Teléfono</label>
-                            <input type="tel" class="form-control" id="telefono">
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Solicitar demo</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section> -->
-
-    <!-- Footer -->
-    <!-- <footer class="bg-light">
-        <div class="container">
-            © 2025 Software Médico Pro - Todos los derechos reservados
-        </div>
-    </footer> -->
-
-    <!-- Bootstrap icons (opcional) -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
-</body>
-</html> -->
-
-
-<!-- el codigo que sigue es una version que me gusto -->
-
-<!-- <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro Médico Salud & Bienestar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body class="bg-slate-50 font-sans text-gray-800">
-
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-blue-600 flex items-center">
-                <i class="fas fa-hand-holding-medical mr-2"></i> SaludVital
-            </div>
-            <div class="hidden md:flex space-x-8 font-medium">
-                <a href="#inicio" class="hover:text-blue-600 transition">Inicio</a>
-                <a href="#servicios" class="hover:text-blue-600 transition">Servicios</a>
-                <a href="#nosotros" class="hover:text-blue-600 transition">Nosotros</a>
-                <a href="#contacto" class="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition">Agendar Cita</a>
-            </div>
-        </div>
-    </nav>
-
-    <section id="inicio" class="relative bg-blue-600 py-20 lg:py-32 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center relative z-10">
-            <div class="md:w-1/2 text-white mb-10 md:mb-0">
-                <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-6">Su salud es nuestra prioridad número uno</h1>
-                <p class="text-lg mb-8 text-blue-100">Ofrecemos atención médica integral con tecnología de vanguardia y un equipo humano altamente calificado.</p>
-                <div class="flex space-x-4">
-                    <a href="#contacto" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition shadow-lg">Reservar Cita</a>
-                    <a href="#servicios" class="border-2 border-white text-white px-8 py-3 rounded-lg font-bold hover:bg-white hover:text-blue-600 transition">Ver Servicios</a>
-                </div>
-            </div>
-            <div class="md:w-1/2 flex justify-center">
-                <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80" alt="Doctor" class="rounded-2xl shadow-2xl border-8 border-white/20 w-4/5">
-            </div>
-        </div>
-        <div class="absolute top-0 right-0 -mt-20 -mr-20 bg-blue-500 rounded-full h-80 w-80 opacity-20"></div>
-    </section>
-
-    <section id="servicios" class="py-20 max-w-7xl mx-auto px-4">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">Especialidades Médicas</h2>
-            <div class="h-1 w-20 bg-blue-600 mx-auto"></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition border-t-4 border-blue-500">
-                <div class="text-blue-500 text-4xl mb-4"><i class="fas fa-heartbeat"></i></div>
-                <h3 class="text-xl font-bold mb-3">Cardiología</h3>
-                <p class="text-gray-600">Cuidado especializado para el corazón con diagnósticos precisos y tratamientos avanzados.</p>
-            </div>
-            <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition border-t-4 border-blue-500">
-                <div class="text-blue-500 text-4xl mb-4"><i class="fas fa-baby"></i></div>
-                <h3 class="text-xl font-bold mb-3">Pediatría</h3>
-                <p class="text-gray-600">Atención integral y dedicada para el crecimiento saludable de los más pequeños.</p>
-            </div>
-            <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition border-t-4 border-blue-500">
-                <div class="text-blue-500 text-4xl mb-4"><i class="fas fa-microscope"></i></div>
-                <h3 class="text-xl font-bold mb-3">Laboratorio</h3>
-                <p class="text-gray-600">Resultados rápidos y confiables para todos tus análisis clínicos esenciales.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="contacto" class="bg-slate-100 py-20">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
-                <div class="md:w-1/3 bg-blue-700 p-12 text-white">
-                    <h3 class="text-2xl font-bold mb-6">Información de Contacto</h3>
-                    <p class="mb-8 opacity-90">Estamos aquí para ayudarte. Contáctanos por cualquiera de estos medios.</p>
-                    <div class="space-y-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-phone-alt mr-4 text-blue-300"></i>
-                            <span>+52 (55) 1234 5678</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-envelope mr-4 text-blue-300"></i>
-                            <span>contacto@saludvital.com</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-map-marker-alt mr-4 text-blue-300"></i>
-                            <span>Av. Médica 123, Ciudad Salud</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="md:w-2/3 p-12">
-                    <h3 class="text-2xl font-bold mb-8 text-gray-800">Agendar una Consulta</h3>
-                    <form action="#" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="text" placeholder="Nombre completo" class="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="email" placeholder="Correo electrónico" class="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <select class="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option>Seleccione Especialidad</option>
-                            <option>Medicina General</option>
-                            <option>Cardiología</option>
-                            <option>Pediatría</option>
-                        </select>
-                        <input type="date" class="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <textarea placeholder="Motivo de la consulta" class="md:col-span-2 border border-gray-300 p-3 rounded-lg h-32 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        <button class="md:col-span-2 bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition">Enviar Solicitud</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="bg-gray-900 text-gray-400 py-10 text-center">
-        <p>© 2026 Centro Médico SaludVital. Todos los derechos reservados.</p>
-    </footer>
-
-</body>
-</html> -->
-
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clínica Avanzada Salud & Vida</title>
+    <title>SaludIntegral | Excelencia Médica y Cuidado Avanzado</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        /* Estilos personalizados para el carrusel y superposición */
-        .swiper-container {
-            width: 100%;
-            height: 600px; /* Ajusta la altura del carrusel */
-        }
-        .swiper-slide {
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-            position: relative;
-        }
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, rgba(28, 77, 160, 0.8), rgba(0, 114, 206, 0.5)); /* Superposición azul para texto */
-        }
-        .swiper-pagination-bullet-active {
-            background-color: white !important;
-        }
-        .swiper-button-prev, .swiper-button-next {
-            color: white !important;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-effect { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .swiper-container { height: 75vh; }
+        .medical-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); }
+        .text-gradient { background: linear-gradient(to right, #2563eb, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-800">
+<body class="bg-slate-50 text-slate-900">
 
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-blue-700 flex items-center">
-                <i class="fas fa-stethoscope mr-2"></i> SaludIntegral
+    <nav class="bg-white/80 glass-effect sticky top-0 z-[100] border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold flex items-center tracking-tight text-slate-800">
+                <span class="bg-blue-600 p-2 rounded-lg mr-2 text-white">
+                    <i class="fas fa-notes-medical"></i>
+                </span>
+                Salud<span class="text-blue-600">Integral</span>
             </div>
-            <div class="hidden md:flex space-x-8 font-medium">
-                <a href="#inicio" class="hover:text-blue-700 transition">Inicio</a>
-                <a href="#especialidades" class="hover:text-blue-700 transition">Especialidades</a>
-                <a href="#equipo" class="hover:text-blue-700 transition">Nuestro Equipo</a>
-                <a href="#contacto" class="bg-blue-700 text-white px-5 py-2 rounded-full hover:bg-blue-800 transition">Pedir Cita</a>
-                <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-700 transition flex items-center">
-                    <i class="fas fa-user mr-2"></i> Ingresar
+            <div class="hidden lg:flex items-center space-x-10 font-semibold text-sm uppercase tracking-wider">
+                <a href="#inicio" class="text-slate-600 hover:text-blue-600 transition">Inicio</a>
+                <a href="#especialidades" class="text-slate-600 hover:text-blue-600 transition">Servicios</a>
+                <a href="#testimonios" class="text-slate-600 hover:text-blue-600 transition">Pacientes</a>
+                <a href="#faq" class="text-slate-600 hover:text-blue-600 transition">Dudas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="#contacto" class="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-0.5">
+                    Agendar Cita
                 </a>
             </div>
         </div>
     </nav>
 
-    <section id="inicio" class="relative">
+    <section id="inicio" class="relative overflow-hidden">
         <div class="swiper swiper-container">
             <div class="swiper-wrapper">
-                <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1400&q=80');">
-                    <div class="overlay"></div>
-                    <div class="relative z-10 text-center max-w-3xl mx-auto px-4">
-                        <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6 animate-fade-in">Bienvenido a SaludIntegral</h1>
-                        <p class="text-xl md:text-2xl mb-8 font-light animate-fade-in animation-delay-300">Cuidamos de ti y de tu familia con pasión y experiencia.</p>
-                        <a href="#contacto" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg animate-fade-in animation-delay-600">Agenda tu Cita Hoy</a>
-                    </div>
-                </div>
-                <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1550831107-15531475752c?auto=format&fit=crop&w=1400&q=80');">
-                    <div class="overlay"></div>
-                    <div class="relative z-10 text-center max-w-3xl mx-auto px-4">
-                        <h2 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6">Tecnología de Vanguardia</h2>
-                        <p class="text-xl md:text-2xl mb-8 font-light">Diagnósticos precisos y tratamientos innovadores a tu alcance.</p>
-                        <a href="#especialidades" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg">Conoce Nuestros Servicios</a>
-                    </div>
-                </div>
-                <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1628348737375-1a3b118b76b3?auto=format&fit=crop&w=1400&q=80');">
-                    <div class="overlay"></div>
-                    <div class="relative z-10 text-center max-w-3xl mx-auto px-4">
-                        <h2 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6">Tu Bienestar, Nuestra Misión</h2>
-                        <p class="text-xl md:text-2xl mb-8 font-light">Un equipo médico comprometido con tu salud y recuperación.</p>
-                        <a href="#equipo" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg">Nuestro Equipo Profesional</a>
+                <div class="swiper-slide relative flex items-center">
+                    <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1920&q=80" class="absolute inset-0 w-full h-full object-cover" alt="Clínica">
+                    <div class="absolute inset-0 bg-slate-900/40"></div>
+                    <div class="container mx-auto px-6 relative z-10">
+                        <div class="max-w-2xl text-white">
+                            <span class="inline-block px-4 py-1 rounded-full bg-blue-600/20 border border-blue-400/30 backdrop-blur-md mb-4 text-sm font-bold uppercase tracking-widest">Tecnología Médica de Élite</span>
+                            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">Su salud merece el mejor cuidado médico.</h1>
+                            <p class="text-xl text-slate-100 mb-8 font-light">Líderes en atención personalizada con tecnología de última generación para diagnósticos precisos.</p>
+                            <div class="flex space-x-4">
+                                <a href="#contacto" class="bg-white text-blue-700 px-8 py-4 rounded-xl font-bold hover:bg-blue-50 transition shadow-xl">Comenzar Ahora</a>
+                                <button class="flex items-center space-x-2 text-white font-bold hover:text-blue-200 transition">
+                                    <span class="w-12 h-12 flex items-center justify-center rounded-full border-2 border-white/50"><i class="fas fa-play"></i></span>
+                                    <span>Ver Video</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="swiper-pagination"></div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
         </div>
     </section>
 
-    <section id="especialidades" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Nuestras Especialidades</h2>
-                <p class="text-lg text-gray-600">Ofrecemos una amplia gama de servicios médicos para todas tus necesidades de salud.</p>
-                <div class="h-1 w-24 bg-blue-700 mx-auto mt-6"></div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="bg-blue-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center border border-blue-100">
-                    <div class="text-blue-700 text-5xl mb-4"><i class="fas fa-user-md"></i></div>
-                    <h3 class="text-xl font-bold mb-2">Medicina General</h3>
-                    <p class="text-gray-600 text-sm">Prevención y tratamiento de enfermedades comunes.</p>
-                </div>
-                <div class="bg-blue-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center border border-blue-100">
-                    <div class="text-blue-700 text-5xl mb-4"><i class="fas fa-heartbeat"></i></div>
-                    <h3 class="text-xl font-bold mb-2">Cardiología</h3>
-                    <p class="text-gray-600 text-sm">Expertos en salud cardiovascular.</p>
-                </div>
-                <div class="bg-blue-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center border border-blue-100">
-                    <div class="text-blue-700 text-5xl mb-4"><i class="fas fa-child"></i></div>
-                    <h3 class="text-xl font-bold mb-2">Pediatría</h3>
-                    <p class="text-gray-600 text-sm">Cuidado integral para niños y adolescentes.</p>
-                </div>
-                <div class="bg-blue-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center border border-blue-100">
-                    <div class="text-blue-700 text-5xl mb-4"><i class="fas fa-tooth"></i></div>
-                    <h3 class="text-xl font-bold mb-2">Odontología</h3>
-                    <p class="text-gray-600 text-sm">Salud bucal para toda la familia.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- <section id="equipo" class="py-20 bg-slate-100">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Conoce a Nuestro Equipo</h2>
-                <p class="text-lg text-gray-600">Profesionales dedicados a tu bienestar con experiencia y calidez humana.</p>
-                <div class="h-1 w-24 bg-blue-700 mx-auto mt-6"></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden text-center hover:shadow-xl transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1559839734-2b716b1772aa?auto=format&fit=crop&w=400&h=400&q=80" alt="Dra. Ana García" class="w-full h-64 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Dra. Ana García</h3>
-                        <p class="text-blue-700 font-medium mb-3">Cardióloga Especialista</p>
-                        <p class="text-gray-600 text-sm">Con más de 15 años de experiencia, la Dra. García es líder en cardiología preventiva.</p>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden text-center hover:shadow-xl transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1612348316275-c4c01b9794d0?auto=format&fit=crop&w=400&h=400&q=80" alt="Dr. Luis Pérez" class="w-full h-64 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Dr. Luis Pérez</h3>
-                        <p class="text-blue-700 font-medium mb-3">Pediatra General</p>
-                        <p class="text-gray-600 text-sm">Dedicado al bienestar de los más jóvenes, el Dr. Pérez ofrece un trato amable y experto.</p>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden text-center hover:shadow-xl transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1594824476967-ce62255757d7?auto=format&fit=crop&w=400&h=400&q=80" alt="Dra. Laura Montes" class="w-full h-64 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Dra. Laura Montes</h3>
-                        <p class="text-blue-700 font-medium mb-3">Médico General</p>
-                        <p class="text-gray-600 text-sm">Enfoque integral en la salud de sus pacientes y prevención de enfermedades.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> -->
-    <section id="equipo" class="py-20 max-w-7xl mx-auto px-6">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-800">Nuestro Equipo Médico</h2>
-            <p class="text-gray-500">Conoce a los profesionales que cuidarán de ti.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=600&auto=format&fit=crop" class="w-full h-72 object-cover" alt="Doctor">
-                <div class="p-6">
-                    <h3 class="font-bold text-xl">Dr. Roberto Sánchez</h3>
-                    <p class="text-blue-600 font-semibold mb-4">Cirujano General</p>
-                    <p class="text-gray-600 text-sm">Experto en procedimientos mínimamente invasivos con 10 años de trayectoria.</p>
-                </div>
-            </div>
-            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1559839734-2b716b1772aa?q=80&w=600&auto=format&fit=crop" class="w-full h-72 object-cover" alt="Doctora">
-                <div class="p-6">
-                    <h3 class="font-bold text-xl">Dra. Elena Martínez</h3>
-                    <p class="text-blue-600 font-semibold mb-4">Pediatra Especialista</p>
-                    <p class="text-gray-600 text-sm">Dedicada a la salud infantil con un enfoque cálido y profesional.</p>
-                </div>
-            </div>
-            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=600&auto=format&fit=crop" class="w-full h-72 object-cover" alt="Doctor">
-                <div class="p-6">
-                    <h3 class="font-bold text-xl">Dr. Javier López</h3>
-                    <p class="text-blue-600 font-semibold mb-4">Cardiólogo</p>
-                    <p class="text-gray-600 text-sm">Especialista en prevención cardiovascular y salud del corazón.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <section id="contacto" class="bg-blue-800 py-20 text-white">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold mb-4">Contáctanos Hoy Mismo</h2>
-                <p class="text-lg text-blue-100">Estamos listos para atenderte. Envíanos un mensaje o llámanos.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+    <div class="relative z-20 -mt-16 max-w-6xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-0 rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10">
+            <div class="bg-white p-10 flex items-center space-x-6 border-r border-slate-50">
+                <i class="fas fa-user-check text-4xl text-blue-600"></i>
                 <div>
-                    <h3 class="text-2xl font-bold mb-6">Nuestra Ubicación</h3>
-                    <p class="text-blue-100 mb-4">Av. Central 456, Colonia Médica, Ciudad Salud, CP 12345</p>
-                    <div class="flex items-center mb-3">
-                        <i class="fas fa-phone-alt mr-3 text-blue-300"></i>
-                        <a href="tel:+525511223344" class="text-white hover:underline">+52 (55) 1122 3344</a>
+                    <h4 class="text-3xl font-bold text-slate-800">15k+</h4>
+                    <p class="text-slate-500 font-medium">Pacientes Felices</p>
+                </div>
+            </div>
+            <div class="bg-white p-10 flex items-center space-x-6 border-r border-slate-50">
+                <i class="fas fa-award text-4xl text-blue-600"></i>
+                <div>
+                    <h4 class="text-3xl font-bold text-slate-800">25+</h4>
+                    <p class="text-slate-500 font-medium">Años de Excelencia</p>
+                </div>
+            </div>
+            <div class="bg-white p-10 flex items-center space-x-6">
+                <i class="fas fa-microscope text-4xl text-blue-600"></i>
+                <div>
+                    <h4 class="text-3xl font-bold text-slate-800">40+</h4>
+                    <p class="text-slate-500 font-medium">Especialistas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="especialidades" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16">
+                <div class="max-w-xl">
+                    <h2 class="text-blue-600 font-bold uppercase tracking-widest text-sm mb-3">Nuestros Servicios</h2>
+                    <h3 class="text-4xl md:text-5xl font-bold text-slate-900">Especialidades diseñadas para su bienestar integral.</h3>
+                </div>
+                <a href="#" class="mt-6 md:mt-0 text-blue-600 font-bold flex items-center hover:underline">
+                    Ver todas las áreas <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="group bg-white p-10 rounded-[2rem] shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500">
+                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-heartbeat"></i>
                     </div>
-                    <div class="flex items-center mb-3">
-                        <i class="fas fa-envelope mr-3 text-blue-300"></i>
-                        <a href="mailto:info@saludintegral.com" class="text-white hover:underline">info@saludintegral.com</a>
+                    <h4 class="text-xl font-bold mb-4">Cardiología</h4>
+                    <p class="text-slate-500 leading-relaxed mb-6">Prevención, diagnóstico y tratamiento avanzado de patologías cardiovasculares.</p>
+                    <a href="#" class="text-sm font-bold text-slate-400 group-hover:text-blue-600 transition">Saber más +</a>
+                </div>
+                <div class="group bg-blue-600 p-10 rounded-[2rem] shadow-xl shadow-blue-900/20 text-white transform lg:-translate-y-4">
+                    <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-white text-3xl mb-8">
+                        <i class="fas fa-baby"></i>
                     </div>
-                    <div class="h-64 bg-gray-200 rounded-lg overflow-hidden mt-8 shadow-inner">
-                        <iframe src="https://www.google.com/maps/embed?pb=!4v1767905182907!6m8!1m7!1s9KK4b5vH2qTAR4IePnSOKg!2m2!1d14.9454225036775!2d-91.11233395348901!3f29.38318095988052!4f-14.969841898959999!5f0.7820865974627469" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    <h4 class="text-xl font-bold mb-4">Pediatría</h4>
+                    <p class="text-blue-100 leading-relaxed mb-6">Acompañamos el crecimiento de sus hijos con el cuidado más cálido y profesional.</p>
+                    <a href="#" class="text-sm font-bold text-white/80 hover:text-white transition">Saber más +</a>
+                </div>
+                <div class="group bg-white p-10 rounded-[2rem] shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500">
+                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-4">Neurología</h4>
+                    <p class="text-slate-500 leading-relaxed mb-6">Especialistas en el sistema nervioso y tratamientos de alta complejidad.</p>
+                    <a href="#" class="text-sm font-bold text-slate-400 group-hover:text-blue-600 transition">Saber más +</a>
+                </div>
+                <div class="group bg-white p-10 rounded-[2rem] shadow-sm border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500">
+                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fas fa-dna"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-4">Laboratorio</h4>
+                    <p class="text-slate-500 leading-relaxed mb-6">Resultados precisos con los más altos estándares de bioseguridad internacional.</p>
+                    <a href="#" class="text-sm font-bold text-slate-400 group-hover:text-blue-600 transition">Saber más +</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="equipo" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-blue-600 font-bold uppercase tracking-widest text-sm mb-3">Nuestra Facultad</h2>
+            <h3 class="text-4xl font-bold text-slate-900 mb-16">Conozca a nuestros expertos</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                <div class="group">
+                    <div class="relative overflow-hidden rounded-[2.5rem] mb-6 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1559839734-2b716b1772aa?q=80&w=800&auto=format&fit=crop" class="w-full h-96 object-cover group-hover:scale-110 transition duration-700" alt="Doctor">
+                        <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-6 rounded-3xl translate-y-2 group-hover:translate-y-0 transition duration-500">
+                            <h4 class="text-xl font-bold text-slate-900">Dra. Elena Martínez</h4>
+                            <p class="text-blue-600 font-semibold">Jefa de Cardiología</p>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <h3 class="text-2xl font-bold mb-6">Agenda tu Próxima Consulta</h3>
-                    <form action="#" class="space-y-4">
-                        <input type="text" placeholder="Tu Nombre Completo" class="w-full p-3 rounded-lg bg-blue-700 border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-blue-200 text-white">
-                        <input type="email" placeholder="Tu Correo Electrónico" class="w-full p-3 rounded-lg bg-blue-700 border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-blue-200 text-white">
-                        <input type="tel" placeholder="Número de Teléfono" class="w-full p-3 rounded-lg bg-blue-700 border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-blue-200 text-white">
-                        <select class="w-full p-3 rounded-lg bg-blue-700 border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 text-blue-200">
-                            <option value="">Selecciona una Especialidad</option>
-                            <option value="general">Medicina General</option>
-                            <option value="cardiologia">Cardiología</option>
-                            <option value="pediatria">Pediatría</option>
-                            <option value="odontologia">Odontología</option>
-                        </select>
-                        <input type="date" class="w-full p-3 rounded-lg bg-blue-700 border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 text-blue-200">
-                        <textarea placeholder="Cuéntanos brevemente el motivo de tu visita" rows="4" class="w-full p-3 rounded-lg bg-blue-700 border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-blue-200 text-white"></textarea>
-                        <button type="submit" class="w-full bg-white text-blue-800 font-bold py-3 rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-md">Enviar Solicitud</button>
+                <div class="group">
+                    <div class="relative overflow-hidden rounded-[2.5rem] mb-6 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=800&auto=format&fit=crop" class="w-full h-96 object-cover group-hover:scale-110 transition duration-700" alt="Doctor">
+                        <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-6 rounded-3xl translate-y-2 group-hover:translate-y-0 transition duration-500">
+                            <h4 class="text-xl font-bold text-slate-900">Dr. Javier López</h4>
+                            <p class="text-blue-600 font-semibold">Especialista en Cirugía</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group">
+                    <div class="relative overflow-hidden rounded-[2.5rem] mb-6 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1594824476967-ce62255757d7?q=80&w=800&auto=format&fit=crop" class="w-full h-96 object-cover group-hover:scale-110 transition duration-700" alt="Doctor">
+                        <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-6 rounded-3xl translate-y-2 group-hover:translate-y-0 transition duration-500">
+                            <h4 class="text-xl font-bold text-slate-900">Dra. Sarah Collins</h4>
+                            <p class="text-blue-600 font-semibold">Medicina Preventiva</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contacto" class="py-24 bg-slate-900 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-blue-600/10 skew-x-12 transform translate-x-20"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+                <div class="lg:w-1/3 bg-slate-50 p-12 md:p-16">
+                    <h3 class="text-3xl font-bold mb-8 text-slate-900">Canales de Atención</h3>
+                    <div class="space-y-8">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 bg-white shadow-sm rounded-xl flex items-center justify-center text-blue-600 mr-4 shrink-0">
+                                <i class="fas fa-phone-volume text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Central Médica</p>
+                                <p class="text-lg font-bold text-slate-800">+52 (55) 8000 1234</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 bg-white shadow-sm rounded-xl flex items-center justify-center text-blue-600 mr-4 shrink-0">
+                                <i class="fas fa-map-marked-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Ubicación</p>
+                                <p class="text-lg font-bold text-slate-800">Av. Paseo de la Reforma 450, CDMX</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-12 p-8 bg-blue-600 rounded-3xl text-white">
+                        <h4 class="font-bold mb-2">Horarios de Urgencias</h4>
+                        <p class="text-blue-100 text-sm opacity-80 mb-4">Contamos con atención de emergencias las 24 horas, los 7 días de la semana.</p>
+                        <a href="tel:911" class="inline-block bg-white text-blue-600 px-6 py-2 rounded-xl font-bold text-sm">Llamar Ahora</a>
+                    </div>
+                </div>
+
+                <div class="lg:w-2/3 p-12 md:p-16">
+                    <h3 class="text-3xl font-bold mb-8 text-slate-900">Agende su Consulta</h3>
+                    <form action="#" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Nombre Completo</label>
+                            <input type="text" placeholder="Ej. Juan Pérez" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Correo Electrónico</label>
+                            <input type="email" placeholder="juan@ejemplo.com" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Especialidad</label>
+                            <select class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition">
+                                <option>Seleccione una opción</option>
+                                <option>Cardiología</option>
+                                <option>Medicina General</option>
+                                <option>Pediatría</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Fecha Preferente</label>
+                            <input type="date" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition text-slate-500">
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Motivo de consulta</label>
+                            <textarea rows="4" placeholder="Describa brevemente sus síntomas..." class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition"></textarea>
+                        </div>
+                        <button class="md:col-span-2 bg-blue-600 text-white font-bold py-5 rounded-2xl hover:bg-blue-700 transition shadow-xl shadow-blue-200 uppercase tracking-widest text-sm">Enviar Solicitud de Cita</button>
                     </form>
                 </div>
             </div>
         </div>
     </section>
+    <section id="testimonios" class="py-24 bg-blue-600 overflow-hidden relative">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+            <i class="fas fa-quote-right text-[20rem] absolute -bottom-20 -right-10 text-white"></i>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-white/80 font-bold uppercase tracking-widest text-sm mb-3">La voz de nuestros pacientes</h2>
+                <h3 class="text-4xl font-bold text-white">Experiencias que nos motivan</h3>
+            </div>
 
-    <footer class="bg-gray-900 text-gray-400 py-10 text-center">
-        <div class="max-w-7xl mx-auto px-4">
-            <p class="mb-2">&copy; 2026 Clínica Avanzada SaludIntegral. Todos los derechos reservados.</p>
-            <div class="flex justify-center space-x-4 text-xl">
-                <a href="#" class="hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="hover:text-white"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
+            <div class="swiper swiper-testimonials pb-12">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide h-auto">
+                        <div class="bg-white p-10 rounded-[2.5rem] shadow-xl h-full flex flex-col justify-between">
+                            <div class="mb-6 text-blue-600 text-2xl">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <p class="text-slate-600 italic text-lg mb-8 leading-relaxed">
+                                "La atención en SaludIntegral superó mis expectativas. El equipo de cardiología no solo es profesional, sino profundamente humano. Me sentí seguro en todo momento."
+                            </p>
+                            <div class="flex items-center">
+                                <img src="https://i.pravatar.cc/150?u=1" class="w-14 h-14 rounded-full border-2 border-blue-100 mr-4" alt="Paciente">
+                                <div>
+                                    <h4 class="font-bold text-slate-900">Carlos Méndez</h4>
+                                    <p class="text-sm text-slate-400">Paciente de Cardiología</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide h-auto">
+                        <div class="bg-white p-10 rounded-[2.5rem] shadow-xl h-full flex flex-col justify-between">
+                            <div class="mb-6 text-blue-600 text-2xl">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <p class="text-slate-600 italic text-lg mb-8 leading-relaxed">
+                                "Llevo a mis hijos a pediatría aquí desde hace 5 años. El Dr. Pérez tiene una paciencia increíble. Es una clínica que realmente cuida a la familia."
+                            </p>
+                            <div class="flex items-center">
+                                <img src="https://i.pravatar.cc/150?u=2" class="w-14 h-14 rounded-full border-2 border-blue-100 mr-4" alt="Paciente">
+                                <div>
+                                    <h4 class="font-bold text-slate-900">Mariana Solís</h4>
+                                    <p class="text-sm text-slate-400">Madre de familia</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination !-bottom-2"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-24 bg-white">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-blue-600 font-bold uppercase tracking-widest text-sm mb-3">Centro de Ayuda</h2>
+                <h3 class="text-4xl font-bold text-slate-900">Preguntas Frecuentes</h3>
+            </div>
+
+            <div class="space-y-4">
+                <div class="faq-item group border border-slate-100 rounded-3xl bg-slate-50 transition-all duration-300">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none" onclick="toggleFaq(this)">
+                        <span class="font-bold text-slate-800 text-lg">¿Cómo puedo agendar una cita por primera vez?</span>
+                        <i class="fas fa-chevron-down faq-icon transition-transform duration-300 text-blue-600"></i>
+                    </button>
+                    <div class="faq-content">
+                        <p class="px-6 pb-6 text-slate-600">Puede agendarla a través de nuestro formulario en línea, llamando a nuestra central médica o directamente por nuestro chat de WhatsApp habilitado 24/7.</p>
+                    </div>
+                </div>
+                <div class="faq-item group border border-slate-100 rounded-3xl bg-slate-50 transition-all duration-300">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none" onclick="toggleFaq(this)">
+                        <span class="font-bold text-slate-800 text-lg">¿Aceptan seguros médicos internacionales?</span>
+                        <i class="fas fa-chevron-down faq-icon transition-transform duration-300 text-blue-600"></i>
+                    </button>
+                    <div class="faq-content">
+                        <p class="px-6 pb-6 text-slate-600">Sí, trabajamos con las principales aseguradoras nacionales e internacionales. Le recomendamos contactarnos para verificar su póliza específica.</p>
+                    </div>
+                </div>
+                <div class="faq-item group border border-slate-100 rounded-3xl bg-slate-50 transition-all duration-300">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none" onclick="toggleFaq(this)">
+                        <span class="font-bold text-slate-800 text-lg">¿Cuentan con servicios de urgencias nocturnas?</span>
+                        <i class="fas fa-chevron-down faq-icon transition-transform duration-300 text-blue-600"></i>
+                    </button>
+                    <div class="faq-content">
+                        <p class="px-6 pb-6 text-slate-600">Contamos con una unidad de cuidados intensivos y urgencias operativa las 24 horas del día, todos los días del año.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-50 border-t border-slate-200 pt-20 pb-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div class="md:col-span-1">
+                    <div class="text-2xl font-bold flex items-center mb-6 text-slate-800">
+                        <span class="bg-blue-600 p-2 rounded-lg mr-2 text-white"><i class="fas fa-notes-medical"></i></span>
+                        SaludIntegral
+                    </div>
+                    <p class="text-slate-500 leading-relaxed">Excelencia médica comprometida con la innovación y el trato humano desde 2001.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Navegación</h4>
+                    <ul class="space-y-4 text-slate-500">
+                        <li><a href="#" class="hover:text-blue-600 transition">Servicios</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">Tecnología</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">Blog Médico</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Legal</h4>
+                    <ul class="space-y-4 text-slate-500">
+                        <li><a href="#" class="hover:text-blue-600 transition">Privacidad de datos</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">Términos de servicio</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">Consentimiento</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Redes Sociales</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-slate-200 pt-8 text-center text-sm text-slate-400 font-medium">
+                &copy; 2026 SaludIntegral Medical Group. Todos los derechos reservados.
             </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-        // Inicializa Swiper
-        const swiper = new Swiper('.swiper-container', {
+        new Swiper('.swiper-container', {
             loop: true,
-            autoplay: {
-                delay: 5000,
-                disableOnInteraction: false,
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
+            effect: 'fade',
+            autoplay: { delay: 6000 },
+            pagination: { el: '.swiper-pagination', clickable: true },
         });
-    </script>
+        // Swiper para Testimonios
+        new Swiper('.swiper-testimonials', {
+            loop: true,
+            slidesPerView: 1,
+            spaceBetween: 30,
+            autoplay: { delay: 5000 },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            breakpoints: {
+                768: { slidesPerView: 2 }
+            }
+        });
 
+        // Lógica de Acordeón FAQ
+        function toggleFaq(button) {
+            const item = button.parentElement;
+            const isActive = item.classList.contains('active');
+            
+            // Cerrar todos los demás
+            document.querySelectorAll('.faq-item').forEach(i => {
+                i.classList.remove('active', 'bg-white', 'shadow-md');
+                i.classList.add('bg-slate-50');
+            });
+
+            if (!isActive) {
+                item.classList.add('active', 'bg-white', 'shadow-md');
+                item.classList.remove('bg-slate-50');
+            }
+        }
+    </script>
 </body>
 </html>
