@@ -128,10 +128,8 @@
                                         <th style="width: 100px;">
                                             <label class="small mb-0 text-primary">Total:</label>
                                         </th>
-                                        <td style="width: 100px;">
-                                            <div class="col-6 text-right">
-                                                <label id="txtTotal" class="small mb-0 text-primary font-weight-bold text-center">0.00</label>
-                                            </div>
+                                        <td style="width: 100px; text-align: right;">
+                                            <label id="txtTotal" class="small mb-0 text-primary font-weight-bold text-center">0.00</label>
                                             <input type="hidden" id="inputTotalHidden" name="total_final" value="0.00">
                                         </td>
                                         <td></td>

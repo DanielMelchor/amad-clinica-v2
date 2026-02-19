@@ -187,83 +187,107 @@ class AdmisionController extends Controller
 
     public function store(Request $request)
     {
-        var_dump($request); die;
-        $agenda_id         = $_POST['agenda_id'];
-        $fecha             = $_POST['fecha'];
-        $paciente_id       = $_POST['paciente_id'];
-        $medico_id         = $_POST['medico_id']; 
-        $hospital_id       = $_POST['hospital_id'];
-        
-        if ($_POST['admision_tercero']) {
-            $admision_tercero  = trim($_POST['admision_tercero']);
-        }else{
-            $admision_tercero = NULL;
-        }
-        if ($_POST['aseguradora_id']) {
-            $aseguradora_id    = $_POST['aseguradora_id'];
-        }else{
-            $aseguradora_id    = NULL;
-        }
-        
-        $poliza_no         = $_POST['poliza_no'];
-        $autorizacion_no   = $_POST['autorizacion_no'];
-        if (isset($_POST['copago'])) {
-            $copago = $_POST['copago'];
-        }else{
-            $copago = 0;
-        }
+        $mensajes = [
+            'agenda_id.required'       => 'Debe Seleccionar un horario',
+            'adm_fecha.required'       => 'Falta Fecha de Admisión',
+            'adm_paciente_id.required' => 'Paciente pendiente de definir',
+            'adm_medico_id.required'   => 'Seleccione un medico permitido',
+            'adm_hospital_id.required' => 'Seleccione Centro de Atención',
+        ];
 
-        if (isset($_POST['coaseguro'])) {
-            $coaseguro = $_POST['coaseguro'];
-        }else{
-            $coaseguro = 0;
-        }
-
-        $no_admision = Correlativo::where('empresa_id', Auth::user()->empresa_id)->where('tipo', 'A')->max('correlativo');
-        $no_admision += 1;
+        $validData = $request->validate([
+            'agenda_id'         => 'required',
+            'adm_fecha'         => 'required|date_format:Y-m-d',
+            'adm_paciente_id'   => 'required|exists:pacientes,id',
+            'adm_medico_id'     => 'required|exists:medicos,id',
+            'adm_hospital_id'   => 'required|exists:hospitales,id'
+        ], $mensajes);
         
-        $paciente                   = Paciente::where('id', $paciente_id)->first();
-
-        $admision = new Admision();
-        $admision->empresa_id       = (int)Auth::user()->empresa_id;
-        $admision->agenda_id        = $agenda_id;
-        $admision->fecha            = $fecha; //$validData['adm_fecha'];
-        $admision->admision_no      = (int)$no_admision;
-        $admision->paciente_id      = (int)$paciente_id;
-        $admision->edad             = Carbon::parse($paciente->fecha_nacimiento)->age;
-        $admision->medico_id        = (int)$medico_id;
-        $admision->hospital_id      = (int)$hospital_id;
-        $admision->coaseguro        = (int)$coaseguro;
-        $admision->copago           = (int)$copago;
-        $admision->estado           = 0;
-        $admision->admision_tercero = $admision_tercero; //$request->admision_tercero;
-        $admision->aseguradora_id   = $aseguradora_id; //$request->aseguradora_id;
-        $admision->poliza_no        = $poliza_no; //$request->poliza_no;
-        $admision->aseguradora_aut_no     = $autorizacion_no; //$request->autorizacion_no;
-        $admision->pagado_por_aseguradora = 'N';
+        DB::beginTransaction();
         try {
+            if ($request['admision_tercero']) {
+                $admision_tercero  = trim($request['admision_tercero']);
+            }else{
+                $admision_tercero = NULL;
+            }
+            if ($request['aseguradora_id']) {
+                $aseguradora_id    = $request['aseguradora_id'];
+            }else{
+                $aseguradora_id    = NULL;
+            }
+            
+            $poliza_no         = $request['poliza_no'];
+            $autorizacion_no   = $request['autorizacion_no'];
+            if (isset($request['copago'])) {
+                $copago = $request['copago'];
+            }else{
+                $copago = 0;
+            }
+
+            if (isset($request['coaseguro'])) {
+                $coaseguro = $request['coaseguro'];
+            }else{
+                $coaseguro = 0;
+            }
+
+            $correlativoModel = Correlativo::where('empresa_id', Auth::user()->empresa_id)
+                                ->where('tipo', 'A')
+                                ->lockForUpdate() 
+                                ->first();
+
+            $no_admision = ($correlativoModel->correlativo ?? 0) + 1;
+            $paciente    = Paciente::where('id', $validData['adm_paciente_id'])->first();
+
+            $admision = new Admision();
+            $admision->empresa_id       = Auth::user()->empresa_id;
+            $admision->agenda_id        = $validData['agenda_id'];
+            $admision->fecha            = $validData['adm_fecha'];
+            $admision->admision_no      = $no_admision;
+            $admision->paciente_id      = $validData['adm_paciente_id'];
+            $admision->edad             = Carbon::parse($paciente->fecha_nacimiento)->age;
+            $admision->medico_id        = $validData['adm_medico_id'];
+            $admision->hospital_id      = $validData['adm_hospital_id'];
+            
+            // Uso de null coalescing ?? para valores por defecto
+            $admision->coaseguro        = $request->input('coaseguro', 0);
+            $admision->copago           = $request->input('copago', 0);
+            $admision->estado           = 0;
+            $admision->admision_tercero = $request->filled('admision_tercero') ? trim($request->admision_tercero) : null;
+            $admision->aseguradora_id   = $request->input('aseguradora_id');
+            $admision->poliza_no        = $request->input('poliza_no');
+            $admision->aseguradora_aut_no     = $request->input('autorizacion_no');
+            $admision->pagado_por_aseguradora = 'N';
             $admision->save();
-            // if ($admision->wasRecentlyCreated){
-            //     $registroAtencion = new AdmisionAtencion();
-            //     $registroAtencion->admision_id = $admision->id;
-            //     $registroAtencion->tipo_atencion_id = $tipo_atencion_id;
-            //     $registroAtencion->estado = 0;
-            //     $registroAtencion->save();
-            // }
+
+            $correlativoModel->update(['correlativo' => $no_admision]);
+
+            $admision->bitacoras()->create([
+                'proceso' => 'APERTURA',
+                'observaciones' => 'Creación de admisión'
+            ]);
+
+            DB::commit();
+
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => '¡Admisión guardada con éxito!',
+                    'type'    => 'success',
+                    'admision_no' => $no_admision,
+                    'admision_id' => $admision->id
+                ]);
+            }
+
+            return redirect()->back()->with(['message' => '¡Éxito!', 'type' => 'success']);
+
         }catch (Throwable $e) {
-            dd('error');
-            print_r($e);
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al guardar: ' . $e->getMessage()
+            ], 500);
         }
 
-        $actualizar_correlativo = Correlativo::where('empresa_id',Auth::user()->empresa_id)->where('tipo', 'A')->first();
-        $actualizar_correlativo->correlativo = $no_admision;
-        $actualizar_correlativo->save();
-
-        $bitacora = new AdmisionBitacora();
-        $bitacora->admision_id = $admision->id;
-        $bitacora->proceso     = 'APERTURA';
-        $bitacora->observaciones = 'Creacion de admision';
-        $bitacora->save();
+        
 
         $respuesta = ['respuesta' => 'Admisión No. '.$admision->admision, 'admision_id' => $admision->id];
 

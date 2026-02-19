@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 use DB;
 use DateTime;
 use Session;
@@ -145,7 +146,7 @@ class AgendaController extends Controller
                             'hospital_id'     => $validData['edit_hospital_id'],
                             'nombre_completo' => $validData['edit_nombre_completo'],
                             'telefonos'       => $validData['edit_telefonos'],
-                            'observaciones'   => $request->observaciones,
+                            'observaciones'   => $request->edit_observaciones,
                             'paciente_id'     => $request->edit_paciente_id ?: null,
                             'estado'          => 'A',
                         ]);
@@ -167,35 +168,115 @@ class AgendaController extends Controller
         }
     }
 
-    public function marcar_cancelada_ajax(){
-        $cita_id = $_POST['cita_id'];
-        $observaciones = $_POST['observaciones'];
-        $cita = Agenda::findOrFail($cita_id);
-        //$fecha         = date("Y-m-d",strtotime($cita->fecha_inicio));
-        $cita->estado = 'C';
-        $cita->observaciones = $observaciones;
-        $cita->save();
+    public function marcar_cancelada_ajax(Request $request){
+        $validator = Validator::make($request->all(), [
+            'cita_id'       => 'required|exists:agendas,id',
+            'observaciones' => 'nullable|string|max:500',
+        ]);
 
-        $registro = new agenda();
-        $registro->empresa_id   = $cita->empresa_id;
-        $registro->sala_id      = $cita->sala_id;
-        $registro->fecha_inicio = $cita->fecha_inicio;
-        $registro->fecha_final  = $cita->fecha_final;
-        $registro->estado       = 'P';
-        $registro->save();
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Datos inválidos: ' . implode(', ', $validator->errors()->all()),
+                'type'    => 'error'
+            ], 422);
+        }
+        DB::beginTransaction();
+        try {
+            $cita = Agenda::findOrFail($request->cita_id);
+            if ($cita->estado === 'R') {
+                return response()->json([
+                    'message' => 'Esta cita ya ha sido marcada como Cancelada previamente.',
+                    'type'    => 'error'
+                ]);
+            }else{
+                $cita->estado = 'C'; // R de Realizada / Finalizada
+                $cita->observaciones = $request->input('observaciones');
+                $cita->save();
 
-        return Response::json('Cita Anulada con Exito !!!');
+                $registro = new agenda();
+                $registro->empresa_id   = $cita->empresa_id;
+                $registro->sala_id      = $cita->sala_id;
+                $registro->fecha_inicio = $cita->fecha_inicio;
+                $registro->fecha_final  = $cita->fecha_final;
+                $registro->estado       = 'P';
+                $registro->save();
+
+                // $cita->bitacoras()->create([
+                //     'proceso'       => 'FINALIZACIÓN',
+                //     'observaciones' => 'Cita marcada como realizada. Obs: ' . $request->input('observaciones'),
+                //     'user_id'       => Auth::id() // Si tienes columna de usuario en bitácora
+                // ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => '¡Cita Cancelada con Éxito!',
+                    'type'    => 'success'
+                ]);
+            }
+        }catch (\Throwable $e) {
+            DB::rollBack();
+            
+            // Log del error para el desarrollador, pero mensaje genérico para el usuario
+            // Log::error("Error al finalizar cita ID {$request->cita_id}: " . $e->getMessage());
+
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al guardar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function marcar_realizada_ajax(){
-        $cita_id = $_POST['cita_id'];
-        $observaciones = $_POST['observaciones'];
-        $cita = Agenda::findOrFail($cita_id);
-        //$fecha         = date("Y-m-d",strtotime($cita->fecha_inicio));
-        $cita->estado = 'R';
-        $cita->observaciones = $observaciones;
-        $cita->save();
-        return Response::json('Cita Finalizada con Exito !!!');
+    public function marcar_realizada_ajax(Request $request){
+        
+        $validator = Validator::make($request->all(), [
+            'cita_id'       => 'required|exists:agendas,id',
+            'observaciones' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Datos inválidos: ' . implode(', ', $validator->errors()->all()),
+                'type'    => 'error'
+            ], 422);
+        }
+        DB::beginTransaction();
+        try {
+            $cita = Agenda::findOrFail($request->cita_id);
+            if ($cita->estado === 'R') {
+                return response()->json([
+                    'message' => 'Esta cita ya ha sido marcada como realizada previamente.',
+                    'type'    => 'error'
+                ]);
+            }else{
+                $cita->estado = 'R'; // R de Realizada / Finalizada
+                $cita->observaciones = $request->input('observaciones');
+                $cita->save();
+
+                // $cita->bitacoras()->create([
+                //     'proceso'       => 'FINALIZACIÓN',
+                //     'observaciones' => 'Cita marcada como realizada. Obs: ' . $request->input('observaciones'),
+                //     'user_id'       => Auth::id() // Si tienes columna de usuario en bitácora
+                // ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => '¡Cita Finalizada con Éxito!',
+                    'type'    => 'success'
+                ]);
+            }
+        }catch (\Throwable $e) {
+            DB::rollBack();
+            
+            // Log del error para el desarrollador, pero mensaje genérico para el usuario
+            // Log::error("Error al finalizar cita ID {$request->cita_id}: " . $e->getMessage());
+
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al guardar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function marcar_espacio_bloqueado(){
@@ -231,7 +312,7 @@ class AgendaController extends Controller
                                 })
                      ->where('a.paciente_id', $paciente_id)
                      ->orderBy('a.fecha_inicio', 'ASC')
-                     ->select(DB::raw('DATE_FORMAT(a.fecha_inicio, "%d/%m%Y %H:%i") as fecha_inicio'), DB::raw('a.estado'), 'subadm.admision_no', 'subadm.nombre as tipo_atencion', 'm.nombre_completo', 'h.nombre', 'a.id')
+                     ->select(DB::raw('DATE_FORMAT(a.fecha_inicio, "%d/%m/%Y %H:%i") as fecha_inicio'), DB::raw('a.estado'), 'subadm.admision_no', 'subadm.nombre as tipo_atencion', 'm.nombre_completo', 'h.nombre', 'a.id')
                      ->get();
 
         return Response::json($registros);
@@ -239,15 +320,39 @@ class AgendaController extends Controller
 
     public function confirmar_ingreso(){
         $cita_id = $_POST['cita_id'];
-        dd($cita_id);
         $registro = Agenda::findOrFail($cita_id);
-        $registro->fecha_en_clinica = Carbon::now();
-        $registro->paciente_en_clinica = 1;
-        $registro->save();
+        if ($registro->paciente_en_clinica == 1) {
+            return response()->json([
+                'message' => 'El paciente ya ha sido registrado previamente en clínica.',
+                'type'    => 'error' 
+            ]); // Código 400 para indicar una solicitud que no se puede procesar
+        }
+        if ($registro->estado == 'C') {
+            return response()->json([
+                'message' => 'No se puede marcar ingreso: La cita está CANCELADA.',
+                'type'    => 'error'
+            ]);
+        }
+        
+        if ($registro->estado == 'R') {
+            return response()->json([
+                'message' => 'No se puede marcar ingreso: La cita fue FINALIZADA.',
+                'type'    => 'warning'
+            ]);
+        }
+        try {
+            $registro->fecha_en_clinica = Carbon::now();
+            $registro->paciente_en_clinica = 1;
+            $registro->save();
 
-        return response()->json([
-                        'message' => '! Registro de asistencia, finalizado con éxito !',
-                        'type'    => 'success'
-                    ]);
+            return response()->json(['message' => '! Registro de asistencia, finalizado con éxito !',
+                                     'type'    => 'success'
+                                   ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el ingreso: ' . $e->getMessage(),
+                'type'    => 'error'
+            ], 500);
+        }
     }
 }

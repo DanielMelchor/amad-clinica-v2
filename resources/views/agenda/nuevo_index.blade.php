@@ -106,6 +106,68 @@
             height: calc(1.5em + 0.75rem + 2px) !important; /* Altura estándar de Bootstrap 4 */
             padding: 0.25rem 0.5rem;
         }
+
+        .table-active {
+            background-color: #c3ab95 !important; /* amarillo claro */
+        }
+
+
+        /* Permite que las pestañas de salas se deslicen lateralmente en móvil */
+        #salasTab::-webkit-scrollbar {
+            display: none;
+        }
+        #salasTab {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Aumentar el área de clic en móviles para las filas de la tabla */
+        /*.table-sm td {
+            padding: 0.75rem 0.3rem !important; 
+            vertical-align: middle;
+        }*/
+
+        /* Ajuste para que el input datetime-local se vea bien en iOS/Android */
+        input[type="datetime-local"] {
+            min-height: 38px;
+        }
+
+        /* Ajustes de botones para pulgares */
+        .btn-sm.rounded-circle {
+            width: 35px;
+            height: 35px;
+            line-height: 24px;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        /* Cambiar el estilo de los botones del SweetAlert */
+        .swal2-styled.swal2-confirm {
+            border-radius: 50px !important;
+            background-color: #28a745 !important; /* Verde success */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .swal2-popup {
+            border-top: 3px solid #007bff; /* Línea azul arriba como las cards de AdminLTE */
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+            filter: grayscale(1);
+        }
+
+        #tblHistorico td {
+            vertical-align: middle;
+            white-space: nowrap; /* Evita que los nombres largos hagan la fila muy alta */
+            padding: 8px 4px;
+        }
+
+        /* Zebra striping más suave para lectura prolongada */
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0,0,0,.02);
+        }
     </style>
 @endsection
 
@@ -165,8 +227,8 @@
 
                             <div class="btn-group-responsive w-100 w-md-auto d-flex justify-content-center justify-content-md-end">
                                 <a href="#" id="btnAsistencia" class="btn btn-xs btn-outline-info rounded-circle elevation-2 mx-1" onclick="confirmarPresencia()" title="Asistencia"><i class="fas fa-user-check"></i></a>
-                                <a href="#" id="btnCita" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mx-1" title="Cita" onclick="fnEditarCita();"><i class="fas fa-plus"></i></a>
-                                <a href="#" id="btnAdmision" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mx-1" title="Admisión" onclick="fnCrearAdmision();"><i class="fas fa-wheelchair"></i></a>
+                                <a href="#" id="btnCita" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mx-1" title="Cita" onclick="fnEditarCita();"><i class="fas fa-calendar-alt"></i></a>
+                                <a href="#" id="btnAdmision" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mx-1" title="Admisión" onclick="fnCrearAdmision();"><i class="fas fa-user-md"></i></a>
                                 <a href="#" id="btnFinalizar" class="btn btn-xs btn-outline-success rounded-circle elevation-2 mx-1" title="Finalizar" onclick="fnFinalizar();"><i class="fas fa-check"></i></a>
                                 <a href="#" id="btnCancelar" class="btn btn-xs btn-outline-danger rounded-circle elevation-2 mx-1" title="Cancelar" onclick="fnCancelar();"><i class="fas fa-ban"></i></a>
                                 <a href="#" id="btnHistorico" class="btn btn-xs btn-outline-secondary rounded-circle elevation-2 mx-1" title="Histórico" onclick="fnHistorico();"><i class="fas fa-book-medical"></i></a>
@@ -279,9 +341,15 @@
                     searchField.focus();
                 }
             });
+
             actualizarContext();
             actualizarEstadoBotones();
             aplicar_filtro();
+        });
+
+        $('.nav-link').on('click', function() {
+            actualizarContext();
+            actualizarEstadoBotones();
         });
 
         //===========================================================================
@@ -324,6 +392,10 @@
         //===========================================================================
         $(document).ready(function() {
             // Usamos delegación de eventos para que funcione incluso tras recargar la tabla con AJAX
+            fnMarcarLinea();
+        });
+
+        function fnMarcarLinea(){
             $(document).on('click', 'table[id^="tbl"] tbody tr', function() {
                 const fila = $(this); // 'this' es la fila clicada
                 
@@ -355,7 +427,7 @@
                 // 3. Actualizar los botones de acción
                 actualizarEstadoBotones(context_paciente_id);
             });
-        });
+        }
 
         function actualizarContext(){
             context_agenda_id          = null;
@@ -390,7 +462,7 @@
                 btnCita.addClass('disabled')
                              .css('pointer-events', 'none') // Evita clics físicos
                              .attr('tabindex', '-1')        // Evita enfoque por teclado
-                             .removeClass('btn-outline-info')
+                             .removeClass('btn-outline-primary')
                              .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
                 btnAdmision.addClass('disabled')
                              .css('pointer-events', 'none') // Evita clics físicos
@@ -418,61 +490,164 @@
                              .removeClass('btn-outline-info')
                              .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
             }else{
-                btnCita.removeClass('disabled')
-                         .css('pointer-events', 'auto') // Evita clics físicos
-                         .attr('tabindex', '1')        // Evita enfoque por teclado
-                         .addClass('btn-outline-info')
-                         .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
-                btnBloqueo.removeClass('disabled')
-                             .css('pointer-events', 'auto') // Evita clics físicos
-                             .attr('tabindex', '1')        // Evita enfoque por teclado
-                             .removeClass('btn-outline-secondary')
-                             .addClass('btn-outline-info'); // Color gris para indicar estado inactivo
-
-            }
-
-            if (valorId === '' || valorId === 'null' || valorId === null) {
-                // Deshabilitar
-                btnAsistencia.addClass('disabled')
-                             .css('pointer-events', 'none') // Evita clics físicos
-                             .attr('tabindex', '-1')        // Evita enfoque por teclado
-                             .removeClass('btn-outline-info')
-                             .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
-                btnAdmision.addClass('disabled')
-                             .css('pointer-events', 'none') // Evita clics físicos
-                             .attr('tabindex', '-1')        // Evita enfoque por teclado
-                             .removeClass('btn-outline-info')
-                             .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
-                btnHistorico.addClass('disabled')
-                             .css('pointer-events', 'none') // Evita clics físicos
-                             .attr('tabindex', '-1')        // Evita enfoque por teclado
-                             .removeClass('btn-outline-info')
-                             .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
-            } else {
-                // Habilitar
-                btnAsistencia.removeClass('disabled')
-                             .css('pointer-events', 'auto')
-                             .removeAttr('tabindex')
-                             .removeClass('btn-outline-secondary')
-                             .addClass('btn-outline-info');
-                btnAdmision.removeClass('disabled')
-                             .css('pointer-events', 'auto') // Evita clics físicos
-                             .attr('tabindex', '-1')        // Evita enfoque por teclado
-                             .removeClass('btn-outline-secondary')
-                             .addClass('btn-outline-primary'); // Color gris para indicar estado inactivo
-                btnHistorico.removeClass('disabled')
-                             .css('pointer-events', 'auto') // Evita clics físicos
-                             .attr('tabindex', '-1')        // Evita enfoque por teclado
-                             .removeClass('btn-outline-secondary')
-                             .addClass('btn-outline-info'); // Color gris para indicar estado inactivo
-                if (context_admision_no || context_admision_no > 0) {
+                if (context_agenda_estado == 'B') {
+                    btnCita.addClass('disabled')
+                           .css('pointer-events', 'none') // Evita clics físicos
+                           .attr('tabindex', '-1')        // Evita enfoque por teclado
+                           .removeClass('btn-outline-primary')
+                           .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                    btnAdmision.addClass('disabled')
+                               .css('pointer-events', 'none') // Evita clics físicos
+                               .attr('tabindex', '-1')        // Evita enfoque por teclado
+                               .removeClass('btn-outline-primary')
+                               .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                }else{
+                    btnCita.removeClass('disabled')
+                           .css('pointer-events', 'auto') // Evita clics físicos
+                           .attr('tabindex', '1')        // Evita enfoque por teclado
+                           .removeClass('btn-outline-secondary')
+                           .addClass('btn-outline-primary'); // Color gris para indicar estado inactivo
                     btnAdmision.removeClass('disabled')
                                .css('pointer-events', 'auto') // Evita clics físicos
-                               .attr('tabindex', '-1')        // Evita enfoque por teclado
-                               .removeClass('btn-outline-info')
-                               .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                               .attr('tabindex', '1')        // Evita enfoque por teclado
+                               .removeClass('btn-outline-secondary')
+                               .addClass('btn-outline-primary'); // Color gris para indicar estado inactivo
+                }
+                
+                if (context_agenda_estado == 'C' || context_agenda_estado == 'R' || context_agenda_estado == 'B' ) {
+                    btnAsistencia.addClass('disabled')
+                                 .css('pointer-events', 'none') // Evita clics físicos
+                                 .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                 .removeClass('btn-outline-info')
+                                 .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                    btnFinalizar.addClass('disabled')
+                                 .css('pointer-events', 'none') // Evita clics físicos
+                                 .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                 .removeClass('btn-outline-success')
+                                 .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                    btnCancelar.addClass('disabled')
+                                 .css('pointer-events', 'none') // Evita clics físicos
+                                 .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                 .removeClass('btn-outline-danger')
+                                 .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                    btnBloqueo.addClass('disabled')
+                                 .css('pointer-events', 'none') // Evita clics físicos
+                                 .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                 .removeClass('btn-outline-info')
+                                 .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                }else{
+                    if (valorId === '' || valorId === 'null' || valorId === null) {
+                        btnAsistencia.addClass('disabled')
+                                     .css('pointer-events', 'none') // Evita clics físicos
+                                     .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-info')
+                                    .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                        btnHistorico.addClass('disabled')
+                                     .css('pointer-events', 'none') // Evita clics físicos
+                                     .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-info')
+                                     .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                    }else{
+                        btnAsistencia.removeClass('disabled')
+                                     .css('pointer-events', 'auto') // Evita clics físicos
+                                     .attr('tabindex', '1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-secondary')
+                                     .addClass('btn-outline-info'); // Color gris para indicar estado inactivo
+                        btnHistorico.removeClass('disabled')
+                                     .css('pointer-events', 'auto') // Evita clics físicos
+                                     .attr('tabindex', '1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-secondary')
+                                     .addClass('btn-outline-info'); // Color gris para indicar estado inactivo
+                    }
+
+                    if (context_admision_no === '' || context_admision_no === 'null' || context_admision_no === null) {
+                        btnFinalizar.addClass('disabled')
+                                     .css('pointer-events', 'none') // Evita clics físicos
+                                     .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-success')
+                                     .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                        btnCancelar.addClass('disabled')
+                                     .css('pointer-events', 'none') // Evita clics físicos
+                                     .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-danger')
+                                     .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                    }else{
+                        btnFinalizar.removeClass('disabled')
+                                     .css('pointer-events', 'auto') // Evita clics físicos
+                                     .attr('tabindex', '1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-secondary')
+                                     .addClass('btn-outline-success'); // Color gris para indicar estado inactivo
+                        btnCancelar.removeClass('disabled')
+                                     .css('pointer-events', 'auto') // Evita clics físicos
+                                     .attr('tabindex', '1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-secondary')
+                                     .addClass('btn-outline-danger'); // Color gris para indicar estado inactivo
+                    }
                 }
             }
+
+            // if (valorId === '' || valorId === 'null' || valorId === null) {
+            //     // Deshabilitar
+            //     btnAsistencia.addClass('disabled')
+            //                  .css('pointer-events', 'none') // Evita clics físicos
+            //                  .attr('tabindex', '-1')        // Evita enfoque por teclado
+            //                  .removeClass('btn-outline-info')
+            //                  .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+            //     btnAdmision.addClass('disabled')
+            //                  .css('pointer-events', 'none') // Evita clics físicos
+            //                  .attr('tabindex', '-1')        // Evita enfoque por teclado
+            //                  .removeClass('btn-outline-info')
+            //                  .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+            //     btnHistorico.addClass('disabled')
+            //                  .css('pointer-events', 'none') // Evita clics físicos
+            //                  .attr('tabindex', '-1')        // Evita enfoque por teclado
+            //                  .removeClass('btn-outline-info')
+            //                  .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+            //     btnBloqueo.removeClass('disabled')
+            //                  .css('pointer-events', 'auto') // Evita clics físicos
+            //                  .attr('tabindex', '1')        // Evita enfoque por teclado
+            //                  .removeClass('btn-outline-secondary')
+            //                  .addClass('btn-outline-info'); // Color gris para indicar estado inactivo
+            // } else {
+            //     // Habilitar
+            //     btnAsistencia.removeClass('disabled')
+            //                  .css('pointer-events', 'auto')
+            //                  .removeAttr('tabindex')
+            //                  .removeClass('btn-outline-secondary')
+            //                  .addClass('btn-outline-info');
+            //     btnAdmision.removeClass('disabled')
+            //                  .css('pointer-events', 'auto') // Evita clics físicos
+            //                  .attr('tabindex', '-1')        // Evita enfoque por teclado
+            //                  .removeClass('btn-outline-secondary')
+            //                  .addClass('btn-outline-primary'); // Color gris para indicar estado inactivo
+            //     btnHistorico.removeClass('disabled')
+            //                  .css('pointer-events', 'auto') // Evita clics físicos
+            //                  .attr('tabindex', '-1')        // Evita enfoque por teclado
+            //                  .removeClass('btn-outline-secondary')
+            //                  .addClass('btn-outline-info'); // Color gris para indicar estado inactivo
+            //     btnBloqueo.addClass('disabled')
+            //                  .css('pointer-events', 'none') // Evita clics físicos
+            //                  .attr('tabindex', '-1')        // Evita enfoque por teclado
+            //                  .removeClass('btn-outline-info')
+            //                  .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+            //     if (context_admision_no || context_admision_no > 0) {
+            //         btnAdmision.removeClass('disabled')
+            //                    .css('pointer-events', 'none') // Evita clics físicos
+            //                    .attr('tabindex', '-1')        // Evita enfoque por teclado
+            //                    .removeClass('btn-outline-info')
+            //                    .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+            //         btnFinalizar.removeClass('disabled')
+            //                     .css('pointer-events', 'auto') // Evita clics físicos
+            //                     .attr('tabindex', '1')        // Evita enfoque por teclado
+            //                     .removeClass('btn-outline-secondary')
+            //                     .addClass('btn-outline-success'); // Color gris para indicar estado inactivo
+            //         btnCancelar.removeClass('disabled')
+            //                     .css('pointer-events', 'auto') // Evita clics físicos
+            //                     .attr('tabindex', '1')        // Evita enfoque por teclado
+            //                     .removeClass('btn-outline-secondary')
+            //                     .addClass('btn-outline-danger'); // Color gris para indicar estado inactivo
+            //     }
+            // }
 
         }
 
@@ -618,7 +793,18 @@
                     }
                     // $("#tbl"+result_sala+" tbody tr").remove();
                     $("#tbl"+result_sala+" tbody").append(html);
-                    // document.querySelector('.tab-pane.active').classList.remove('active');
+                    if (idRegistro !== null) {
+                        // Buscamos la fila que tenga el ID guardado
+                        let filaGuardada = $(`table[id^="tbl"] tbody tr`).filter(function() {
+                            return $(this).find('#idRegistro').text().trim() === idRegistro.toString();
+                        });
+
+                        if (filaGuardada.length > 0) {
+                            filaGuardada.addClass('table-active');
+                            // Opcional: Hacer scroll hasta la fila si es una lista larga
+                            // filaGuardada[0].scrollIntoView({ block: 'nearest' });
+                        }
+                    }
                     $("#nav-link-sala"+sala_activa).addClass("active");
                 },
                 error: function(error){
@@ -635,7 +821,6 @@
         // Confirmar llegada de paciente
         //===========================================================================
         function confirmarPresencia(){
-            console.log('idRegistro '+idRegistro)
             if (typeof idRegistro !== 'undefined' && idRegistro !== null) {
                 Swal.fire({
                         title: 'Confirmación',
@@ -661,11 +846,14 @@
                                 },
                                 success: function(response){
                                     Swal.fire({
-                                        title: 'Trabajo Finalizado !!!',
+                                        title: response.type === 'success' ? 'Trabajo Finalizado' : 'Atención',
                                         text: response.message,
                                         icon: response.type // Asegúrate que tu backend envíe 'success', 'error', etc.
                                     }).then(() => {
-                                        actualizarEstadoBotones();
+                                        if(response.type === 'success') {
+                                            aplicar_filtro();
+                                            actualizarEstadoBotones(context_paciente_id);
+                                        }
                                     });
                                 },
                                 error: function(error){
@@ -695,18 +883,12 @@
         //===========================================================================
         function fnEditarCita(){
             if (typeof idRegistro !== 'undefined' && idRegistro !== null) {
-                fnActualizarPacientes();
+                let idASeleccionar = (context_paciente_id != 'null' && context_paciente_id != '') ? context_paciente_id : '';
+                fnActualizarPacientes(idASeleccionar);
                 let fecha = $('#fecha_filtro').val();
                 let fechaHora = fecha + "T" + context_hora;
                 $('#fecha_cita').val(fechaHora);
-                if (context_paciente_id != 'null') {
-                    console.log('edicion 1');
-                    document.getElementById('edit_paciente_id').value     = context_paciente_id;
-                }else{
-                    console.log('edicion 2');
-                    document.getElementById('edit_paciente_id').value     = '';
-                }
-                $('#edit_paciente_id').change();
+
                 if (context_paciente_nombre != 'null') {
                     document.getElementById('edit_nombre_completo').value = context_paciente_nombre;
                 }else{
@@ -746,6 +928,16 @@
                             input.disabled = false;
                         });
                     }
+
+                    const formulario = $('#editarRegistro');
+                    const btn = formulario.find('button[type="submit"]');
+                    if (context_agenda_estado == 'C' || context_agenda_estado == 'R' || context_agenda_estado == 'B') {
+                        btn.prop('disabled', true); 
+                        btn.addClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                    }else{
+                        btn.prop('disabled', false); 
+                        btn.removeClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                    }
                 }
                 $('#editarRegistro').modal('show');
             }else{
@@ -759,21 +951,55 @@
         function fnCrearAdmision(){
             // alert(context_admision_no);
             if (typeof idRegistro !== 'undefined' && idRegistro !== null) {
-                if (context_paciente_en_clinica == 0) {
-                    Swal.fire({
-                        title: 'Error',
-                        text:  'Paciente aun no aparece disponible',
-                        icon:  'error',
-                        confirmButtonText: "Aceptar",
-                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
-                        customClass: {
-                            popup: 'mi-clase-personalizada',
-                            confirmButton: 'mi-boton-redondo btn-guardar', // Puedes usar tus clases existentes
-                            cancelButton: 'btn-danger'
-                        },
-                        buttonsStyling: false,
+                var inputs = document.querySelectorAll('#nuevaAdmisionModal input, #nuevaAdmisionModal select, #nuevaAdmisionModal textarea');
+                const formulario = $('#nuevaAdmisionModal');
+                const btn = formulario.find('button[type="submit"]');
+                if (context_admision_no != '') {
+                    btn.prop('disabled', true); 
+                    btn.addClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                    inputs.forEach(function(input) {
+                        input.disabled = true;
                     });
                 }else{
+                    if (context_agenda_estado == 'C' || context_agenda_estado == 'R' || context_agenda_estado == 'B'){
+                        btn.prop('disabled', true); 
+                        btn.addClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                        inputs.forEach(function(input) {
+                            input.disabled = true;
+                        });
+                    }else{
+                        btn.prop('disabled', false); 
+                        btn.removeClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                        inputs.forEach(function(input) {
+                            input.disabled = false;
+                        });
+                    }
+                }
+                    // if (context_admision_no != '') {
+                    //     inputs.forEach(function(input) {
+                    //         input.disabled = true;
+                    //     });
+                    //     if (context_agenda_estado == 'C' || context_agenda_estado == 'R' || context_agenda_estado == 'B'){
+                    //         btn.prop('disabled', true); 
+                    //         btn.addClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                    //     }else{
+                    //         btn.prop('disabled', false); 
+                    //         btn.removeClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                    //     }
+                    // }else{
+                    //     btn.prop('disabled', false); 
+                    //     btn.removeClass('disabled'); // Clase de Bootstrap para refuerzo visual
+                    //     if (context_agenda_estado == 'C' || context_agenda_estado == 'R' || context_agenda_estado == 'B'){
+                    //         inputs.forEach(function(input) {
+                    //             input.disabled = true;
+                    //         });
+                    //     }else{
+                    //         inputs.forEach(function(input) {
+                    //             input.disabled = false;
+                    //         });
+                    //     }
+                    // }
+                    
                     document.getElementById('adm_paciente_id').value = context_paciente_id;
                     $('#adm_paciente_id').change();
                     document.getElementById('adm_hospital_id').value = context_hospital_id;
@@ -781,7 +1007,7 @@
                     document.getElementById('adm_medico_id').value = context_medico_id;
                     $('#adm_medico_id').change();
                     $('#nuevaAdmisionModal').modal('show');
-                }
+                // }
             }else{
                 // alert('Debe seleccionar un horario para continuar');
                 Swal.fire({
@@ -798,7 +1024,7 @@
             }
         }
 
-        function fnActualizarPacientes(){
+        function fnActualizarPacientes(idASeleccionar = null){
             let html = '';
 
             $.ajax({
@@ -808,13 +1034,16 @@
                 data: {"_token": "{{ csrf_token() }}"
                       },
                 success: function(response){
-                    console.log(response);
-                    html += '<option value="">Paciente sin ficha...</option>'
-                    $("#edit_paciente_id").empty().append(html);
+                    html += '<option value="">Paciente sin ficha...</option>';
                     for (var i = 0; i < response.length; i++) {
-                        html += '<option value="'+response[i]['id']+'">'+response[i]['nombre_completo']+'</option>'
+                        html += '<option value="'+response[i]['id']+'">'+response[i]['nombre_completo']+'</option>';
                     }
-                    $("#edit_paciente_id").append(html);
+                    $("#edit_paciente_id").empty().append(html);
+
+                    // IMPORTANTE: Asignar el valor AQUÍ, después de que el HTML existe
+                    if(idASeleccionar){
+                        $("#edit_paciente_id").val(idASeleccionar).trigger('change');
+                    }
                 },
                 error: function(error){
                     console.log(error);
@@ -860,6 +1089,12 @@
             // Agregamos el ID de la cita que no está en el HTML
             formData.push({ name: "agenda_id", value: context_agenda_id });
 
+            const btn = $(this).find('button[type="submit"]');
+    
+            // Lo deshabilitamos y cambiamos el icono por un spinner (opcional)
+            btn.prop('disabled', true);
+            btn.html('<i class="fas fa-spinner fa-spin"></i>')
+
             $.ajax({
                 url: $(this).attr('action'),
                 type: "POST",
@@ -879,6 +1114,7 @@
 
                     // Refrescamos solo la tabla (tu función existente)
                     aplicar_filtro(); 
+                    actualizarEstadoBotones();
                 },
                 error: function(jqXHR) {
                     var errorMsg = 'Hubo un problema al actualizar el registro.';
@@ -900,12 +1136,16 @@
         $('#admisionForm').on('submit', function(e){
             e.preventDefault(); // Detiene la recarga de la página
 
+            var disabledInputs = $(this).find(':disabled');
+            disabledInputs.prop('disabled', false);
+
             // Obtenemos los datos del formulario
             var formData = $(this).serializeArray();
+
+            disabledInputs.prop('disabled', true);
             
             // Agregamos el ID de la cita que no está en el HTML
             formData.push({ name: "agenda_id", value: context_agenda_id });
-
             $.ajax({
                 url: $(this).attr('action'),
                 type: "POST",
@@ -923,7 +1163,7 @@
                         confirmButtonText: 'Aceptar'
                     });
 
-                    // Refrescamos solo la tabla (tu función existente)
+                    aplicar_filtro();
                     actualizarEstadoBotones();
                 },
                 error: function(jqXHR) {
@@ -940,7 +1180,213 @@
                     });
                 }
             });
-        })
+        });
+
+        //===========================================================================
+        // Abrir Bloqueo de horario
+        //===========================================================================
+        function fnBloqueo(){
+            if (typeof idRegistro !== 'undefined' && idRegistro !== null) {
+                $('#bloqueoModal').modal('show');
+            }else{
+                // alert('Debe seleccionar un horario para continuar');
+                Swal.fire({
+                    title: 'Error',
+                    text:  'Debe seleccionar un horario para continuar',
+                    icon:  'error',
+                    confirmButtonText: "Aceptar",
+                    confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                    customClass: {
+                        confirmButton: 'btn btn-success'
+                    },
+                    buttonsStyling: false,
+                });
+            }
+        }
+
+        //=====================================================================
+        // Grabar Bloqueo de horario
+        //=====================================================================
+        $(function(){
+            $("#bloqueoForm").submit(function(){
+                var cita_id         = context_agenda_id;
+                var observaciones   = document.getElementById('bloqueo_espacio_observaciones').value;
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    url: "{{ route('bloquear_espacio') }}",
+                    method: "POST",
+                    data: {cita_id         : cita_id,
+                           observaciones   : observaciones
+                    },
+                    success: function(response){
+                        Swal.fire({
+                            title: 'Trabajo Finalizado',
+                            text:  response,
+                            icon:  'success',
+                            confirmButtonText: "Aceptar",
+                            confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                            customClass: {
+                                confirmButton: 'btn btn-success'
+                            },
+                            buttonsStyling: false,
+                        }).then((result) => {
+                            if (result.isConfirmed) { 
+                                aplicar_filtro();
+                                actualizarEstadoBotones();
+                            } 
+                        });
+                    },
+                    error: function(error){
+                        console.log(error);
+                    }
+                });
+            });
+        });
+
+        //=====================================================================
+        // Marcar registro como finalizado
+        //=====================================================================
+        function fnFinalizar(){
+            Swal.fire({
+                title: 'Confirmación',
+                text: "¿Confirmas que deseas finalizar la cita?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745', // Color success de AdminLTE
+                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
+                confirmButtonText: 'Si Finalizar',
+                cancelButtonText: 'No',
+                allowEscapeKey: true,
+                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+            }).then((result) => {
+                if (result.isConfirmed) { 
+                    $.ajax({
+                        url: "{{ route('realizar_cita') }}",
+                        type: "POST",
+                        async: true,
+                        data: {"_token": "{{ csrf_token() }}", 
+                               cita_id: idRegistro, 
+                               observaciones: 'Prueba cancelacion de cita'
+                              },
+                        success: function(response){
+                            var info = response;
+                            Swal.fire({
+                                title: response.type === 'success' ? '¡Logrado!' : 'Atención',
+                                text: response.message,
+                                icon: response.type,
+                                showConfirmButton: true,
+                                confirmButtonText: 'Aceptar'
+                            }).then((result) => {
+                                actualizarEstadoBotones();
+                                aplicar_filtro();
+                            });
+                        },
+                        error: function(error){
+                            console.log(error);
+                        }
+                    });
+                } 
+            });
+        }
+
+        //=====================================================================
+        // Marcar registro como cancelado
+        //=====================================================================
+        function fnCancelar(){
+            Swal.fire({
+                title: 'Confirmación',
+                text: "Seguro de Cancelar la Cita ?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745', // Color success de AdminLTE
+                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No',
+                allowEscapeKey: true,
+                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+            }).then((result) => {
+                if (result.isConfirmed) { 
+                    $.ajax({
+                        url: "{{ route('cancelar_cita') }}",
+                        type: "POST",
+                        async: true,
+                        data: {"_token": "{{ csrf_token() }}", 
+                               cita_id: idRegistro, 
+                               observaciones: 'Prueba cancelacion de cita'
+                              },
+                        success: function(response){
+                            var info = response;
+                            Swal.fire({
+                                title: response.type === 'success' ? '¡Logrado!' : 'Atención',
+                                text: response.message,
+                                icon: response.type,
+                                showConfirmButton: true,
+                                confirmButtonText: 'Aceptar'
+                            }).then((result) => {
+                                actualizarEstadoBotones();
+                                aplicar_filtro();
+                            });
+                        },
+                        error: function(error){
+                            console.log(error);
+                        }
+                    });
+                } 
+            });
+        }
+
+        //=====================================================================
+        // historico de pacientes
+        //=====================================================================
+        function fnHistorico(){
+            $.ajax({
+                url: "{{ route('paciente_citas') }}",
+                type: "POST",
+                async: true,
+                data: {"_token": "{{ csrf_token() }}", 
+                       paciente_id: context_paciente_id
+                      },
+                success: function(response){
+                    let html = '';
+                    for(var i = 0; i < response.length; i++){
+                        html += '<tr class="text-center" style="font-size: 12px;">';
+                        html += '<td>'+response[i]['fecha_inicio']+'</td>'
+                        html += '<td>'
+                        switch (response[i]['estado']){
+                            case 'A' : html += 'Activa'; break;
+                            case 'R' : html += 'Realizada'; break;
+                            case 'C' : html += 'Cancelada'; break;
+                            case 'B' : html += 'Bloqueado'; break;
+                            case 'Z' : html += 'Trasladado'; break;
+                            case 'P' : html += 'Disponible'; break;
+                            default : 'Disponible'; break;
+                        }
+                        html += '</td>'
+                        html += '<td>';
+                        if (response[i]['admision_no'] != null) {
+                            html += response[i]['admision_no']
+                        }
+                        html += '</td>'
+                        html += '<td>'
+                        if (response[i]['admision_no'] != null) {
+                            html += response[i]['tipo_atencion'];
+                        }
+                        html += '</td>'
+                        html += '<td>'+response[i]['nombre_completo']+'</td>'
+                        html += '<td>'+response[i]['nombre']+'</td>'
+                        html += '</tr>';    
+                    }
+                    $("#tblHistorico tbody tr").remove();
+                    $("#tblHistorico tbody").append(html);
+                    $('#historicoModal').modal('show');
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        }
 
     </script>
 @endsection

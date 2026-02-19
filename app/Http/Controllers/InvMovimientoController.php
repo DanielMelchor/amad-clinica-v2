@@ -91,8 +91,7 @@ class InvMovimientoController extends Controller
 
     public function store_compra(Request $request){
         $datos = $request->all();
-        // print_r($request['productos']);
-        // die;
+        
         $validData = $request->validate([
             'proveedor_id'     => 'required',
             'nit'              => 'required',

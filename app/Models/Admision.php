@@ -29,4 +29,9 @@ class Admision extends Model
             return $query->where('admision', 'like', '%'.$AdmisionNo.'%');
         }
     }
+
+    public function bitacoras()
+    {
+        return $this->hasMany(AdmisionBitacora::class, 'admision_id');
+    }
 }
