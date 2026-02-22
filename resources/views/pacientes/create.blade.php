@@ -456,20 +456,44 @@
     </div>
 @endsection
 @section('js')
+    {{-- Capturar Errores de Validación (como el unique:username) --}}
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Revisar Formulario',
+                // Unimos todos los mensajes de error en una lista
+                html: `
+                    <ul style="text-align: left;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonText: "Aceptar",
+                confirmButtonColor: "#dc3545",
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                buttonsStyling: false
+            });
+        </script>
+    @endif
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
-                
                 setTimeout(function() {
-                    swal({
-                        title: "Trabajo Finalizado",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "success", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-success'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
@@ -478,15 +502,17 @@
         @if(Session::has('message'))
             <script>
                 setTimeout(function() {
-                    swal({
-                        title: "Error",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif

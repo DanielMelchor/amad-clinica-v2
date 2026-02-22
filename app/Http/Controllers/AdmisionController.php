@@ -97,7 +97,7 @@ class AdmisionController extends Controller
 
     public function nueva_admision($id){
         $hoy = Carbon::now()->format('Y-m-d');
-        $paciente_id = Crypt::decrypt($id);
+        $paciente_id = Crypt::decryptString($id);
 
         $pPaciente  = Paciente::where('id', $paciente_id)
                       ->select('id', DB::raw('CONCAT(nombres, " ", apellidos) as nombre_completo'), 'expediente_no', 
@@ -198,7 +198,6 @@ class AdmisionController extends Controller
             'adm_hospital_id'   => 'required|exists:hospitales,id'
         ], $mensajes);
 
-        dd($validData);
         
         DB::beginTransaction();
         try {
