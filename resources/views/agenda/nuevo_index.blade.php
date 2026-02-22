@@ -672,7 +672,13 @@
             var fecha  = $('#fecha_filtro').val();
             var medico = $('#medico_filtro').val();
             var estado = $('#estado_filtro').val();
-            // alert(sala_activa+' '+fecha+' '+medico+' '+estado);
+            
+            $(".nav-link").removeClass("active");
+            $(".tab-pane").removeClass("active show");
+
+            // Activamos solo el link y el panel de la sala que el usuario seleccionó
+            $("#nav-link-sala" + sala_activa).addClass("active");
+            $("#sala" + sala_activa).addClass("active show");
             $("#tbl"+sala_activa+" tbody tr").remove();
             var salas = @json($salas);
             $.each(salas, function(index, valor) {

@@ -323,37 +323,6 @@
 		        }
 		    });
 
-		    // $.ajax({
-		    //     headers: {
-            //         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            //     },
-            //     url: "{{ route('trae_caracteristicas_x_producto') }}",
-            //     method: "POST",
-            //     data: {producto_id: producto_id},
-		    //     success: function(response) {
-		    //         response.forEach(function(item, index) {
-		    //         	fnAgregarCaracteristica();
-		    //         	// let dosisSelect = $('#dosis\\['+index+'\\]\\[dosis_id\\]');
-            // 			let idInput = $('#caracteristica\\['+index+'\\]\\[id\\]');
-            // 			let descripcionInput = $('#caracteristica\\['+index+'\\]\\[descripcion\\]');
-		    //             if (idInput.length > 0) {
-		    //                 idInput.val(item['id']);
-		    //             } else {
-		    //                 console.error('No se encontró el input para cantidad en el índice ' + index);
-		    //             }
-		    //             if (descripcionInput.length > 0) {
-		    //                 descripcionInput.val(item['descripcion']);
-		    //             } else {
-		    //                 console.error('No se encontró el input para cantidad en el índice ' + index);
-		    //             }
-		    //         });
-		    //     },
-		    //     error: function() {
-		    //         // Este bloque se ejecuta si hay un error con la solicitud
-		    //         console.error('Error en la solicitud AJAX:');
-		    //     }
-		    // });
-
 		    $.ajax({
 		        headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

@@ -20,7 +20,7 @@ class Bodega extends Model
 
     protected $table = 'bodegas';
     
-    protected $fillable = ['empresa_id', 'descripcion', 'estado'];
+    protected $fillable = ['empresa_id', 'id', 'descripcion', 'estado'];
     
-    protected $hidden = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
+    protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

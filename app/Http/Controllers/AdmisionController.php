@@ -95,21 +95,16 @@ class AdmisionController extends Controller
         return view('admisiones.index', compact('medicos','hospitales', 'aseguradoras','pacientes', 'admisiones', 'hoy', 'listaAtenciones'));
     }
 
-    public function nueva_admision($id, $origen){
+    public function nueva_admision($id){
         $hoy = Carbon::now()->format('Y-m-d');
-        $paciente_id = Crypt::decryptString($id);
+        $paciente_id = Crypt::decrypt($id);
 
         $pPaciente  = Paciente::where('id', $paciente_id)
-                      ->select('id', DB::raw('CONCAT(nombres, " ", apellidos) nombre_completo'), 'expediente_no', 
+                      ->select('id', DB::raw('CONCAT(nombres, " ", apellidos) as nombre_completo'), 'expediente_no', 
                                'fecha_nacimiento', 'antmedico_descripcion', 'antquirurgico_descripcion', 'antalergia_descripcion', 'antgineco_descripcion', 'antfamiliar_descripcion', 'antmedicamento_descripcion', 'tabaco_cnt', 'tabaco_tiempo', 'alcohol_cnt', 'alcohol_tiempo',
-                               DB::raw('CASE WHEN genero = "M" THEN "Masculino" ELSE "Femenino" END as genero'))
+                               DB::raw('CASE WHEN genero = "M" THEN "Masculino" ELSE "Femenino" END as genero'),
+                               DB::raw('TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) AS edad'),)
                       ->first();
-
-        if ($pPaciente->genero == 'M') {
-            $genero = 'Masculino';
-        }else{
-            $genero = 'Femenino';
-        }
 
         $totalAdmisiones = \DB::table('admisiones')
                            ->where('empresa_id', Auth::user()->empresa_id)
@@ -169,7 +164,7 @@ class AdmisionController extends Controller
         //                    ->select('p.id', 'p.descripcion')
         //                    ->get();
 
-        return view('admisiones.nueva_admision', compact('pPaciente', 'genero', 'pListaC', 'pListaP', 'pListaH', 'pMedicamentos', 'pProcedimientos', 'premedicacion', 'origen', 'listado', 'hoy'));
+        return view('admisiones.nueva_admision', compact('pPaciente', 'pListaC', 'pListaP', 'pListaH', 'pMedicamentos', 'pProcedimientos', 'premedicacion', 'listado', 'hoy'));
     }
 
     public function getAdmisiones($paciente_id){
@@ -202,6 +197,8 @@ class AdmisionController extends Controller
             'adm_medico_id'     => 'required|exists:medicos,id',
             'adm_hospital_id'   => 'required|exists:hospitales,id'
         ], $mensajes);
+
+        dd($validData);
         
         DB::beginTransaction();
         try {

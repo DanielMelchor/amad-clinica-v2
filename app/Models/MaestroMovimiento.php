@@ -30,9 +30,27 @@ class MaestroMovimiento extends Model
         return $this->belongsTo(InventarioTransaccion::class, 'inventario_transaccion_id');
     }
 
+    // Relación con Proveedor
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
+
+    // Relación con Tipo de Documento
+    public function tipoDocumento()
+    {
+        return $this->belongsTo(TipoDocumento::class, 'tipo_documento_id');
+    }
+
+    // Relación con Bodega
+    public function bodega()
+    {
+        return $this->belongsTo(Bodega::class, 'bodega_origen_id');
+    }
+
+    // Relación con los Detalles (Artículos)
     public function detalles()
     {
-        return $this->hasMany(DetalleMovimiento::class, 'maestro_movimiento_id')
-                    ->where('estado', '!=', 2);
+        return $this->hasMany(DetalleMovimiento::class, 'maestro_movimiento_id');
     }
 }

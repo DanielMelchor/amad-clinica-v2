@@ -1,139 +1,123 @@
 @extends('adminlte::page')
+
 @section('css')
-	<meta name="csrf-token" content="{{ csrf_token() }}" />
-	<link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-	<link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-	<style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
-        }
-        .dataTables_wrapper .row {
-            display: flex;
-            align-items: center; /* Alinea verticalmente los elementos */
-            justify-content: flex-start; /* Ajusta los elementos a la izquierda */
-        }
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <style type="text/css">
+        /* --- ESTILOS BASE --- */
+        .btn-guardar { background-color: #A5C890 !important; }
+        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: auto; }
 
-        .dataTables_wrapper .row .col-auto {
-            display: flex;
-            justify-content: flex-start; /* Alinea los elementos dentro de las columnas */
-        }
+        /* --- ESTRATEGIA MOBILE FIRST (Hasta 768px) --- */
+        @media (max-width: 768px) {
+            #tblprincipal thead { display: none; } /* Ocultar cabecera en móvil */
 
-        .dataTables_wrapper .row .col {
-            display: flex;
-            justify-content: flex-start;
+            #tblprincipal tr {
+                display: block;
+                margin-bottom: 1.2rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                background: #fff;
+                padding: 10px;
+            }
+
+            #tblprincipal td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+                padding: 0.75rem 0.5rem !important;
+                border-top: 1px solid #f2f2f2 !important;
+                width: 100% !important;
+                min-height: 45px;
+            }
+
+            #tblprincipal td:first-child { border-top: none !important; }
+
+            /* Generar etiquetas desde el atributo data-label */
+            #tblprincipal td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                color: #495057;
+                flex: 1;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+            }
+
+            /* Botones de acción más grandes para pulgares */
+            .btn-xs { padding: 0.5rem 0.7rem; font-size: 1rem; }
+            
+            /* Ajuste de controles de búsqueda */
+            .dataTables_wrapper .row { flex-direction: column; align-items: center; }
         }
     </style>
 @endsection
+
 @section('title', 'Clasificaciones')
-@section('content_header')
-	<br>
-@endsection
 
 @section('content')
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="card shadow-sm">
-					<div class="card-header d-flex align-items-center" style="background-color: #E1E8ED;">
-						<h5 class="mb-0 flex-grow-1">Clasificación de Insumos</h5>
-						
-						<div class="ml-auto">
-							<button type="button" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" title="Agregar Registro" onclick="fn_agregar(); return false;">
-								<i class="fas fa-plus"></i>
-							</button>
-							<a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
-								<i class="fas fa-sign-out-alt"></i>
-							</a>
-						</div>
-					</div>
+    <div class="row pt-3">
+        <div class="col-12 col-md-11 mx-auto">
+            <div class="card shadow-lg">
+                <div class="card-header" style="background-color: #E1E8ED;">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shield-alt mr-2"></i>Clasificaciones</h6>
+                        </div>
+                        <div class="col-4 text-right">
+                            <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-3" onclick="fn_agregar();">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-3">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tblprincipal" class="table table-sm table-striped table-hover w-100">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($registros as $registro)
+                                    <tr>
+                                        <td class="align-middle text-center">{{ $registro->nombre }}</td>
+                                        <td class="align-middle text-center">
+                                            <span class="badge {{ $registro->estado == 1 ? 'badge-success' : 'badge-danger' }}">
+                                                {{ $registro->estado == 1 ? 'Alta' : 'Baja' }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle text-right">
+                                            @php $Id= Crypt::encrypt($registro->id); @endphp
+                                            <button class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar" onclick="fn_edicion('{{ $Id }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-					<div class="card-body p-2 p-md-3">
-						<div class="row">
-							<div class="col-12">
-								<div class="table-responsive">
-									<table id="tblprincipal" class="table table-sm table-striped table-hover w-100">
-										<thead class="thead-light" style="font-size: 13px;">
-											<tr>
-												<th class="text-center">Nombre</th>
-												<th class="text-center">Estado</th>
-												<th class="text-right">Acciones</th>
-											</tr>   
-										</thead>
-										<tbody style="font-size: 13px;">
-											@foreach($registros as $registro)
-												<tr>
-													<td class="align-middle text-center">{{ $registro->nombre }}</td>
-													<td class="align-middle text-center">
-														<span class="badge {{ $registro->estado == 1 ? 'badge-success' : 'badge-danger' }}">
-															{{ $registro->estado == 1 ? 'Alta' : 'Baja' }}
-														</span>
-													</td>
-													<td class="align-middle text-right">
-														@php $Id= Crypt::encrypt($registro->id); @endphp
-														<button class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar" onclick="fn_edicion('{{ $Id }}')">
-															<i class="fas fa-edit"></i>
-														</button>
-													</td>
-												</tr>
-											@endforeach
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="card-footer d-none d-md-block">
-						</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	@include('invclasificaciones.partials.modals_invclasificaciones')
+    @include('invclasificaciones.partials.modals_invclasificaciones')
+
 @endsection
+
 @section('js')
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    <script type="text/javascript">
-    	$(function () {
+    <script>
+        $(document).ready(function() {
+            // Inicialización limpia de DataTable
             $('#tblprincipal').DataTable({
                 "paging": true,
                 "lengthChange": true,
@@ -168,76 +152,73 @@
                     }
                 ]
             });
-        });
-		//========================================================================
-		// Levantar modal de Agregar
-		//========================================================================
-		function fn_agregar(){
-			document.getElementById('nombre').value  = '';
-        	/*$('#plural').prop('checked', false);
-        	$('#estado').prop('checked', false);*/
-        	$('#agregarModalCenter').on('shown.bs.modal', function () {
-		  		$('#nombre').trigger('focus');
-			});
-			$("#agregarModalCenter").modal();
-		}
 
-		//========================================================================
-		// Levantar modal de edición
-		//========================================================================
-		function fn_edicion(id){
-			$.ajax({
-	        	url: "{{ route('inv_clasificacion_editar') }}",
-		        type: "POST",
-		        dataType: 'json',
-		        data: {"_token": "{{ csrf_token() }}", 
-		               id : id},
-	            success: function(response){
-	            	console.log(response);
-	            	document.getElementById('eid').value           = id;
-	            	document.getElementById('enombre').value       = response.nombre;
-
-	            	if (response.definir_caracteristica == 1) {
-	            		$('#edefinir_caracteristica').prop('checked', true);
-	            	}else{
-	            		$('#edefinir_caracteristica').prop('checked', false);
-	            	}
-
-	            	if (response.definir_medidas == 1) {
-	            		$('#edefinir_medidas').prop('checked', true);
-	            	}else{
-	            		$('#edefinir_medidas').prop('checked', false);
-	            	}
-
-	            	if (response.definir_dosis == 1) {
-	            		$('#edefinir_dosis').prop('checked', true);
-	            	}else{
-	            		$('#edefinir_dosis').prop('checked', false);
-	            	}
-
-	            	if (response.estado == 1) {
-	            		$('#eestado').prop('checked', true);
-	            	}else{
-	            		$('#eestado').prop('checked', false);
-	            	}
-
-	            	$('#editarModalCenter').on('shown.bs.modal', function () {
-				  		$('#enombre').trigger('focus');
-					});
-					$("#editarModalCenter").modal();
-	            },
-	            error: function(error){
-		            console.log(error);
-		        }
-		    });
-		}
-
-		$(document).ready(function() {
             $('#formaNuevoRegistro').on('submit', function() {
-                // Deshabilitar el botón de submit cuando se envíe el formulario
                 $('#submitButton').prop('disabled', true);
-                // $('#submitButton').text('Enviando...');
             });
         });
+
+        //========================================================================
+        // Levantar modal de Agregar
+        //========================================================================
+        function fn_agregar(){
+            document.getElementById('nombre').value  = '';
+            /*$('#plural').prop('checked', false);
+            $('#estado').prop('checked', false);*/
+            $('#agregarModalCenter').on('shown.bs.modal', function () {
+                $('#nombre').trigger('focus');
+            });
+            $("#agregarModalCenter").modal();
+        }
+
+        //========================================================================
+        // Levantar modal de edición
+        //========================================================================
+        function fn_edicion(id){
+            $.ajax({
+                url: "{{ route('inv_clasificacion_editar') }}",
+                type: "POST",
+                dataType: 'json',
+                data: {"_token": "{{ csrf_token() }}", 
+                       id : id},
+                success: function(response){
+                    console.log(response);
+                    document.getElementById('eid').value           = id;
+                    document.getElementById('enombre').value       = response.nombre;
+
+                    if (response.definir_caracteristica == 1) {
+                        $('#edefinir_caracteristica').prop('checked', true);
+                    }else{
+                        $('#edefinir_caracteristica').prop('checked', false);
+                    }
+
+                    if (response.definir_medidas == 1) {
+                        $('#edefinir_medidas').prop('checked', true);
+                    }else{
+                        $('#edefinir_medidas').prop('checked', false);
+                    }
+
+                    if (response.definir_dosis == 1) {
+                        $('#edefinir_dosis').prop('checked', true);
+                    }else{
+                        $('#edefinir_dosis').prop('checked', false);
+                    }
+
+                    if (response.estado == 1) {
+                        $('#eestado').prop('checked', true);
+                    }else{
+                        $('#eestado').prop('checked', false);
+                    }
+
+                    $('#editarModalCenter').on('shown.bs.modal', function () {
+                        $('#enombre').trigger('focus');
+                    });
+                    $("#editarModalCenter").modal();
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        }
     </script>
 @endsection

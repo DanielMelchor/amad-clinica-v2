@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
+use DB;
 use Response;
 use Session;
 use user;
@@ -52,32 +53,38 @@ class AseguradoraController extends Controller
             'nombre' => 'required'
         ]);
 
-        $aseguradora = new Aseguradora();
-        $aseguradora->empresa_id = Auth::user()->empresa_id;
-        $aseguradora->nombre = $validData['nombre'];
-        $aseguradora->direccion = $request->direccion;
-        $aseguradora->telefonos = $request->telefonos;
-        $aseguradora->contacto = $request->contacto;
-        $aseguradora->facturacion_nit = $request->facturacion_nit;
-        $aseguradora->facturacion_nombre = $request->facturacion_nombre;
-        $aseguradora->facturacion_direccion = $request->facturacion_direccion;
-        if (isset($request->estado)) {
-            $aseguradora->estado = 1;
-        }else{
-            $aseguradora->estado = 0;
+        DB::beginTransaction();
+        try {
+            $aseguradora = new Aseguradora();
+            $aseguradora->empresa_id = Auth::user()->empresa_id;
+            $aseguradora->nombre = $validData['nombre'];
+            $aseguradora->direccion = $request->direccion;
+            $aseguradora->telefonos = $request->telefonos;
+            $aseguradora->contacto = $request->contacto;
+            $aseguradora->facturacion_nit = $request->facturacion_nit;
+            $aseguradora->facturacion_nombre = $request->facturacion_nombre;
+            $aseguradora->facturacion_direccion = $request->facturacion_direccion;
+            if (isset($request->estado)) {
+                $aseguradora->estado = 1;
+            }else{
+                $aseguradora->estado = 0;
+            }
+            $aseguradora->save();
+
+            DB::commit();
+
+            return back()->withInput()->with([
+                'message' => '! Registro almacenado con exito !',
+                'type' => 'success'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with([
+                'message' => 'Error al guardar: ' . $e->getMessage(),
+                'type' => 'error'
+            ]);
         }
-        $aseguradora->save();
-
-        //Session::flash('success', 'Se editó el medico con éxito.');
-
-        // Session::flash('success', 'Aseguradora grabada con exito !!!' );
-        // return redirect(route('aseguradoras'));
-        $message = array(
-            'message' => 'Registro almacenado con exito !!!',
-            'type'    => 'success'
-        );
-        return redirect()->back()->with($message);
-
     }
 
     /**
@@ -121,32 +128,37 @@ class AseguradoraController extends Controller
         $id     = $_POST['eid'];
         $aseguradoraId = Crypt::decrypt($id);
 
-        $aseguradora = Aseguradora::findorfail($aseguradoraId);
-        $aseguradora->nombre = $validData['enombre'];
-        $aseguradora->direccion = $request->edireccion;
-        $aseguradora->telefonos = $request->etelefonos;
-        $aseguradora->contacto = $request->econtacto;
-        $aseguradora->facturacion_nit = $request->efacturacion_nit;
-        $aseguradora->facturacion_nombre = $request->efacturacion_nombre;
-        $aseguradora->facturacion_direccion = $request->efacturacion_direccion;
-        if (isset($request->eestado)) {
-            $aseguradora->estado = 1;
-        }else{
-            $aseguradora->estado = 0;
+        DB::beginTransaction();
+        try {
+            $aseguradora = Aseguradora::findorfail($aseguradoraId);
+            $aseguradora->nombre = $validData['enombre'];
+            $aseguradora->direccion = $request->edireccion;
+            $aseguradora->telefonos = $request->etelefonos;
+            $aseguradora->contacto = $request->econtacto;
+            $aseguradora->facturacion_nit = $request->efacturacion_nit;
+            $aseguradora->facturacion_nombre = $request->efacturacion_nombre;
+            $aseguradora->facturacion_direccion = $request->efacturacion_direccion;
+            if (isset($request->eestado)) {
+                $aseguradora->estado = 1;
+            }else{
+                $aseguradora->estado = 0;
+            }
+            $aseguradora->save();
+
+            DB::commit();
+
+            return back()->withInput()->with([
+                'message' => '! Registro actualizado con exito !',
+                'type' => 'success'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with([
+                'message' => 'Error al guardar: ' . $e->getMessage(),
+                'type' => 'error'
+            ]);
         }
-        $aseguradora->save();
-
-        //Session::flash('success', 'Se editó el medico con éxito.');
-
-        //return Redirect::route('aseguradoras')->with('message','Medico grabado con exito');
-        // Session::flash('success', 'Aseguradora Actualizada con exito !!!' );
-        // return redirect(route('aseguradoras'));
-        $message = array(
-            'message' => 'Registro actualizado con exito !!!',
-            'type'    => 'success'
-        );
-        return redirect()->back()->with($message);
-
     }
 
     /**

@@ -1,139 +1,128 @@
 @extends('adminlte::page')
+
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
-        }
-        .dataTables_wrapper .row {
-            display: flex;
-            align-items: center; /* Alinea verticalmente los elementos */
-            justify-content: flex-start; /* Ajusta los elementos a la izquierda */
-        }
+        /* --- ESTILOS BASE --- */
+        .btn-guardar { background-color: #A5C890 !important; }
+        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: auto; }
 
-        .dataTables_wrapper .row .col-auto {
-            display: flex;
-            justify-content: flex-start; /* Alinea los elementos dentro de las columnas */
-        }
+        /* --- ESTRATEGIA MOBILE FIRST (Hasta 768px) --- */
+        @media (max-width: 768px) {
+            #tblprincipal thead { display: none; } /* Ocultar cabecera en móvil */
 
-        .dataTables_wrapper .row .col {
-            display: flex;
-            justify-content: flex-start;
+            #tblprincipal tr {
+                display: block;
+                margin-bottom: 1.2rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                background: #fff;
+                padding: 10px;
+            }
+
+            #tblprincipal td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+                padding: 0.75rem 0.5rem !important;
+                border-top: 1px solid #f2f2f2 !important;
+                width: 100% !important;
+                min-height: 45px;
+            }
+
+            #tblprincipal td:first-child { border-top: none !important; }
+
+            /* Generar etiquetas desde el atributo data-label */
+            #tblprincipal td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                color: #495057;
+                flex: 1;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+            }
+
+            /* Botones de acción más grandes para pulgares */
+            .btn-xs { padding: 0.5rem 0.7rem; font-size: 1rem; }
+            
+            /* Ajuste de controles de búsqueda */
+            .dataTables_wrapper .row { flex-direction: column; align-items: center; }
         }
     </style>
 @endsection
-@section('title', 'Productos')
 
-@section('content_header')
-    <br>
-@endsection
+@section('title', 'Insumos')
 
 @section('content')
-	<div class="container-fluid">
-        <div class="row">
-            <div class="col-12 col-lg-10 offset-lg-1">
-                <div class="card shadow-sm">
-                    <div class="card-header d-flex align-items-center" style="background-color: #E1E8ED;">
-                        <h5 class="mb-0 flex-grow-1 font-weight-bold">Productos</h5>
-                        
-                        <div class="ml-auto">
-                            <a href="{{ route('crear_producto')}}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" title="Crear Producto">
-                                <i class="fas fa-plus"></i>
-                            </a>
-                            <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </a>
+    <div class="row pt-3">
+        <div class="col-12 col-md-11 mx-auto">
+            <div class="card shadow-lg">
+                <div class="card-header" style="background-color: #E1E8ED;">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shield-alt mr-2"></i>Insumos</h6>
                         </div>
-                    </div>
-
-                    <div class="card-body p-1 p-md-3">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-striped table-hover w-100" id="tblprincipal">
-                                        <thead class="thead-light" style="font-size: 13px;">
-                                            <tr>
-                                                <th>Clasificación</th>
-                                                <th>Descripción</th>
-                                                <th class="text-center">Estado</th>
-                                                <th class="text-right">Acciones</th>
-                                            </tr>   
-                                        </thead>
-                                        <tbody style="font-size: 13px;">
-                                            @foreach($pProductos as $pProducto)
-                                                <tr>
-                                                    <td class="align-middle">{{ $pProducto->clasificacion }}</td>
-                                                    <td class="align-middle">{{ $pProducto->descripcion }}</td>
-                                                    <td class="align-middle text-center">
-                                                        <span class="badge {{ $pProducto->estado == 1 ? 'badge-success' : 'badge-danger' }}">
-                                                            {{ $pProducto->estado == 1 ? 'Alta' : 'Baja' }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="align-middle text-right">
-                                                        @php $productoId= Crypt::encrypt($pProducto->id); @endphp
-                                                        <a href="{{ route('editar_producto', $productoId) }}" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar">
-                                                            <i class="fa fa-edit"></i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+                        <div class="col-4 text-right">
+                            <div class="ml-auto">
+                                <a href="{{ route('crear_producto')}}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" title="Crear Producto">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tblprincipal" class="table table-sm table-striped table-hover w-100">
+                            <thead class="thead-light" style="font-size: 13px;">
+                                <tr class="text-center">
+                                    <th>Clasificación</th>
+                                    <th>Descripción</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-right">Acciones</th>
+                                </tr>   
+                            </thead>
+                            <tbody style="font-size: 13px;">
+                                @foreach($pProductos as $pProducto)
+                                    <tr>
+                                        <td class="align-middle">{{ $pProducto->clasificacion }}</td>
+                                        <td class="align-middle">{{ $pProducto->descripcion }}</td>
+                                        <td class="align-middle text-center">
+                                            <span class="badge {{ $pProducto->estado == 1 ? 'badge-success' : 'badge-danger' }}">
+                                                {{ $pProducto->estado == 1 ? 'Alta' : 'Baja' }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle text-right">
+                                            @php $productoId= Crypt::encrypt($pProducto->id); @endphp
+                                            <a href="{{ route('editar_producto', $productoId) }}" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @include('aseguradoras.partials.modals_aseguradoras')
+
 @endsection
+
 @section('js')
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
     <script>
-  		$(function () {
-  			$('#tblprincipal').DataTable({
+        $(document).ready(function() {
+            // Inicialización limpia de DataTable
+            $('#tblprincipal').DataTable({
                 "paging": true,
                 "lengthChange": true,
                 "searching": true,
@@ -167,6 +156,35 @@
                     }
                 ]
             });
-      	});
+
+            $('#formaNuevoRegistro').on('submit', function() {
+                $('#submitButton').prop('disabled', true);
+            });
+        });
+
+        function fn_agregar(){
+            $('#formaNuevoRegistro')[0].reset();
+            $('#agregarModalCenter').modal('show');
+        }
+
+        function fn_edicion(id){
+            $.ajax({
+                url: "{{ route('aseguradora_editar') }}",
+                type: "POST",
+                data: {"_token": "{{ csrf_token() }}", id : id},
+                success: function(res){
+                    $('#eid').val(id);
+                    $('#enombre').val(res.nombre);
+                    $('#edireccion').val(res.direccion);
+                    $('#etelefonos').val(res.telefonos);
+                    $('#econtacto').val(res.contacto);
+                    $('#efacturacion_nit').val(res.facturacion_nit);
+                    $('#efacturacion_nombre').val(res.facturacion_nombre);
+                    $('#efacturacion_direccion').val(res.facturacion_direccion);
+                    $('#eestado').prop('checked', res.estado == 'A');
+                    $('#editarModalCenter').modal('show');
+                }
+            });
+        }
     </script>
 @endsection

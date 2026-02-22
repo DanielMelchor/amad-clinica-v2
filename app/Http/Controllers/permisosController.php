@@ -243,38 +243,39 @@ class permisosController extends Controller
         return view('permisos.usuario_edit', compact('registro', 'empresas', 'cajas', 'salas', 'salas_x_usuario', 'roles', 'roles_x_usuario'));
     }
 
-    public function usuario_update(Request $request, $id){
-        //dd($request);
+    public function usuario_update(Request $request){
         $validData = $request->validate([
+            'id'         => 'required',
             'name'       => 'required',
             'username'   => 'required',
             'empresa_id' => 'required'
         ]);
 
 
-        $registro = User::where('id', $id)->first();
+        $registro = User::where('id', $validData['id'])->first();
         $registro->name           = $validData['name'];
         $registro->username       = $validData['username'];
         $registro->empresa_id     = $validData['empresa_id'];
         $registro->caja_id        = $request->caja_id;
+        $registro->sala_principal_id = $request->sala_principal_id;
         $registro->save();
 
         $salas = $request->callbacks;
         $roles = $request->callbacksr;
 
-        DB::table('salas_x_usuarios')->where('user_id', $id)->delete();
+        DB::table('salas_x_usuarios')->where('user_id', $validData['id'])->delete();
 
         if (isset($salas)) {
             foreach ($salas as $key => $s) {
                 //dd($s);
                 $sala_usuario               = new SalaxUsuario();
-                $sala_usuario->user_id      = $id;
+                $sala_usuario->user_id      = $validData['id'];
                 $sala_usuario->sala_id      = $s;
                 $sala_usuario->save();
             }
         }
 
-        DB::table('model_has_roles')->where('model_id', $id)->delete();
+        DB::table('model_has_roles')->where('model_id', $validData['id'])->delete();
 
         if (isset($roles)) {
             foreach ($roles as $key => $r) {

@@ -55,10 +55,26 @@
                             <p class="text-xl text-slate-100 mb-8 font-light">Líderes en atención personalizada con tecnología de última generación para diagnósticos precisos.</p>
                             <div class="flex space-x-4">
                                 <a href="#contacto" class="bg-white text-blue-700 px-8 py-4 rounded-xl font-bold hover:bg-blue-50 transition shadow-xl">Comenzar Ahora</a>
-                                <button class="flex items-center space-x-2 text-white font-bold hover:text-blue-200 transition">
+                                <button class="flex items-center space-x-2 text-white font-bold hover:text-blue-200 transition" id="btnVerVideo">
                                     <span class="w-12 h-12 flex items-center justify-center rounded-full border-2 border-white/50"><i class="fas fa-play"></i></span>
                                     <span>Ver Video</span>
                                 </button>
+                                <div id="videoModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/80 p-4">
+                                    <div class="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden">
+                                        <button id="cerrarModal" class="absolute top-4 right-4 text-white text-3xl z-10 hover:text-blue-400 transition">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        
+                                        <iframe id="videoPlayer" 
+                                                class="w-full h-full" 
+                                                src="" 
+                                                title="YouTube video player" 
+                                                frameborder="0" 
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                                allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -194,7 +210,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Central Médica</p>
-                                <p class="text-lg font-bold text-slate-800">+52 (55) 8000 1234</p>
+                                <p class="text-lg font-bold text-slate-800">+502 1234 0000</p>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -203,7 +219,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Ubicación</p>
-                                <p class="text-lg font-bold text-slate-800">Av. Paseo de la Reforma 450, CDMX</p>
+                                <p class="text-lg font-bold text-slate-800">Santa Catarina Pinula zona 10</p>
                             </div>
                         </div>
                     </div>
@@ -418,6 +434,40 @@
                 item.classList.remove('bg-slate-50');
             }
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('btnVerVideo'); //
+            const modal = document.getElementById('videoModal'); //
+            const cerrar = document.getElementById('cerrarModal'); //
+            const iframe = document.getElementById('videoPlayer');
+
+            // REEMPLAZA ESTE ID por el de tu video (lo que va después de v=)
+            const videoID = "MT3ZHLBUGnY"; 
+            const youtubeURL = `https://www.youtube.com/embed/${videoID}?autoplay=1&rel=0`;
+
+            // Abrir modal y cargar video
+            btn.addEventListener('click', () => {
+                iframe.src = youtubeURL; // Al asignar el SRC con autoplay=1, el video inicia solo
+                modal.classList.remove('hidden');
+            });
+
+            // Función para cerrar y "destruir" el video
+            const cerrarVideo = () => {
+                modal.classList.add('hidden');
+                iframe.src = ""; // Al vaciar el SRC, el video se detiene por completo
+            };
+
+            cerrar.addEventListener('click', cerrarVideo);
+
+            // Cerrar al hacer clic fuera
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) cerrarVideo();
+            });
+
+            // Cerrar con tecla ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape") cerrarVideo();
+            });
+        });
     </script>
 </body>
 </html>

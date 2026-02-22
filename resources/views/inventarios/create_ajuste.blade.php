@@ -1,19 +1,100 @@
 @extends('adminlte::page')
+
 @section('css')
+    <style>
+        /* --- ESTILOS MOBILE FIRST --- */
+        .select2-container {
+            width: 100% !important;
+        }
+        
+        /* Ajuste de inputs para que no se amontonen en móvil */
+        @media (max-width: 768px) {
+            .input-group {
+                display: flex;
+                flex-direction: column;
+            }
+            .input-group-prepend, .input-group-text {
+                width: 100% !important;
+                display: block !important;
+                border-radius: 0.25rem 0.25rem 0 0 !important;
+                text-align: center;
+            }
+            .input-group > .form-control, 
+            .input-group > .select2-container {
+                width: 100% !important;
+                border-radius: 0 0 0.25rem 0.25rem !important;
+            }
+
+            .input-group-sm > .select2-container--default .select2-selection--single {
+                border-top-left-radius: 0 !important;
+                border-bottom-left-radius: 0 !important;
+            }
+
+            /* Transformación de la tabla de detalles en tarjetas */
+            #tblDetalle thead { display: none; }
+            #tblDetalle tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                padding: 10px;
+                background: #fdfdfd;
+            }
+            #tblDetalle td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: none !important;
+                padding: 0.5rem 0 !important;
+                text-align: right !important;
+            }
+            #tblDetalle td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                flex: 1;
+            }
+            /* Hacer que los inputs dentro de la tabla ocupen el ancho disponible */
+            #tblDetalle input {
+                max-width: 150px;
+            }
+
+            .select2-container--default .select2-selection--single {
+                border-radius: 0 0 0.25rem 0.25rem !important;
+                height: calc(2.25rem + 2px) !important; /* Altura estándar de AdminLTE */
+            }
+        }
+        @media (max-width: 767.98px) {
+            .input-group-prepend, 
+            .input-group-text {
+                width: 100% !important;
+                border-radius: 0.25rem 0.25rem 0 0 !important;
+                justify-content: center !important;
+            }
+            
+            .select2-container--default .select2-selection--single {
+                border-top-left-radius: 0 !important;
+                border-top-right-radius: 0 !important;
+                border-bottom-left-radius: 0.25rem !important;
+                border-bottom-right-radius: 0.25rem !important;
+            }
+        }
+    </style>
 @endsection
+
 @section('title', 'Ajustes')
-@section('content_header')
-    <br>
-@endsection
+
 @section('content')
-    <div class="row">
+    <div class="row pt-3">
         <div class="col-12 col-lg-10 offset-lg-1">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-lg border-0">
                 <form role="form" id="FormaAjuste" method="POST" action="{{route('grabar_ajuste')}}">
                     @csrf
                     <div class="card-header py-2" style="background-color: #E1E8ED;">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 font-weight-bold text-secondary">Nuevo Ajuste</h6>
+                            <h6 class="mb-0 font-weight-bold text-secondary">
+                                <i class="fas fa-tools mr-2"></i>Nuevo Ajuste
+                            </h6>
                             <div class="d-flex">
                                 <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle mr-2 shadow-sm elevation-2" title="Guardar">
                                     <i class="fas fa-save"></i>
@@ -26,258 +107,190 @@
                     </div>
 
                     <div class="card-body p-3">
+                        {{-- SECCIÓN CABECERA --}}
                         <div class="row mb-3">
-                            <div class="col-12 col-md-4 mb-2">
-                                <label class="small font-weight-bold text-muted">Fecha</label>
-                                <input type="date" class="form-control form-control-sm" id="fecha_transaccion" name="fecha_transaccion" value="{{ $hoy }}" readonly>
+                            <div class="col-12 col-md-6 mb-3">
+                                <div class="input-group input-group-sm flex-column flex-md-row">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light font-weight-bold justify-content-center" 
+                                              style="min-width: 100px; height: 100%;">
+                                            Bodega
+                                        </span>
+                                    </div>
+                                    <select class="form-control select2" name="bodega_id" id="bodega_id" required>
+                                        <option value="">Seleccione...</option>
+                                        @foreach($bodegas as $pBodega)
+                                            <option value="{{$pBodega->id}}">{{$pBodega->descripcion}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-12 col-md-6 mb-2">
-                                <label class="small font-weight-bold text-muted">Bodega</label>
-                                <select class="custom-select custom-select-sm select2bs4" id="bodega_id" name="bodega_id" required>
-                                    @foreach($bodegas as $b)
-                                        <option value="{{ $b->id }}">{{ $b->descripcion }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light font-weight-bold">Fecha</span>
+                                    </div>
+                                    <input type="date" class="form-control" name="fecha" id="fecha" value="{{date('Y-m-d')}}" required>
+                                </div>
                             </div>
-                            <div class="col-12 col-md-2 d-flex align-items-end justify-content-end mb-2">
-                                <button type="button" class="btn btn-sm btn-primary btn-block d-md-none" onclick="agregarFila();">
-                                    <i class="fas fa-plus mr-1"></i> Agregar Artículo
-                                </button>
-                                <button type="button" class="btn btn-xs btn-outline-primary rounded-circle d-none d-md-inline elevation-2" onclick="agregarFila();" title="Agregar Artículo">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                            <div class="col-12 mb-2">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light font-weight-bold">Motivo</span>
+                                    </div>
+                                    <input type="text" class="form-control" name="comentario" id="comentario" placeholder="Ej. Inventario inicial, corrección..." required>
+                                </div>
                             </div>
                         </div>
 
-                        <hr class="my-3">
+                        <hr>
 
+                        {{-- SECCIÓN DETALLE --}}
                         <div class="table-responsive">
-                            <table id="tblDetalle" class="table table-sm table-hover">
+                            <table class="table table-sm table-hover" id="tblDetalle">
                                 <thead class="bg-light">
-                                    <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
-                                        <th style="width: 50%;">Artículo</th>
-                                        <th style="width: 15%;">U. Medida</th>
-                                        <th style="width: 15%;">Cantidad</th>
-                                        <th style="width: 15%;">Motivo</th>
-                                        <th style="width: 5%;"></th>
+                                    <tr>
+                                        <th style="width: 50%">Producto</th>
+                                        <th class="text-center">Tipo</th>
+                                        <th class="text-center" style="width: 15%">Cantidad</th>
+                                        <th class="text-center">Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tbodyDetalle">
-                                    </tbody>
+                                <tbody>
+                                    <tr id="fila_0">
+                                        <td data-label="Producto">
+                                            <select class="form-control form-control-sm select2" name="id_producto[]" required>
+                                                <option value="">Seleccionar...</option>
+                                                @foreach($productos as $pProducto)
+                                                    <option value="{{$pProducto->id}}">{{$pProducto->descripcion}}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td data-label="Tipo" class="text-center">
+                                            <select class="form-control form-control-sm" name="tipo_ajuste[]">
+                                                <option value="I">Ingreso (+)</option>
+                                                <option value="E">Egreso (-)</option>
+                                            </select>
+                                        </td>
+                                        <td data-label="Cantidad" class="text-center">
+                                            <input type="number" class="form-control form-control-sm text-right" name="cantidad[]" step="0.01" min="0.01" required>
+                                        </td>
+                                        <td data-label="Acción" class="text-center">
+                                            <button type="button" class="btn btn-xs btn-danger rounded-circle elevation-2" onclick="eliminarFila(this)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
+
+                        <button type="button" class="btn btn-sm btn-primary mt-2" onclick="agregarFila()">
+                            <i class="fas fa-plus mr-1"></i> Agregar Producto
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 @endsection
+
 @section('js')
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    <script type="text/javascript">
-        //========================================================================
-        // inicializar librerias
-        //========================================================================
+    <script>
         $(document).ready(function() {
-            // Inicialización robusta para Bootstrap 4
-            $('.select2bs4').each(function() {
+            $('.select2').each(function() {
                 $(this).select2({
                     theme: 'bootstrap4',
                     width: '100%',
-                    placeholder: "Seleccionar...",
+                    placeholder: "Seleccione...",
                     allowClear: true,
                     // Si el select está dentro de un modal, descomenta la siguiente línea:
                     // dropdownParent: $(this).parent() 
                 });
             });
 
-            // Corrección de bug de foco en el buscador de Select2
+            // Fix para que el buscador reciba el foco automáticamente al abrir
             $(document).on('select2:open', () => {
-                let searchField = document.querySelector('.select2-search__field');
-                if (searchField) {
-                    searchField.focus();
-                }
+                document.querySelector('.select2-search__field').focus();
+            });
+            
+            $('#bodega_id').select2({
+                theme: 'bootstrap4',
+                width: '100%', // Esto soluciona el desbordamiento
+                placeholder: "Seleccione una bodega"
             });
         });
 
-        //========================================================================
-        // declaracion de variables
-        //========================================================================
-        nFila  = 1;
-        nLinea = 0;
-        const productos_db = @json($productos);
-        productos_db.sort(compare);
+        function agregarFila() {
+            let id = Date.now();
+            let fila = `
+                <tr id="fila_${id}">
+                    <td data-label="Producto">
+                        <select class="form-control form-control-sm select2" name="id_producto[]" required>
+                            <option value="">Seleccionar...</option>
+                            @foreach($productos as $pProducto)
+                                <option value="{{$pProducto->id}}">{{$pProducto->descripcion}}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td data-label="Tipo" class="text-center">
+                        <select class="form-control form-control-sm" name="tipo_ajuste[]">
+                            <option value="I">Ingreso (+)</option>
+                            <option value="E">Egreso (-)</option>
+                        </select>
+                    </td>
+                    <td data-label="Cantidad" class="text-center">
+                        <input type="number" class="form-control form-control-sm text-right" name="cantidad[]" step="0.01" min="0.01" required>
+                    </td>
+                    <td data-label="Acción" class="text-center">
+                        <button type="button" class="btn btn-xs btn-danger rounded-circle elevation-2" onclick="eliminarFila(this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            $('#tblDetalle tbody').append(fila);
+            $('.select2').select2({ width: '100%' });
+        }
 
-        //========================================================================
-        // funcion para ordenar detalle
-        //========================================================================
-
-        function compare(a,b){
-            const valorA = a.linea;
-            const valorB = b.linea;
-            let comparacion = 0;
-
-            if (valorA < valorB) {
-                comparacion = -1;
-            }else{
-                comparacion = 1;
+        function eliminarFila(btn) {
+            if ($('#tblDetalle tbody tr').length > 1) {
+                $(btn).closest('tr').remove();
+            } else {
+                Swal.fire("Atención", "El ajuste debe tener al menos un producto", "warning");
             }
-            return comparacion;
         }
 
-        //========================================================================
-        // Agregar una nueva fila a la tabla
-        //========================================================================
-
-        function agregarFila(){
-            html = '';
-            html += '<tr>'
-            html += '<input type="hidden" class="form-control" id="productos['+nLinea+'][id]" name="productos['+nLinea+'][id]" value="'+nLinea+'">'
-            html += '<td style="width: 50%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][articulo_id]" name="productos['+nLinea+'][articulo_id]" onchange="actualizarMedidas('+nLinea+');">'
-            html += '<option value="">Seleccionar....</option>'
-            productos_db.forEach(function(p, index) {
-                html += `<option value="${p.id}">${p.descripcion}</option>`;
-            });
-            html += '</select>'
-            html += '</td>'
-            html += '<td style="width: 20%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][unidad_medida_id]" name="productos['+nLinea+'][unidad_medida_id]">'
-            html += '</select>'
-            html += '</td>'
-            html += '<td style="width: 15%;">'
-            html += '<input type="number" class="form-control" placeholder="0" id="productos['+nLinea+'][cantidad]" name="productos['+nLinea+'][cantidad]" step="any" required style="text-align: right;">'
-            html += '</td>'
-            html += '<td style="width: 10%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][signo]" name="productos['+nLinea+'][signo]">'
-            // html += '<option value="">Seleccionar....</option>'
-            html += '<option value="1">Entrada</option>'
-            html += '<option value="-1">Salida</option>'
-            html += '</select>'
-            html += '</td>'
-            html += '<td style="width: 5%;">'
-            html += '<a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar"><i class="fas fa-trash-alt"></i></a>'
-            html += '</td>'
-            html += '</tr>';
-            $("#tblDetalle > tbody").append(html);
-            $('.eliminar').on('click',eliminar);
-
-            $(`#productos\\[${nLinea}\\]\\[articulo_id\\]`).select2({ theme: 'bootstrap4' });
-            $(`#productos\\[${nLinea}\\]\\[unidad_medida_id\\]`).select2({ theme: 'bootstrap4' });
-            $(`#productos\\[${nLinea}\\]\\[signo\\]`).select2({ theme: 'bootstrap4' });
-
-            nFila += 1;
-            nLinea += 1;
-        }
-
-        //===================================================================
-        // Eliminar fila del detalle
-        //===================================================================
-        function eliminar(){
-            var whichtr = $(this).closest("tr");
-            whichtr.remove(); 
-            return false;
-        }
-
-        //========================================================================
-        // actualizar unidad de medida en base a producto seleccionado
-        //========================================================================
-        function actualizarMedidas(id){
-            var producto_id = document.getElementById("productos["+id+"][articulo_id]").value;
-            var select      = document.getElementById("productos["+id+"][unidad_medida_id]"); 
-            
-            $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('trae_medidas_x_producto') }}",
-                method: "POST",
-                data: {producto_id: producto_id},
-                success: function(response){
-                    var el = document.createElement("option");
-                    el.textContent = 'Seleccionar...';
-                    el.value = '';
-                    select.appendChild(el);
-                    for (var i = 0; i < response.length; i++) {
-                        var opt = response.length;
-                        var el = document.createElement("option");
-                        el.textContent = response[i]['unidad_medida_descripcion'];
-                        el.value = response[i]['unidad_medida_id'];
-                        select.appendChild(el);
-                    }
-                },
-                error: function(error){
-                    console.log(error);
-                }       
-            });
-        }
-
-        //===================================================================
-        // Confirmar salida de pantalla
-        //===================================================================
-        function confirma_salida(){
+        function confirma_salida() {
             Swal.fire({
-                title: 'Confirmación',
-                text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
+                title: '¿Desea salir?',
+                text: "Se perderán los cambios no guardados",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#28a745', // Color success de AdminLTE
-                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
-                confirmButtonText: 'Si, Salir',
+                confirmButtonText: 'Sí, salir',
                 cancelButtonText: 'No',
-                allowEscapeKey: true,
-                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+                reverseButtons: true
             }).then((result) => {
-                if (result.isConfirmed) { 
+                if (result.isConfirmed) {
                     window.location.href = "{{ route('lista_ajustes') }}";
-                } 
+                }
             });
         }
 
         $('#FormaAjuste').on('submit', function(e) {
-            e.preventDefault(); // Evita que la página se recargue
+            e.preventDefault();
+            $('#submitButton').prop('disabled', true);
             
             $.ajax({
                 url: $(this).attr('action'),
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
-                    Swal.fire("Éxito", "Guardado correctamente", "success")
+                    Swal.fire("Éxito", "Ajuste guardado correctamente", "success")
                         .then(() => window.location.href = "{{ route('lista_ajustes') }}");
                 },
                 error: function(xhr) {
-                    // Si el controlador devuelve un error (catch)
-                    let mensaje = xhr.responseJSON.message || "Error desconocido";
+                    $('#submitButton').prop('disabled', false);
+                    let mensaje = xhr.responseJSON ? xhr.responseJSON.message : "Error al guardar";
                     Swal.fire("Error", mensaje, "error");
                 }
             });

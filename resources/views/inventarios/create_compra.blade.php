@@ -1,5 +1,93 @@
 @extends('adminlte::page')
 @section('css')
+    <style>
+        /* Estilos Mobile First para la tabla de detalles */
+        @media (max-width: 768px) {
+            #tblDetalle, #tblDetalle thead, #tblDetalle tbody, #tblDetalle th, #tblDetalle td, #tblDetalle tr {
+                display: block;
+            }
+            #tblDetalle thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            #tblDetalle tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+                padding: 10px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            #tblDetalle td {
+                border: none;
+                position: relative;
+                padding-left: 50% !important;
+                text-align: left !important;
+                margin-bottom: 5px;
+                width: 100% !important;
+                display: block !important;
+                padding-left: 10px !important;
+            }
+            #tblDetalle input[type="number"], 
+            #tblDetalle input[type="text"],
+            #tblDetalle .select2-container {
+                width: 100% !important;
+                display: block !important;
+            }
+
+            #tblDetalle td:before {
+                position: absolute;
+                left: 10px;
+                width: 45%;
+                white-space: nowrap;
+                font-weight: bold;
+                color: #495057;
+                font-size: 11px;
+                text-transform: uppercase;
+            }
+            /* Etiquetas para cada celda en móvil */
+            #tblDetalle td:nth-of-type(1):before { content: "Artículo"; }
+            #tblDetalle td:nth-of-type(2):before { content: "U.M."; }
+            #tblDetalle td:nth-of-type(3):before { content: "Cantidad"; }
+            #tblDetalle td:nth-of-type(4):before { content: "Unitario"; }
+            #tblDetalle td:nth-of-type(5):before { content: "Subtotal"; }
+            
+            #tblDetalle td:last-child {
+                padding-left: 0 !important;
+                text-align: center !important;
+                border-top: 1px solid #eee;
+                margin-top: 10px;
+                padding-top: 10px !important;
+            }
+            .form-control-sm {
+                margin-bottom: 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-control-sm, .custom-select-sm {
+                height: calc(1.5em + 1rem + 2px) !important; /* Más alto para dedos */
+                font-size: 16px !important; /* Evita que iOS haga zoom automático al enfocar */
+            }
+            .btn-xs {
+                padding: 0.5rem !important; /* Botones más grandes */
+                font-size: 1rem !important;
+            }
+            /* El botón de agregar artículo debe ser ancho completo en móvil */
+            .btn-primary.rounded-pill {
+                width: 100%;
+                padding: 12px !important;
+            }
+        }
+
+        .card-header {
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            background-color: #E1E8ED !important;
+        }
+    </style>
 @endsection
 @section('title', 'Compras')
 @section('content_header')
@@ -8,7 +96,7 @@
 @section('content')
     <div class="row">
         <div class="col-12 col-lg-12">
-            <form class="form-horizontal" id="FormaCompra" action="#">
+            <form class="form-horizontal" id="FormaCompra" method="post" action="{{ route('grabar_compra')}}">
                 @csrf
                 <div class="card shadow-sm">
                     <div class="card-header" style="background-color: #E1E8ED;">
@@ -25,7 +113,7 @@
                         </div>
                     </div>
 
-                    <div class="card-body p-2 p-md-3">
+                    <div class="card-body p-1 p-sm-3">
                         <div class="row">
                             <div class="col-12 col-md-5 col-lg-4 mb-3">
                                 <div class="card h-100 border">
@@ -33,13 +121,13 @@
                                         <small class="font-weight-bold">Datos de Proveedor</small>
                                     </div>
                                     <div class="card-body p-2">
-                                        <input type="hidden" id="proveedor_id" name="proveedor_id">
+                                        <input type="hidden" id="proveedor_id" name="proveedor_id" value="{{ old('proveedor_id') }}">
                                         
                                         <label class="small mb-0">N.I.T.</label>
                                         <div class="input-group input-group-sm mb-2">
-                                            <input type="text" class="form-control" placeholder="Buscar..." id="nit" name="nit" onchange="trae_proveedor();" style="text-transform: uppercase;" autofocus required>
+                                            <input type="text" class="form-control" placeholder="Buscar..." id="nit" name="nit" value="{{ old('nit') }}" onchange="trae_proveedor();" style="text-transform: uppercase;" autofocus required>
                                             <div class="input-group-append">
-                                                <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#proveedorModal">
+                                                <button class="btn" style="background-color: #7FB3D5;" id="actaulizarProveedor" type="button" data-toggle="modal" data-target="#proveedorModal">
                                                     <i class="fas fa-search"></i>
                                                 </button>
                                             </div>
@@ -49,7 +137,7 @@
                                         <input type="text" class="form-control form-control-sm mb-2" id="proveedor_nombre" disabled>
 
                                         <label class="small mb-0">Días Crédito</label>
-                                        <input type="text" class="form-control form-control-sm" id="dias_credito" readonly style="text-align: right;">
+                                        <input type="text" class="form-control form-control-sm" id="dias_credito" name="dias_credito" readonly style="text-align: right;" onchange="calcularVencimiento();">
                                     </div>
                                 </div>
                             </div>
@@ -72,28 +160,34 @@
                                             </div>
                                             <div class="col-6 mb-2">
                                                 <label class="small mb-0">Serie</label>
-                                                <input type="text" class="form-control form-control-sm text-uppercase" id="serie" name="serie" required>
+                                                <input type="text" class="form-control form-control-sm text-uppercase" id="serie" name="serie" value="{{ old('serie') }}" required>
                                             </div>
                                             <div class="col-6 mb-2">
                                                 <label class="small mb-0">Correlativo</label>
-                                                <input type="number" class="form-control form-control-sm text-right" id="numero_documento" name="numero_documento" required>
+                                                <input type="number" class="form-control form-control-sm text-right" id="numero_documento" name="numero_documento" value="{{ old('numero_documento') }}" required>
                                             </div>
                                             <div class="col-6 mb-2">
                                                 <label class="small mb-0">Fch. Emisión</label>
-                                                <input type="date" class="form-control form-control-sm" id="fecha_emision" name="fecha_emision" value="{{ $hoy }}" required>
+                                                <input type="date" class="form-control form-control-sm" id="fecha_emision" name="fecha_emision" value="{{ old('fecha_emision') }}" onchange="calcularVencimiento();" required>
                                             </div>
                                             <div class="col-6 mb-2">
                                                 <label class="small mb-0">Fch. Vencimiento</label>
-                                                <input type="date" class="form-control form-control-sm" id="fecha_vencimiento" disabled>
+                                                <input type="date" class="form-control form-control-sm" id="fecha_vencimiento" name="fecha_vencimiento" value="{{ old('fecha_vencimiento') }}" readonly>
                                             </div>
-                                            <div class="col-12">
+                                            <div class="col-6">
                                                 <label class="small mb-0 text-primary">Bodega de Ingreso</label>
                                                 <select class="custom-select custom-select-sm select2bs4" id="bodega_id" name="bodega_id" required>
                                                     <option value="" selected>Seleccionar...</option>
                                                     @foreach($bodegas as $b)
-                                                        <option value="{{ $b->id }}">{{ $b->descripcion }}</option>
+                                                        <option value="{{ $b->id }}" {{ old('bodega_id') == $b->id ? 'selected' : '' }}>
+                                                            {{ $b->descripcion }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <label class="small mb-0">Monto</label>
+                                                <input type="number" step="any" min="0.01" class="form-control form-control-sm text-right" id="total" name="total" value="{{ old('total') }}" required>
                                             </div>
                                         </div>
                                     </div>
@@ -102,8 +196,8 @@
                         </div>
 
                         <div class="text-right mb-2">
-                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" onclick="agregarFila();">
-                                <i class="fas fa-plus mr-1"></i> Agregar Artículo
+                            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-sm" style="background-color: #7FB3D5;" onclick="agregarFila();" title="Agregar Artículo">
+                                <i class="fas fa-plus mr-1"></i>
                             </button>
                         </div>
 
@@ -123,7 +217,7 @@
                                 <tfoot>
                                     <tr>
                                         <td style="min-width: 200px;"></td>
-                                        <th style="width: 80px;"</th>
+                                        <th style="width: 80px;"></th>
                                         <th style="width: 80px;"></th>
                                         <th style="width: 100px;">
                                             <label class="small mb-0 text-primary">Total:</label>
@@ -144,37 +238,34 @@
     </div>
 @endsection
 @section('js')
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
+    <script>
+        $(document).ready(function() {
+            // Manejo de mensajes de éxito/error desde la sesión
+            @if(session('message'))
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Éxito!' : 'Error' }}",
+                    text: "{!! session('message') !!}",
+                    icon: "{{ session('type') ?? 'info' }}",
+                    confirmButtonColor: "{{ session('type') == 'success' ? '#28a745' : '#dc3545' }}",
+                    confirmButtonText: 'Aceptar'
+                });
+            @endif
+
+            // Mostrar errores de validación de Laravel (importante si no guarda)
+            @if ($errors->any())
+                Swal.fire({
+                    title: "Errores de validación",
+                    html: `<ul style="text-align: left;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                           </ul>`,
+                    icon: 'error',
+                    confirmButtonText: 'Corregir'
+                });
+            @endif
+        });
+    </script>
     <script type="text/javascript">
         //========================================================================
         // inicializar librerias
@@ -199,6 +290,60 @@
                     searchField.focus();
                 }
             });
+
+            $('#FormaCompra').on('submit', function(e) {
+                // 1. Obtener los valores crudos para comparar
+                // Usamos parseFloat para asegurar que la comparación sea numérica
+                const montoManual = parseFloat($('#total').val()) || 0;
+                const montoCalculado = parseFloat($('#inputTotalHidden').val()) || 0;
+
+                // 2. Validar si son diferentes (usamos un margen de 0.01 por decimales)
+                if (Math.abs(montoManual - montoCalculado) > 0.01) {
+                    
+                    // 3. Detener el envío del formulario
+                    e.preventDefault(); 
+                    e.stopPropagation();
+
+                    // 4. Mostrar el mensaje con SweetAlert2
+                    Swal.fire({
+                        title: "¡Montos no coinciden!",
+                        html: `El total de la factura (<b>Q ${montoManual.toFixed(2)}</b>) no coincide con el total de artículos (<b>Q ${montoCalculado.toFixed(2)}</b>).`,
+                        icon: 'warning',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Revisar'
+                    });
+
+                    return false;
+                }
+                
+                // Si coinciden, el formulario se envía normalmente
+            });
+
+            // Verificar si hay datos anteriores (después de un error de validación)
+            @if(old('productos'))
+                const productosAnteriores = @json(old('productos'));
+                
+                Object.values(productosAnteriores).forEach(p => {
+                    // Llamamos a tu función existente para crear la fila
+                    agregarFila();
+                    
+                    // Llenamos los campos de la última fila creada
+                    let index = nLinea - 1;
+                    $(`select[name="productos[${index}][articulo_id]"]`).val(p.articulo_id).trigger('change');
+                    $(`input[name="productos[${index}][cantidad]"]`).val(p.cantidad);
+                    $(`input[name="productos[${index}][precio_unitario]"]`).val(p.precio_unitario);
+                    $(`input[name="productos[${index}][precio_total]"]`).val(p.precio_total);
+                    
+                    // Como la unidad de medida depende de un AJAX, usamos un pequeño timeout 
+                    // o la cargamos manualmente si es necesario
+                    setTimeout(() => {
+                        $(`select[name="productos[${index}][unidad_medida_id]"]`).val(p.unidad_medida_id).trigger('change');
+                    }, 1000);
+                });
+
+                // Recalcular el total de la tabla
+                total_tabla();
+            @endif
         });
 
         //========================================================================
@@ -257,6 +402,7 @@
                         document.getElementById('proveedor_nombre').value = response.nombre_comercial;
                         document.getElementById('dias_credito').value = response.dias_credito;
                         document.getElementById('fecha_vencimiento').value = document.getElementById('fecha_emision').value + response.dias_credito;
+                        calcularVencimiento();
                     }
                 },
                 error: function(error){
@@ -408,7 +554,7 @@
             // Actualización de la interfaz
             $('#txtTotal').text(formatoMoneda);
             $('#inputTotalHidden').val(totalFormateado);
-            $("#total").val(totalFormateado);
+            //$("#total").val(totalFormateado);
         }
 
         //========================================================================
@@ -437,9 +583,33 @@
                 reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
             }).then((result) => {
                 if (result.isConfirmed) { 
-                    window.location.href = "{{ route('lista_ajustes') }}";
+                    window.location.href = "{{ route('lista_compras') }}";
                 } 
             });
+        }
+
+        //===================================================================
+        // Calcular fecha de vencimiento
+        //===================================================================
+        function calcularVencimiento() {
+            const fchEmision = document.getElementById('fecha_emision').value;
+            const dias = parseInt(document.getElementById('dias_credito').value) || 0;
+            const campoVencimiento = document.getElementById('fecha_vencimiento');
+
+            if (fchEmision) {
+                // Creamos la fecha a partir del string YYYY-MM-DD
+                let fecha = new Date(fchEmision + 'T00:00:00'); 
+                
+                // Sumamos los días de crédito
+                fecha.setDate(fecha.getDate() + dias);
+
+                // Formateamos de vuelta a YYYY-MM-DD para el input
+                const yyyy = fecha.getFullYear();
+                const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+                const dd = String(fecha.getDate()).padStart(2, '0');
+                
+                campoVencimiento.value = `${yyyy}-${mm}-${dd}`;
+            }
         }
     </script>
 @endsection

@@ -1,23 +1,49 @@
 @extends('adminlte::page')
 
 @section('css')
-    <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    <style type="text/css">
-        /* Ajustes para pantallas pequeñas */
-        @media (max-width: 576px) {
-            .card-header h5 { font-size: 1.1rem; }
-            .btn-xs { padding: .25rem .4rem; font-size: .875rem; }
-            .input-group-text { width: 100% !important; border-radius: 0.25rem 0.25rem 0 0 !important; }
-            .input-group-prepend { width: 100%; }
-        }
-
+    <style>
+        /* --- ESTILOS BASE --- */
         .btn-guardar { background-color: #A5C890 !important; }
-        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        
-        /* Centrado de controles de DataTable en móvil */
-        .dataTables_wrapper .row { display: flex; flex-wrap: wrap; justify-content: center; }
+        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: auto; }
+
+        /* --- ESTRATEGIA MOBILE FIRST (Hasta 768px) --- */
+        @media (max-width: 768px) {
+            #tblprincipal thead { display: none; } /* Ocultar cabecera en móvil */
+
+            #tblprincipal tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                background: #fff;
+                padding: 10px;
+            }
+
+            #tblprincipal td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+                padding: 0.6rem 0.5rem !important;
+                border-top: 1px solid #f2f2f2 !important;
+                width: 100% !important;
+            }
+
+            #tblprincipal td:first-child { border-top: none !important; }
+
+            /* Generar etiquetas desde data-label */
+            #tblprincipal td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                color: #495057;
+                flex: 1;
+            }
+
+            /* Botones más grandes para touch */
+            .btn-xs { padding: 0.4rem 0.6rem; font-size: 0.9rem; }
+        }
     </style>
 @endsection
 

@@ -41,7 +41,7 @@
 @section('content')
     <div class="row">
         <div class="col-lg-12">
-            <form class="form" method="POST" action="{{ route('usuario_grabar') }}">
+            <form class="form" method="POST" action="{{ route('usuario_actualizar') }}">
                 @csrf
                 <div class="card">
                     <div class="card-header" style="background-color: #E1E8ED;">

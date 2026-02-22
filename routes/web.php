@@ -329,7 +329,7 @@ use Illuminate\Support\Facades\Route;
             'prefix' => 'medicos',
             'middleware' => ['permission:administrar-pantalla-medicos']
         ], function () {
-            Route::get('nueva_admision/{paciente_id}/{origen}', [AdmisionController::class, 'nueva_admision'])->name('nueva_admision');
+            Route::get('nueva_admision/{paciente_id}', [AdmisionController::class, 'nueva_admision'])->name('nueva_admision');
 
         });
 
@@ -392,8 +392,8 @@ use Illuminate\Support\Facades\Route;
             'middleware' => ['permission:ver-pacientes']
         ], function () {
             Route::get('listado', [PacienteController::class, 'index'])->name('pacientes');
-            Route::get('agregar/{origen}/{cita_id}', [PacienteController::class, 'create'])->name('crear_paciente');
-            Route::post('grabar/{origen}/{cita_id}', [PacienteController::class, 'store'])->name('grabar_paciente');
+            Route::get('agregar', [PacienteController::class, 'create'])->name('crear_paciente');
+            Route::post('grabar', [PacienteController::class, 'store'])->name('grabar_paciente');
             Route::get('editar/{paciente_id}', [PacienteController::class, 'edit'])->name('editar_paciente');
             Route::post('actualizar/{paciente_id}', [PacienteController::class, 'update'])->name('actualizar_paciente');
             Route::get('paciente_admision/{paciente_id}', [PacienteController::class, 'show'])->name('paciente_admision');
@@ -617,7 +617,7 @@ use Illuminate\Support\Facades\Route;
             Route::get('crear_usuario', [permisosController::class, 'usuario_create'])->name('usuario_agregar');
             Route::post('grabar_usuario', [permisosController::class, 'usuario_store'])->name('usuario_grabar');
             Route::get('editar_usuario/{user_id}', [permisosController::class, 'usuario_edit'])->name('usuario_editar');
-            Route::post('actualizar_usuario/{user_id}', [permisosController::class, 'usuario_update'])->name('usuario_actualizar');
+            Route::post('actualizar_usuario', [permisosController::class, 'usuario_update'])->name('usuario_actualizar');
         });
 
         Route::get('/home', function() {

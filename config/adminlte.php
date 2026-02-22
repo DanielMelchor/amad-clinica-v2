@@ -73,11 +73,11 @@ return [
 
     'logo' => '<b>Grupo</b>@mad',
     // 'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-    'logo_img' => 'img/logo_trial_short.png',
+    'logo_img' => 'img/jerico_icono.png',
     // 'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_class' => 'brand-image-xs img-circle elevation-4',
     // 'logo_img_xl' => null,
-    'logo_img_xl' => 'img/logo_trial_large.png',
+    'logo_img_xl' => 'img/jerico_completo.png',
     'logo_img_xl_class' => 'brand-image-xs',
     'logo_img_alt' => '',
 

@@ -1,51 +1,92 @@
 @extends('adminlte::page')
 @section('css')
-    <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
-    <link rel="stylesheet" href="{{ asset('assets/select2/css/select2.min.css')}}">
-    <link rel="stylesheet" href="{{ asset('assets/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    <style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
-        }
-        .dataTables_wrapper .row {
-            display: flex;
-            align-items: center; /* Alinea verticalmente los elementos */
-            justify-content: flex-start; /* Ajusta los elementos a la izquierda */
+    <style>
+        /* Estilos Mobile First para la tabla de detalles */
+        @media (max-width: 768px) {
+            #tblDetalle, #tblDetalle thead, #tblDetalle tbody, #tblDetalle th, #tblDetalle td, #tblDetalle tr {
+                display: block;
+            }
+            #tblDetalle thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            #tblDetalle tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+                padding: 10px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            #tblDetalle td {
+                border: none;
+                position: relative;
+                padding-left: 50% !important;
+                text-align: left !important;
+                margin-bottom: 5px;
+                width: 100% !important;
+                display: block !important;
+                padding-left: 10px !important;
+            }
+            #tblDetalle input[type="number"], 
+            #tblDetalle input[type="text"],
+            #tblDetalle .select2-container {
+                width: 100% !important;
+                display: block !important;
+            }
+
+            #tblDetalle td:before {
+                position: absolute;
+                left: 10px;
+                width: 45%;
+                white-space: nowrap;
+                font-weight: bold;
+                color: #495057;
+                font-size: 11px;
+                text-transform: uppercase;
+            }
+            /* Etiquetas para cada celda en móvil */
+            #tblDetalle td:nth-of-type(1):before { content: "Artículo"; }
+            #tblDetalle td:nth-of-type(2):before { content: "U.M."; }
+            #tblDetalle td:nth-of-type(3):before { content: "Cantidad"; }
+            #tblDetalle td:nth-of-type(4):before { content: "Unitario"; }
+            #tblDetalle td:nth-of-type(5):before { content: "Subtotal"; }
+            
+            #tblDetalle td:last-child {
+                padding-left: 0 !important;
+                text-align: center !important;
+                border-top: 1px solid #eee;
+                margin-top: 10px;
+                padding-top: 10px !important;
+            }
+            .form-control-sm {
+                margin-bottom: 8px;
+            }
         }
 
-        .dataTables_wrapper .row .col-auto {
-            display: flex;
-            justify-content: flex-start; /* Alinea los elementos dentro de las columnas */
+        @media (max-width: 768px) {
+            .form-control-sm, .custom-select-sm {
+                height: calc(1.5em + 1rem + 2px) !important; /* Más alto para dedos */
+                font-size: 16px !important; /* Evita que iOS haga zoom automático al enfocar */
+            }
+            .btn-xs {
+                padding: 0.5rem !important; /* Botones más grandes */
+                font-size: 1rem !important;
+            }
+            /* El botón de agregar artículo debe ser ancho completo en móvil */
+            .btn-primary.rounded-pill {
+                width: 100%;
+                padding: 12px !important;
+            }
         }
 
-        .dataTables_wrapper .row .col {
-            display: flex;
-            justify-content: flex-start;
+        .card-header {
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            background-color: #E1E8ED !important;
         }
-        .input-group-text {
-            height: 30px; /* Ajusta la altura */
-            padding: 5px 10px; /* Ajusta el padding */
-            font-size: 0.875rem; /* Puedes ajustar el tamaño de la fuente según sea necesario */
-        }
-
-        /*.custom-select-sm, .select2bs4 {
-            height: 30px; /* Ajusta la altura según lo que necesites */
-            padding: 5px; /* Ajusta el padding para que la altura se reduzca */
-            font-size: 0.875rem; /* Ajusta el tamaño de la fuente para que todo el conjunto se vea más pequeño */
-        }*/
     </style>
 @endsection
 @section('title', 'Compras')
@@ -54,290 +95,365 @@
 @endsection
 @section('content')
     <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <form class="form-horizontal" id="FormaCompra" action="#">
+        <div class="col-12 col-lg-12">
+            <form class="form-horizontal" id="FormaCompra" method="post" action="{{ route('actualizar_compra')}}">
                 @csrf
-                <div class="card">
+                <div class="card shadow-sm">
                     <div class="card-header" style="background-color: #E1E8ED;">
-                        <div class="row">
-                            <div class="col-md-9">
-                                <h6>Edición de Compra</h6>
-                            </div>
-                            <div class="col-md-3" style="text-align: right;">
-                                <!-- <a href="{{ route('crear_compra') }}" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></a> -->
-                                <button type="submit" id="btnGuardar" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-                                <a href="{{ route('lista_compras') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 font-weight-bold">Nueva Compra</h6>
+                            <div>
+                                @if(!$esSoloLectura)
+                                <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-2" title="Guardar">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                @endif
+                                <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir" onclick="confirma_salida();">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                    <div class="card-body">
+
+                    <div class="card-body p-1 p-sm-3">
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="card rounded-top">
-                                    <div class="card-header" style="background-color: #E1E8ED;">
-                                        <h6>Datos de Proveedor</h6>
+                            <div class="col-12 col-md-5 col-lg-4 mb-3">
+                                <div class="card h-100 border">
+                                    <div class="card-header py-1" style="background-color: #f8f9fa;">
+                                        <small class="font-weight-bold">Datos de Proveedor</small>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="card-body p-2">
                                         <input type="hidden" id="compra_id" name="compra_id" value="{{ $encabezado->id }}">
-                                        <input type="hidden" id="proveedor_id" name="proveedor_id" value="{{ $encabezado->proveedor_id }}">
-                                        <div class="row">
-                                            <div class="input-group col-md-10 offset-md-1 mb-1">
-                                                <span class="input-group-text" id="basic-addon1">N.I.T.</span>
-                                                <input type="text" class="form-control form-control-sm" placeholder="N.I.T." aria-label="nit" aria-describedby="find_proveedor" id="nit" name="nit" value="{{ $encabezado->nit }}" onchange="trae_proveedor();" style="text-transform: uppercase;" autofocus required>
-                                                <div class="input-group-append">
-                                                    <button class="btn btn-xs btn-outline-secondary" type="button" id="find_proveedor" data-toggle="modal" data-target="#proveedorModal"><i class="fas fa-search"></i></button>
-                                                </div>
+                                        <input type="hidden" id="proveedor_id" name="proveedor_id" value="{{ old('proveedor_id', $encabezado->proveedor_id) }}">
+                                        
+                                        <label class="small mb-0">N.I.T.</label>
+                                        <div class="input-group input-group-sm mb-2">
+                                            <input type="text" class="form-control" placeholder="Buscar..." id="nit" name="nit" value="{{ old('nit', $encabezado->nit) }}" onchange="trae_proveedor();" style="text-transform: uppercase;" autofocus required {{ $esSoloLectura ? 'readonly' : '' }}>
+                                            <div class="input-group-append">
+                                                <button class="btn" style="background-color: #7FB3D5;" id="actaulizarProveedor" type="button" data-toggle="modal" data-target="#proveedorModal">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="input-group col-md-10 offset-md-1 mb-1">
-                                                <span class="input-group-text" id="basic-addon1">Nombre</span>
-                                                <input type="text" class="form-control form-control-sm" id="proveedor_nombre" name="proveedor_nombre" value="{{ $encabezado->nombre_comercial }}" style="text-transform: uppercase;" disabled>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-group col-md-10 offset-md-1 mb-1">
-                                                <span class="input-group-text" id="basic-addon1">Dias Crédito</span>
-                                                <input type="text" class="form-control form-control-sm" id="dias_credito" name="dias_credito" value="{{ $encabezado->dias_credito }}" style="text-align: right;" readonly>
-                                            </div>
-                                        </div>
+
+                                        <label class="small mb-0">Nombre</label>
+                                        <input type="text" class="form-control form-control-sm mb-2" id="proveedor_nombre" value="{{ $encabezado->proveedor->nombre_comercial }}" disabled>
+
+                                        <label class="small mb-0">Días Crédito</label>
+                                        <input type="text" class="form-control form-control-sm" id="dias_credito" name="dias_credito" value="{{ old('dias_credito', $encabezado->dias_credito) }}" readonly style="text-align: right;" onchange="calcularVencimiento();">
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-8">
-                                <div class="card rounded-top">
-                                    <div class="card-header" style="background-color: #E1E8ED;">
-                                        <h6>Datos de Comprobante</h6>
+
+                            <div class="col-12 col-md-7 col-lg-8 mb-3">
+                                <div class="card h-100 border">
+                                    <div class="card-header py-1" style="background-color: #f8f9fa;">
+                                        <small class="font-weight-bold">Datos de Comprobante</small>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="card-body p-2">
                                         <div class="row">
-                                            <div class="col-md-12 input-group input-group-sm mb-1">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text" id="basic-addon1">Documento</span>
-                                                </div>
-                                                <select class="custom-select custom-select-sm select2 select2bs4" id="documento_id" name="documento_id" required>
+                                            <div class="col-12 mb-2">
+                                                <label class="small mb-0">Documento</label>
+                                                <select class="custom-select custom-select-sm select2bs4" {{ $esSoloLectura ? 'disabled' : '' }} id="documento_id" name="documento_id" required>
                                                     <option value="" selected>Seleccionar...</option>
                                                     @foreach($tipo_documentos as $td)
-                                                        <option value="{{ $td->id }}" @if($td->id == $encabezado->tipo_documento_id) selected @endif>{{ $td->descripcion }}</option>
+                                                        <option value="{{ $td->id }}" 
+                                                            {{ (old('documento_id', $encabezado->tipo_documento_id) == $td->id) ? 'selected' : '' }}>
+                                                            {{ $td->descripcion }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="input-group mb-1">
-                                                    <span class="input-group-text" id="basic-addon1">Serie</span>
-                                                    <input type="text" class="form-control form-control-sm" placeholder="Serie" aria-label="serie" aria-describedby="serie" id="serie" name="serie" value="{{ $encabezado->serie }}" style="text-transform: uppercase;" required>
-                                                </div>
+                                            <div class="col-6 mb-2">
+                                                <label class="small mb-0">Serie</label>
+                                                <input type="text" class="form-control form-control-sm text-uppercase" id="serie" name="serie" value="{{ old('serie', $encabezado->serie) }}" required {{ $esSoloLectura ? 'readonly' : '' }}>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="input-group mb-1">
-                                                    <span class="input-group-text" id="basic-addon1">Correlativo</span>
-                                                    <input type="number" class="form-control form-control-sm" placeholder="documento" aria-label="documento" aria-describedby="documento" id="numero_documento" name="numero_documento" value="{{ $encabezado->numero_documento }}" required style="text-align: right;">
-                                                </div>
+                                            <div class="col-6 mb-2">
+                                                <label class="small mb-0">Correlativo</label>
+                                                <input type="number" class="form-control form-control-sm text-right" id="numero_documento" name="numero_documento" value="{{ old('numero_documento', $encabezado->numero_documento) }}" required {{ $esSoloLectura ? 'readonly' : '' }}>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="input-group mb-1">
-                                                    <span class="input-group-text" id="basic-addon1">Fch. Emisión</span>
-                                                    <input type="date" class="form-control form-control-sm" id="fecha_emision" name="fecha_emision" value="{{ $encabezado->fecha_emision }}" required>
-                                                </div>
+                                            <div class="col-6 mb-2">
+                                                <label class="small mb-0">Fch. Emisión</label>
+                                                <input type="date" class="form-control form-control-sm" id="fecha_emision" name="fecha_emision" value="{{ old('fecha_emision', $encabezado->fecha_emision) }}" onchange="calcularVencimiento();" required {{ $esSoloLectura ? 'readonly' : '' }}>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="input-group mb-1">
-                                                    <span class="input-group-text" id="basic-addon1">Fch. Vencimiento</span>
-                                                    <input type="date" class="form-control form-control-sm" id="fecha_vencimiento" name="fecha_vencimiento" value="{{ $encabezado->fecha_vencimiento}}" readonly>
-                                                </div>
+                                            <div class="col-6 mb-2">
+                                                <label class="small mb-0">Fch. Vencimiento</label>
+                                                <input type="date" class="form-control form-control-sm" id="fecha_vencimiento" name="fecha_vencimiento" value="{{ old('fecha_vencimiento', $encabezado->fecha_vencimiento) }}" readonly>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6 input-group mb-1">
-                                                <span class="input-group-text" id="basic-addon1">Total</span>
-                                                <input type="number" class="form-control form-control-sm" placeholder="0.00" step="any" id="total" name="total" value="{{ $encabezado->total }}" min="0" required style="text-align: right;">
-                                            </div>
-                                            <div class="col-md-6 input-group mb-1">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text" id="basic-addon1">Bodega</span>
-                                                </div>
-                                                <select class="custom-select custom-select-sm select2 select2bs4" id="bodega_id" name="bodega_id" required>
+                                            <div class="col-6">
+                                                <label class="small mb-0 text-primary">Bodega de Ingreso</label>
+                                                <select class="custom-select custom-select-sm select2bs4" id="bodega_id" name="bodega_id" required {{ $esSoloLectura ? 'readonly' : '' }}>
                                                     <option value="" selected>Seleccionar...</option>
                                                     @foreach($bodegas as $b)
-                                                        <option value="{{ $b->id }}" @if($encabezado->bodega_origen_id == $b->id) selected @endif>{{ $b->descripcion }}</option>
+                                                        <option value="{{ $b->id }}" 
+                                                            {{ (old('bodega_id', $encabezado->bodega_origen_id) == $b->id) ? 'selected' : '' }}>
+                                                            {{ $b->descripcion }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <!-- <div class="col-md-1" style="text-align: right;">
-                                                <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" onclick="agregarFila(); return false;" title="Agregar Artículo"><i class="fas fa-plus-circle"></i></a>
-                                            </div> -->
+                                            <div class="col-6 mb-2">
+                                                <label class="small mb-0">Monto</label>
+                                                <input type="number" step="any" min="0.01" class="form-control form-control-sm text-right" id="total" name="total" value="{{ old('total', $encabezado->total) }}" required {{ $esSoloLectura ? 'readonly' : '' }}>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-1 offset-md-11" style="text-align: right;">
-                                <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" onclick="agregarFila(); return false;" title="Agregar Artículo"><i class="fas fa-plus-circle"></i></a>
-                            </div>
+
+                        <div class="text-right mb-2">
+                            @if(!$esSoloLectura)
+                            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-sm" style="background-color: #7FB3D5;" onclick="agregarFila();" title="Agregar Artículo">
+                                <i class="fas fa-plus mr-1"></i>
+                            </button>
+                            @endif
                         </div>
-                        <div class="row text-center">
-                            <div class="col-md-12">
-                                <div class="table-responsive">
-                                    <table id="tblDetalle" class="table table-sm table-striped table-hovver text-center">
-                                        <thead>
-                                            <tr style="font-size: 12px;">
-                                                <th style="width: 30%;">Artículo</th>
-                                                <th style="width: 20%;">Caracteristica</th>
-                                                <th style="width: 10%;">U. Medida</th>
-                                                <th style="width: 10%;">Cantidad</th>
-                                                <th style="width: 15%;">Prc. Unit.</th>
-                                                <th style="width: 15%;">Prc. Total</th>
-                                                <th>&nbsp;</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr></tr>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td><h5><b>Total</b></h5></td>
-                                                <td style="text-align: right;"><h5><b>0.00</b></h5></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
+
+                        <div class="table-responsive" style="-webkit-overflow-scrolling: touch;">
+                            <table id="tblDetalle" class="table table-sm table-striped table-hover border">
+                                <thead class="bg-light shadow-sm">
+                                    <tr style="font-size: 11px; text-transform: uppercase;">
+                                        <th style="min-width: 200px;">Artículo</th>
+                                        <th style="width: 80px;">U.M.</th>
+                                        <th style="width: 80px;">Cant.</th>
+                                        <th style="width: 100px;">Unitario</th>
+                                        <th style="width: 100px;">Subtotal</th>
+                                        <th style="width: 40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="min-width: 200px;"></td>
+                                        <th style="width: 80px;"></th>
+                                        <th style="width: 80px;"></th>
+                                        <th style="width: 100px;">
+                                            <label class="small mb-0 text-primary">Total:</label>
+                                        </th>
+                                        <td style="width: 100px; text-align: right;">
+                                            <label id="txtTotal" class="small mb-0 text-primary font-weight-bold text-center">0.00</label>
+                                            <input type="hidden" id="inputTotalHidden" name="total_final" value="0.00">
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    <!-- Modal proveedores -->
-    <div class="modal fade" id="proveedorModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
-            <div class="modal-content">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-md-10">
-                                <h6>Lista de Proveedores</h6>
-                            </div>
-                            <div class="col-md-2" style="text-align: right;">
-                                <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Salir"><i class="fas fa-sign-out-alt"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="table-responsive">
-                                    <table id="tblproveedores" class="table table-sm table-striped text-center" style="width: 100%;">
-                                        <thead>
-                                            <tr style="font-size: 12px;">
-                                                <th>N.I.T.</th>
-                                                <th>Nombre</th>
-                                                <td>&nbsp;</td>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($proveedores as $p)
-                                                <tr style="font-size: 12px;">
-                                                    <td>{{ $p->nit }}</td>
-                                                    <td>{{ $p->nombre_comercial }}</td>
-                                                    <td> <button class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Seleccionar Proveedor" onclick="asignarNit('{{$p->nit}}','{{$p->id}}','{{$p->nombre_comercial}}','{{$p->dias_credito}}');"><i class="fas fa-check-circle"></i></button></td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- /modal proveedores -->
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-    <script src="{{ asset('assets/select2/js/select2.full.min.js')}}"></script>
-    <script type="text/javascript">
-        //========================================================================
-        // declaracion de variables
-        //========================================================================
-        var nFila  = 1;
-        var nLinea = 0;
-        var total  = 0;
-        var productos_db = [];
+    <script>
+        $(document).ready(function() {
+            // Manejo de mensajes de éxito/error desde la sesión
+            @if(session('message'))
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Éxito!' : 'Error' }}",
+                    text: "{!! session('message') !!}",
+                    icon: "{{ session('type') ?? 'info' }}",
+                    confirmButtonColor: "{{ session('type') == 'success' ? '#28a745' : '#dc3545' }}",
+                    confirmButtonText: 'Aceptar'
+                });
+            @endif
 
+            // Mostrar errores de validación de Laravel (importante si no guarda)
+            @if ($errors->any())
+                Swal.fire({
+                    title: "Errores de validación",
+                    html: `<ul style="text-align: left;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                           </ul>`,
+                    icon: 'error',
+                    confirmButtonText: 'Corregir'
+                });
+            @endif
+
+            @if($esSoloLectura)
+                $('#documento_id').prop('disabled', true).trigger('change');
+                // O para todos los selects de una vez:
+                $('.select2bs4').prop('disabled', true).trigger('change');
+            @endif
+        });
+    </script>
+    <script type="text/javascript">
         //========================================================================
         // inicializar librerias
         //========================================================================
-        $(function () {
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
-        });
+        $(document).ready(function() {
+            // Inicialización robusta para Bootstrap 4
+            $('.select2bs4').each(function() {
+                $(this).select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    placeholder: "Seleccionar...",
+                    allowClear: true,
+                    // Si el select está dentro de un modal, descomenta la siguiente línea:
+                    // dropdownParent: $(this).parent() 
+                });
+            });
 
-        //========================================================================
-        // al cargar la pagina trae los productos
-        //========================================================================
-        document.addEventListener("DOMContentLoaded",function(event){
-            var compra_id = document.getElementById('compra_id').value;
-            $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('trae_detalle_compra') }}",
-                method: "POST",
-                data: {compra_id : compra_id},
-                success: function(response){
-                    let total = 0;
-                    response.forEach(function(item, index) {
-                        agregarFila();  // Llamar a agregarFila para crear la fila en la tabla
-                        // Asignar valores a los campos de la fila
-                        $('#productos\\['+index+'\\]\\[id\\]').val(item['id']);
-                        $('#productos\\['+index+'\\]\\[articulo_id\\]').val(item['producto_id']).trigger('change');
-                        setTimeout(function() {
-                            $('#productos\\['+index+'\\]\\[articulo_caracteristica_id\\]').val(item['producto_caracteristica_id']).trigger('change');
-                        }, 500); // Un pequeño retraso para esperar que el select esté listo
-                        
-                        // Esperar a que Select2 cargue el select antes de asignar el valor de unidad_medida_id
-                        setTimeout(function() {
-                            $('#productos\\['+index+'\\]\\[unidad_medida_id\\]').val(item['unidad_medida_id']).trigger('change');
-                        }, 500); // Un pequeño retraso para esperar que el select esté listo
-                        
-                        $('#productos\\['+index+'\\]\\[cantidad\\]').val(item['cantidad']);
-                        $('#productos\\['+index+'\\]\\[precio_unitario\\]').val(item['precio_unitario']);
-                        $('#productos\\['+index+'\\]\\[precio_total\\]').val(item['precio_total']);
-
-                        total_linea(index);  // Llamar a la función total_linea para actualizar el precio total de la fila
-                        total += parseFloat(item['precio_total']);  // Sumar el precio total de la fila
-                    });
-                    var pie = '';
-                    total = total.toFixed(2);
-                    pie += '<tr>'
-                    pie += '<td style="width: 30%;"></td>'
-                    pie += '<td style="width: 15%;"></td>'
-                    pie += '<td style="width: 15%;"></td>'
-                    pie += '<td style="width: 20%;"><h6><b>Total</b></h6></td>'
-                    pie += '<td style="width: 20%;"><h6><b>'+total+'</b></h6></td>'
-                    pie += '</tr>'
-                    $("#tblDetalle tfoot tr").remove();
-                    $('#tblDetalle tfoot').append(pie);
-                },
-                error: function(error){
-                    console.log(error);
+            // Corrección de bug de foco en el buscador de Select2
+            $(document).on('select2:open', () => {
+                let searchField = document.querySelector('.select2-search__field');
+                if (searchField) {
+                    searchField.focus();
                 }
             });
-            
+
+            $('#FormaCompra').on('submit', function(e) {
+                // 1. Obtener los valores crudos para comparar
+                // Usamos parseFloat para asegurar que la comparación sea numérica
+                const montoManual = parseFloat($('#total').val()) || 0;
+                const montoCalculado = parseFloat($('#inputTotalHidden').val()) || 0;
+
+                // 2. Validar si son diferentes (usamos un margen de 0.01 por decimales)
+                if (Math.abs(montoManual - montoCalculado) > 0.01) {
+                    
+                    // 3. Detener el envío del formulario
+                    e.preventDefault(); 
+                    e.stopPropagation();
+
+                    // 4. Mostrar el mensaje con SweetAlert2
+                    Swal.fire({
+                        title: "¡Montos no coinciden!",
+                        html: `El total de la factura (<b>Q ${montoManual.toFixed(2)}</b>) no coincide con el total de artículos (<b>Q ${montoCalculado.toFixed(2)}</b>).`,
+                        icon: 'warning',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Revisar'
+                    });
+
+                    return false;
+                }
+                
+                // Si coinciden, el formulario se envía normalmente
+            });
+
+            // Verificar si hay datos anteriores (después de un error de validación)
+            @if(old('productos'))
+                const productosAnteriores = @json(old('productos'));
+                
+                Object.values(productosAnteriores).forEach(p => {
+                    // Llamamos a tu función existente para crear la fila
+                    agregarFila();
+                    
+                    // Llenamos los campos de la última fila creada
+                    let index = nLinea - 1;
+                    $(`select[name="productos[${index}][articulo_id]"]`).val(p.articulo_id).trigger('change');
+                    $(`input[name="productos[${index}][cantidad]"]`).val(p.cantidad);
+                    $(`input[name="productos[${index}][precio_unitario]"]`).val(p.precio_unitario);
+                    $(`input[name="productos[${index}][precio_total]"]`).val(p.precio_total);
+                    
+                    // Como la unidad de medida depende de un AJAX, usamos un pequeño timeout 
+                    // o la cargamos manualmente si es necesario
+                    setTimeout(() => {
+                        $(`select[name="productos[${index}][unidad_medida_id]"]`).val(p.unidad_medida_id).trigger('change');
+                    }, 1000);
+                });
+
+                // Recalcular el total de la tabla
+                total_tabla();
+            @endif
+
+            const detalleExistente = @json($encabezado->detalles);
+            const esSoloLectura = {{ $esSoloLectura ? 'true' : 'false' }};
+
+            if (detalleExistente && detalleExistente.length > 0) {
+                // 1. Limpiar el cuerpo de la tabla antes de empezar (por seguridad)
+                $("#tblDetalle tbody").empty();
+                nLinea = 0;
+
+                detalleExistente.forEach(item => {
+                    // Llamamos a tu función para crear la fila vacía
+                    agregarFila(esSoloLectura);
+
+                    // Obtenemos el índice de la fila recién creada (nLinea - 1)
+                    let i = nLinea - 1;
+                    
+                    // Llenamos los valores
+                    $(`select[name="productos[${i}][articulo_id]"]`).val(item.producto_id).trigger('change');
+                    $(`input[name="productos[${i}][cantidad]"]`).val(item.cantidad);
+                    $(`input[name="productos[${i}][precio_unitario]"]`).val(item.precio_unitario);
+
+                    // 5. Cargar la unidad de medida y calcular total de línea
+                    cargarUnidadGuardada(i, item.unidad_medida_id);
+                    total_linea(i);
+                });
+            }
         });
+
+        function llenarUnidadMedidaEdicion(filaId, productoId, unidadSeleccionadaId) {
+            var select = document.getElementById("productos[" + filaId + "][unidad_medida_id]");
+            
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                url: "{{ route('trae_medidas_x_producto') }}",
+                method: "POST",
+                data: {producto_id: productoId},
+                success: function(response) {
+                    $(select).empty().append('<option value="">Seleccionar...</option>');
+                    
+                    response.forEach(function(res) {
+                        let selected = (res.unidad_medida_id == unidadSeleccionadaId) ? 'selected' : '';
+                        $(select).append(`<option value="${res.unidad_medida_id}" ${selected}>${res.unidad_medida_descripcion}</option>`);
+                    });
+                    
+                    // Refrescar Select2 para mostrar el valor seleccionado
+                    $(select).trigger('change');
+                }
+            });
+        }
+
+        function cargarUnidadGuardada(filaId, unidadGuardadaId) {
+            // 1. Obtener el ID del artículo de esa fila específica
+            var producto_id = document.getElementById("productos[" + filaId + "][articulo_id]").value;
+            var select = document.getElementById("productos[" + filaId + "][unidad_medida_id]"); 
+            
+            if (producto_id) {
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    url: "{{ route('trae_medidas_x_producto') }}",
+                    method: "POST",
+                    data: { producto_id: producto_id },
+                    success: function(response) {
+                        // Limpiar el select
+                        $(select).empty().append('<option value="">Seleccionar...</option>');
+                        
+                        // Llenar con las opciones del servidor
+                        for (var i = 0; i < response.length; i++) {
+                            var unitId = response[i]['unidad_medida_id'];
+                            var unitDesc = response[i]['unidad_medida_descripcion'];
+                            
+                            // Comprobar si esta es la unidad que debe estar seleccionada
+                            var isSelected = (unitId == unidadGuardadaId) ? 'selected' : '';
+                            
+                            $(select).append(`<option value="${unitId}" ${isSelected}>${unitDesc}</option>`);
+                        }
+                        
+                        // Refrescar Select2 para que muestre el cambio visualmente
+                        $(select).trigger('change');
+                    },
+                    error: function(error) {
+                        console.log("Error al cargar unidades:", error);
+                    }
+                });
+            }
+        }
+
+        //========================================================================
+        // Variables
+        //========================================================================
+        var nLinea = 0;
+        var nFila  = 1;
+        const productos_db = @json($productos);
+        productos_db.sort(compare);
 
         //========================================================================
         // funcion para ordenar detalle
@@ -375,16 +491,19 @@
                         document.getElementById('proveedor_id').value = '';
                         document.getElementById('proveedor_nombre').value = '';
                         document.getElementById('dias_credito').value = '';
-                        swal({
-                            title: 'Error',
-                            text: 'Proveedor no encontrado, favor utilice boton de busqueda',
-                            type: 'error'
+                        Swal.fire({
+                            title: "Error",
+                            text: "! Proveedor no encontrado!",
+                            icon: 'error', // En v2 es 'icon', no 'type'
+                            showConfirmButton: true,
+                            confirmButtonText: 'Aceptar'
                         });
                     }else{
                         document.getElementById('proveedor_id').value = response.id;
                         document.getElementById('proveedor_nombre').value = response.nombre_comercial;
                         document.getElementById('dias_credito').value = response.dias_credito;
                         document.getElementById('fecha_vencimiento').value = document.getElementById('fecha_emision').value + response.dias_credito;
+                        calcularVencimiento();
                     }
                 },
                 error: function(error){
@@ -394,142 +513,144 @@
         }
 
         //========================================================================
-        // asignar datos de proveedor
-        //========================================================================
-        function asignarNit(nit, proveedor_id, nombre_comercial, dias_credito){
-            document.getElementById('nit').value = nit;
-            document.getElementById('proveedor_id').value = proveedor_id;
-            document.getElementById('proveedor_nombre').value = nombre_comercial;
-            document.getElementById('dias_credito').value = dias_credito;
-            $('#proveedorModal').hide();
-            $('.modal-backdrop').hide();
-            //alert(nit+' '+proveedor_id+' '+proveedor_nombre+' '+proveedor_telefono)
-        }
-
-        //========================================================================
         // Agregar una nueva fila a la tabla
         //========================================================================
 
-        function agregarFila(){
-            // var productos_db = JSON.parse(localStorage.productos_db);
-            productos_db.sort(compare);
-            html = '';
-            html += '<tr>'
-            html += '<input type="hidden" class="form-control" id="productos['+nLinea+'][id]" name="productos['+nLinea+'][id]" value="0">'
-            html += '<td style="width: 30%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][articulo_id]" name="productos['+nLinea+'][articulo_id]" onchange="actualizarMedidas('+nLinea+');">'
-            html += '<option value="">Seleccionar....</option>'
-            @foreach($productos as $producto)
-                html += '<option value="{{$producto->id}}">{{$producto->descripcion}}</option>'
-            @endforeach
-            html += '</select>'
-            html += '</td>'
-            html += '<td style="width: 20%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][articulo_caracteristica_id]" name="productos['+nLinea+'][articulo_caracteristica_id]">'
-            html += '<option value="">Seleccionar....</option>'
-            html += '</select>'
-            html += '</td>'
-            html += '<td style="width: 10%;">'
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="productos['+nLinea+'][unidad_medida_id]" name="productos['+nLinea+'][unidad_medida_id]">'
-            html += '</select>'
-            html += '</td>'
-            html += '<td style="width: 10%;">'
-            html += '<input type="number" class="form-control form-control-sm" placeholder="0" id="productos['+nLinea+'][cantidad]" name="productos['+nLinea+'][cantidad]" step="any" onchange="total_linea('+nLinea+')" required style="text-align: right;">'
-            html += '</td>'
-            html += '<td style="width: 15%;">'
-            html += '<input type="number" class="form-control form-control-sm" placeholder="0" id="productos['+nLinea+'][precio_unitario]" name="productos['+nLinea+'][precio_unitario]" onchange="total_linea('+nLinea+')" step="any" required style="text-align: right;">'
-            html += '</td>'
-            html += '<td style="width: 15%;">'
-            html += '<input type="number" class="form-control form-control-sm" placeholder="0" id="productos['+nLinea+'][precio_total]" name="productos['+nLinea+'][precio_total]" step="any" required style="text-align: right;" readonly>'
-            html += '</td>'
-            html += '<td>'
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fa fa-trash-alt"></i></button>'
-            // html += '<a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Eliminar Artículo" onclick="eliminarFila(this)"><i class="fa fa-trash-alt"></i></a>'
-            html += '</td>'
-            html += '</tr>';
-            //document.getElementById("tblDetalle").insertRow(-1).innerHTML = html;
+        /*function agregarFila() {
+            let html = `
+                <tr>
+                    <input type="hidden" name="productos[${nLinea}][id]" value="${nLinea}">
+                    
+                    <td style="min-width: 250px;">
+                        <select class="custom-select custom-select-sm select2bs4" 
+                                id="productos[${nLinea}][articulo_id]" 
+                                name="productos[${nLinea}][articulo_id]" 
+                                onchange="actualizarMedidas(${nLinea});" required>
+                            <option value="">Seleccionar...</option>
+                            ${productos_db.map(p => `<option value="${p.id}">${p.descripcion}</option>`).join('')}
+                        </select>
+                    </td>
+
+                    <td style="min-width: 120px;">
+                        <select class="custom-select custom-select-sm select2bs4" 
+                                id="productos[${nLinea}][unidad_medida_id]" name="productos[${nLinea}][unidad_medida_id]" required>
+                        </select>
+                    </td>
+
+                    <td style="width: 100px; min-width: 80px;">
+                        <input type="number" class="form-control form-control-sm text-right" 
+                            placeholder="0" id="productos[${nLinea}][cantidad]" name="productos[${nLinea}][cantidad]" 
+                            step="any" onchange="total_linea(${nLinea})" required>
+                    </td>
+
+                    <td style="width: 120px; min-width: 100px;">
+                        <input type="number" class="form-control form-control-sm text-right" 
+                            placeholder="0" id="productos[${nLinea}][precio_unitario]" name="productos[${nLinea}][precio_unitario]" 
+                            onchange="total_linea(${nLinea})" step="any" required>
+                    </td>
+
+                    <td style="width: 120px; min-width: 100px;">
+                        <input type="number" class="form-control form-control-sm text-right bg-light" 
+                            placeholder="0" id="productos[${nLinea}][precio_total]" name="productos[${nLinea}][precio_total]" 
+                            step="any" required readonly>
+                    </td>
+
+                    <td class="text-center" style="width: 50px;">
+                        <button type="button" class="btn btn-xs btn-outline-danger rounded-circle shadow-sm" 
+                                onclick="eliminarFila(this)">
+                            <i class="fa fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>`;
+
             $("#tblDetalle > tbody").append(html);
-            $('.eliminar').on('click',eliminar);
+            
+            // Inicializar Select2 específicamente para los nuevos elementos
+            $(`select[name="productos[${nLinea}][articulo_id]"]`).select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+            
+            $(`select[name="productos[${nLinea}][unidad_medida_id]"]`).select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
             nFila += 1;
             nLinea += 1;
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
-        }
+        }*/
+        function agregarFila(esSoloLectura = false) { 
+            let html = `
+                <tr>
+                    <input type="hidden" name="productos[${nLinea}][id]" value="${nLinea}">
+                    
+                    <td style="min-width: 250px;">
+                        <select class="custom-select custom-select-sm select2bs4" 
+                                id="productos[${nLinea}][articulo_id]" 
+                                name="productos[${nLinea}][articulo_id]" 
+                                onchange="actualizarMedidas(${nLinea});" 
+                                required ${esSoloLectura ? 'disabled' : ''}> 
+                            <option value="">Seleccionar...</option>
+                            ${productos_db.map(p => `<option value="${p.id}">${p.descripcion}</option>`).join('')}
+                        </select>
+                    </td>
 
-        function eliminar(){
-            var whichtr = $(this).closest("tr");
-            whichtr.remove(); 
-            total_tabla();
-            return false;
-        }
+                    <td style="min-width: 120px;">
+                        <select class="custom-select custom-select-sm select2bs4" 
+                                id="productos[${nLinea}][unidad_medida_id]" 
+                                name="productos[${nLinea}][unidad_medida_id]" 
+                                required ${esSoloLectura ? 'disabled' : ''}> 
+                        </select>
+                    </td>
 
-        function total_linea(id){
-            var cantidad        = document.getElementById('productos['+id+'][cantidad]').value;
-            var precio_unitario = document.getElementById('productos['+id+'][precio_unitario]').value;
-            document.getElementById('productos['+id+'][precio_total]').value = (cantidad * precio_unitario).toFixed(2);
-            total_tabla();
-        }
+                    <td style="width: 100px;">
+                        <input type="number" class="form-control form-control-sm text-right" 
+                            id="productos[${nLinea}][cantidad]" name="productos[${nLinea}][cantidad]" 
+                            onchange="total_linea(${nLinea})" required 
+                            ${esSoloLectura ? 'readonly' : ''}> 
+                    </td>
 
-        function total_tabla(){
-            var pie = '';
-            var total = 0;
-            var filas=document.querySelectorAll("#tblDetalle tbody tr");
-            filas.forEach(function(e) {
-                var columnas = e.querySelectorAll("td");
-                if (!isNaN(parseFloat($(columnas[5]).find('input').val())) ) {
-                    total += parseFloat($(columnas[5]).find('input').val());
-                }
-            });
-            total = total.toFixed(2);
-            pie += '<tr>'
-            pie += '<td style="width: 30%;"></td>'
-            pie += '<td style="width: 15%;"></td>'
-            pie += '<td style="width: 15%;"></td>'
-            pie += '<td style="width: 20%;"><h6><b>Total</b></h6></td>'
-            pie += '<td style="width: 20%;"><h6><b>'+total+'</b></h6></td>'
-            pie += '</tr>'
-            $("#tblDetalle tfoot tr").remove();
-            $('#tblDetalle tfoot').append(pie);
+                    <td style="width: 120px;">
+                        <input type="number" class="form-control form-control-sm text-right" 
+                            id="productos[${nLinea}][precio_unitario]" 
+                            name="productos[${nLinea}][precio_unitario]" 
+                            onchange="total_linea(${nLinea})" required 
+                            ${esSoloLectura ? 'readonly' : ''}> 
+                    </td>
+
+                    <td style="width: 120px;">
+                        <input type="number" class="form-control form-control-sm text-right bg-light" 
+                            id="productos[${nLinea}][precio_total]" 
+                            name="productos[${nLinea}][precio_total]" 
+                            readonly> 
+                    </td>
+
+                    <td class="text-center" style="width: 50px;">
+                        ${!esSoloLectura ? `
+                            <button type="button" class="btn btn-xs btn-outline-danger rounded-circle shadow-sm" 
+                                    onclick="eliminarFila(this)">
+                                <i class="fa fa-trash-alt"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>`;
+
+            $("#tblDetalle > tbody").append(html);
+            
+            // Inicializar Select2 para los nuevos elementos
+            $(`#productos\\[${nLinea}\\]\\[articulo_id\\]`).select2({ theme: 'bootstrap4', width: '100%' });
+            $(`#productos\\[${nLinea}\\]\\[unidad_medida_id\\]`).select2({ theme: 'bootstrap4', width: '100%' });
+
+            nLinea++;
         }
 
         //========================================================================
-        // eliminar fila especifica de la tabla
+        // actualizar unidad de medida en base a producto seleccionado
         //========================================================================
         function actualizarMedidas(id){
             var producto_id = document.getElementById("productos["+id+"][articulo_id]").value;
             var select      = document.getElementById("productos["+id+"][unidad_medida_id]"); 
-            var caracteristica = document.getElementById("productos["+id+"][articulo_caracteristica_id]"); 
-
-            $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('trae_caracteristicas_x_producto') }}",
-                method: "POST",
-                data: {producto_id: producto_id},
-                success: function(response) {
-                    caracteristica.innerHTML = '';
-                    var opt = response.length;
-                    var el1 = document.createElement("option");
-                    el1.textContent = 'Seleccionar...';
-                    el1.value = null;
-                    caracteristica.appendChild(el1);
-                    for (var i = 0; i < response.length; i++) {
-                        var opt = response.length;
-                        var el1 = document.createElement("option");
-                        el1.textContent = response[i]['descripcion'];
-                        el1.value = response[i]['id'];
-                        caracteristica.appendChild(el1);
-                    }
-                },
-                error: function() {
-                    // Este bloque se ejecuta si hay un error con la solicitud
-                    console.error('Error en la solicitud AJAX:');
-                }
-            });
-
+            
             $.ajax({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -538,6 +659,10 @@
                 method: "POST",
                 data: {producto_id: producto_id},
                 success: function(response){
+                    var el = document.createElement("option");
+                    el.textContent = 'Seleccionar...';
+                    el.value = '';
+                    select.appendChild(el);
                     for (var i = 0; i < response.length; i++) {
                         var opt = response.length;
                         var el = document.createElement("option");
@@ -552,82 +677,104 @@
             });
         }
 
+        //===================================================================
+        // Total de la linea
+        //===================================================================
+        function total_linea(id){
+            var cantidad        = document.getElementById('productos['+id+'][cantidad]').value;
+            var precio_unitario = document.getElementById('productos['+id+'][precio_unitario]').value;
+            document.getElementById('productos['+id+'][precio_total]').value = (cantidad * precio_unitario).toFixed(2);
+            total_tabla();
+        }
+
+        //===================================================================
+        // Total de la tabla
+        //===================================================================
+        function total_tabla() {
+            let total = 0;
+            
+            // Es más rápido buscar directamente los inputs de subtotal
+            // Asumiendo que tus inputs terminan en [precio_total]
+            $('#tblDetalle tbody tr').each(function() {
+                // Buscamos el input que contiene el subtotal de la fila
+                // Usamos un selector que busque el final del nombre del input
+                let valorInput = $(this).find('input[name$="[precio_total]"]').val();
+                
+                // Si no usas nombres dinámicos, puedes usar una clase: .input-subtotal
+                let subtotal = parseFloat(valorInput);
+                
+                if (!isNaN(subtotal)) {
+                    total += subtotal;
+                }
+            });
+
+            let totalFormateado = total.toFixed(2);
+
+            // Formato visual para el usuario (con comas y puntos)
+            let formatoMoneda = new Intl.NumberFormat('es-GT', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(total);
+
+            // Actualización de la interfaz
+            $('#txtTotal').text(formatoMoneda);
+            $('#inputTotalHidden').val(totalFormateado);
+            //$("#total").val(totalFormateado);
+        }
+
         //========================================================================
         // eliminar fila especifica de la tabla
         //========================================================================
         function eliminarFila(row){
             var d = row.parentNode.parentNode.rowIndex; 
-            total -= document.getElementById("productos[3][precio_total]").value;
-            alert(total);
-            total = total.toFixed(2);
-            pie += '<tr>'
-            pie += '<td style="width: 30%;"></td>'
-            pie += '<td style="width: 15%;"></td>'
-            pie += '<td style="width: 15%;"></td>'
-            pie += '<td style="width: 20%;"><h6><b>Total</b></h6></td>'
-            pie += '<td style="width: 20%;"><h6><b>'+total+'</b></h6></td>'
-            pie += '</tr>'
             document.getElementById('tblDetalle').deleteRow(d);
-            $("#tblDetalle tfoot tr").remove();
-            $('#tblDetalle tfoot').append(pie);
-            //total_tabla();
+            total_tabla();
         }
 
-        //========================================================================
-        // Guardar Compra
-        //========================================================================
-        $(function(){
-            $("#FormaCompra").submit(function(){
-                var total_documento = parseFloat(document.getElementById('total').value);
-                total_documento = total_documento.toFixed(2);
-                var total           = 0;
-                var filas=document.querySelectorAll("#tblDetalle tbody tr");
-                filas.forEach(function(e) {
-                    var columnas = e.querySelectorAll("td");
-                    if (!isNaN(parseFloat($(columnas[5]).find('input').val())) ) {
-                        total += parseFloat($(columnas[5]).find('input').val());
-                    }
-                });
-                total = total.toFixed(2);
-                if (total_documento == total) {
-                    event.preventDefault(); // Evita el envío normal del formulario
-                    var formData = new FormData(this); // Serializa los datos del formulario
-                    var csrfToken = $('meta[name="csrf-token"]').attr('content');
-                    formData.append('_token', csrfToken);
-                    // console.log(formData);
-                    // alert('revisar');
-                    $.ajax({
-                        url: "{{ route('actualizar_compra') }}",
-                        type: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        data: formData,
-                        contentType: false,  // Impide que jQuery configure el tipo de contenido
-                        processData: false,
-                        success: function(response){
-                            swal({
-                                title: 'Trabajo Finalizado',
-                                text: response.message,
-                                type: 'success',
-                                },
-                                function(){
-                                    return window.location.href = "{{route('lista_compras')}}";
-                                }
-                            );
-                        },
-                        error: function(error){
-                            console.log(error);
-                        }
-                    });
-                }else{
-                    swal({
-                        title: 'Error',
-                        text: 'Para continuar el total de productos debe coincidir con el valor del documento de compra',
-                        type: 'error'
-                    });
-                }
-            })
-        });
+        //===================================================================
+        // Confirmar salida de pantalla
+        //===================================================================
+        function confirma_salida(){
+            Swal.fire({
+                title: 'Confirmación',
+                text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745', // Color success de AdminLTE
+                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
+                confirmButtonText: 'Si, Salir',
+                cancelButtonText: 'No',
+                allowEscapeKey: true,
+                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+            }).then((result) => {
+                if (result.isConfirmed) { 
+                    window.location.href = "{{ route('lista_compras') }}";
+                } 
+            });
+        }
+
+        //===================================================================
+        // Calcular fecha de vencimiento
+        //===================================================================
+        function calcularVencimiento() {
+            const fchEmision = document.getElementById('fecha_emision').value;
+            const dias = parseInt(document.getElementById('dias_credito').value) || 0;
+            const campoVencimiento = document.getElementById('fecha_vencimiento');
+
+            if (fchEmision) {
+                // Creamos la fecha a partir del string YYYY-MM-DD
+                let fecha = new Date(fchEmision + 'T00:00:00'); 
+                
+                // Sumamos los días de crédito
+                fecha.setDate(fecha.getDate() + dias);
+
+                // Formateamos de vuelta a YYYY-MM-DD para el input
+                const yyyy = fecha.getFullYear();
+                const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+                const dd = String(fecha.getDate()).padStart(2, '0');
+                
+                campoVencimiento.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
     </script>
 @endsection

@@ -55,17 +55,17 @@ class PacienteController extends Controller
         ]);
     }
 
-    public function create($origen, $cita)
+    public function create()
     {
         $aseguradoras = Aseguradora::all();
         $tipoTelefonos = TipoComunicacion::where('estado', 'A')->orderBy('nombre', 'ASC')->get();
         $tipoDirecciones = TipoUbicacion::where('estado', 'A')->orderBy('nombre', 'ASC')->get();
         $parentescos     = Parentesco::where('estado', 1)->orderBy('nombre', 'asc')->get();
         
-        return view('pacientes.create', compact('aseguradoras', 'tipoTelefonos', 'tipoDirecciones', 'origen', 'cita', 'parentescos'));
+        return view('pacientes.create', compact('aseguradoras', 'tipoTelefonos', 'tipoDirecciones', 'parentescos'));
     }
 
-    public function store(Request $request, $origen, $cita)
+    public function store(Request $request)
     {
         $validData = $request->validate([
             'nombres'          => 'required|min:3',
@@ -282,14 +282,14 @@ class PacienteController extends Controller
             'type'    => 'success'
         );
 
-        // return redirect()->back()->with($message);
+        return redirect()->back()->with($message);
 
-        if ($origen == 'P') {
+        /*if ($origen == 'P') {
             // return Redirect::route('pacientes');
             return redirect()->back()->with($message);
         } else {
             return Redirect::route('nueva_edicion', $cita);
-        }
+        }*/
     }
 
     public function edit($id)

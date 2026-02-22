@@ -18,5 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a este módulo de admisiones.',
+                'type'    => 'error'
+            ], 403);
+        });
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

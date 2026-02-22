@@ -1,8 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    <link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.css')}}">
     <style type="text/css">
         .patient-banner {
           display: flex;
@@ -210,8 +208,8 @@
 @endsection
 @section('content')
     <div class="container-fluid">
-        <input type="text" id="admision_id" name="admision_id">
-        <input type="text" id="admision_atencion_id" name="admision_atencion_id">
+        <input type="hidden" id="admision_id" name="admision_id">
+        <input type="hidden" id="admision_atencion_id" name="admision_atencion_id">
 
         <header class="patient-banner">
             <div class="patient-identity">
@@ -1093,6 +1091,7 @@
 
         let timerInterval;
         let startTime;
+        const paciente = @json($pPaciente);
 
 
         // Usamos esta forma para que '$' siempre funcione dentro
@@ -1246,7 +1245,7 @@
                 }
             });
 
-            $("#EdadHtml").text('49 años'); // Tu lógica existente
+            $("#EdadHtml").text(paciente.edad+' años'); // Tu lógica existente
 
             // $('.admission-node').on('click', function() {
             //     // 1. Identificamos el <li> padre de este nodo

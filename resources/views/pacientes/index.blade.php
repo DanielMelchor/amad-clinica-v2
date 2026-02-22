@@ -1,136 +1,123 @@
 @extends('adminlte::page')
+
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
+        /* --- ESTILOS BASE --- */
+        .btn-guardar { background-color: #A5C890 !important; }
+        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: auto; }
+
+        /* --- ESTRATEGIA MOBILE FIRST (Hasta 768px) --- */
+        @media (max-width: 768px) {
+            #tblprincipal thead { display: none; } /* Ocultar cabecera en móvil */
+
+            #tblprincipal tr {
+                display: block;
+                margin-bottom: 1.2rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                background: #fff;
+                padding: 10px;
+            }
+
+            #tblprincipal td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+                padding: 0.75rem 0.5rem !important;
+                border-top: 1px solid #f2f2f2 !important;
+                width: 100% !important;
+                min-height: 45px;
+            }
+
+            #tblprincipal td:first-child { border-top: none !important; }
+
+            /* Generar etiquetas desde el atributo data-label */
+            #tblprincipal td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                color: #495057;
+                flex: 1;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+            }
+
+            /* Botones de acción más grandes para pulgares */
+            .btn-xs { padding: 0.5rem 0.7rem; font-size: 1rem; }
+            
+            /* Ajuste de controles de búsqueda */
+            .dataTables_wrapper .row { flex-direction: column; align-items: center; }
         }
     </style>
 @endsection
+
 @section('title', 'Pacientes')
 
-@section('content_header')
-    <br>
-@endsection
-
 @section('content')
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
+    <div class="row pt-3">
+        <div class="col-12 col-md-11 mx-auto">
+            <div class="card shadow-lg">
                 <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <h6>Pacientes</h6>
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shield-alt mr-2"></i>Lista de Pacientes</h6>
                         </div>
-                        <div class="col-md-3" style="text-align: right;">
-                            <a href="{{ route('crear_paciente', ['P', '0'])}}" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Nuevo Registro"><i class="fas fa-plus-circle"></i></a>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+                        <div class="col-4 text-right">
+                            <a href="{{ route('crear_paciente') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
+                                <i class="fas fa-plus-circle"></i>
+                            </a>
+                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
-                <form class="form-horizontal">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="table-responsive">
-                                    <table id="tblprincipal"  class="table table-sm table-striped" width="100%" style="font-size: 12px;">
-                                        <thead class="thead-primary">
-                                            <tr>
-                                                <th scope="col" class="text-center">Código</th>
-                                                <th scope="col" class="text-center">Nombre</th>
-                                                <th scope="col" class="text-center">Expediente</th>
-                                                <th scope="col" class="text-center">Estado</th>
-                                                <th>&nbsp;</th>
-                                            </tr>   
-                                        </thead>
-                                        <tbody>
-                                            @foreach($pPacientes as $pPaciente)
-                                                <tr class="text-center">
-                                                    <td>{{ $pPaciente->codigo_id}}</td>
-                                                    <td>{{ $pPaciente->nombre_completo }}</td>
-                                                    <td>{{ $pPaciente->expediente_no }}</td>
-                                                    @if($pPaciente->estado == 1)
-                                                        <td>Activo</td>
-                                                    @else
-                                                        <td>Baja</td>
-                                                    @endif
-                                                    @php $pacienteId= Crypt::encrypt($pPaciente->id); @endphp
-                                                    <td>
-                                                        <a href="{{route('editar_paciente' , $pacienteId )}}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Empresa"><i class="fas fa-edit"></i></a>
-                                                        <a href="{{route('nueva_admision' , ['paciente_id' => $pPaciente->id, 'origen' => 'P' ] )}}" class="btn btn-xs btn-outline-info rounded-circle elevation-4" title="ver Admisiones"><i class="fas fa-book-medical"></i></a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tblprincipal" class="table table-sm table-striped table-hover w-100">
+                            <thead class="bg-light">
+                                <tr class="text-center" style="font-size: 12px; text-transform: uppercase;">
+                                    <th class="text-left pl-3">Código</th>
+                                    <th class="text-center pl-3">Nombre</th>
+                                    <th class="text-center pl-3">Expediente</th>
+                                    <th class="text-center pl-3">Estado</th>
+                                    <th style="width: 50px;">Acción</th>
+                                </tr>   
+                            </thead>
+                            <tbody>
+                                @foreach($pPacientes as $pPaciente)
+                                    <tr class="text-center" style="font-size: 11px;">
+                                        <td>{{ $pPaciente->codigo_id}}</td>
+                                        <td>{{ $pPaciente->nombre_completo }}</td>
+                                        <td>{{ $pPaciente->expediente_no }}</td>
+                                        @if($pPaciente->estado == 1)
+                                            <td>Activo</td>
+                                        @else
+                                            <td>Baja</td>
+                                        @endif
+                                        @php $pacienteId= Crypt::encrypt($pPaciente->id); @endphp
+                                        <td>
+                                            <a href="{{route('editar_paciente' , $pacienteId )}}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Empresa"><i class="fas fa-edit"></i></a>
+                                            <a href="{{route('nueva_admision' , ['paciente_id' => $pacienteId] )}}" class="btn btn-xs btn-outline-info rounded-circle elevation-4" title="ver Admisiones"><i class="fas fa-book-medical"></i></a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 @endsection
+
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-    <!-- <script src="{{asset('assets/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js')}}"></script> -->
-    @if(Session::has('success'))
-        <script>
-            swal("Trabajo Finalizado", "{!! Session::get('success') !!}", "success")
-        </script>
-    @endif
-    @if(Session::has('error'))
-        <script>
-            swal("Error !!!", "{!! Session::get('error') !!}", "error")
-        </script>
-    @endif
-    <script type="text/javascript">
-        // $(function () {
-        //     $('#tblprincipal').DataTable({
-        //       "paging": true,
-        //       "lengthChange": false,
-        //       "searching": true,
-        //       "ordering": true,
-        //       "info": true,
-        //       "autoWidth": false,
-        //       language: {
-        //             "sProcessing":     "Procesando...",
-        //             "sLengthMenu":     "Mostrar _MENU_ registros",
-        //             "sZeroRecords":    "No se encontraron resultados",
-        //             "sEmptyTable":     "Ningún dato disponible en esta tabla =(",
-        //             "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-        //             "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
-        //             "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
-        //             "sInfoPostFix":    "",
-        //             "sSearch":         "Buscar:",
-        //             "sUrl":            "",
-        //             "sInfoThousands":  ",",
-        //             "sLoadingRecords": "Cargando...",
-        //             "oPaginate": {
-        //                             "sFirst":    "Primero",
-        //                             "sLast":     "Último",
-        //                             "sNext":     "Siguiente",
-        //                             "sPrevious": "Anterior"
-        //                         }
-        //         },
-        //         dom: 'Bfrtip'
-        //     });
-        // });
-        $(function () {
+    <script>
+        $(document).ready(function() {
+            // Inicialización limpia de DataTable
             $('#tblprincipal').DataTable({
                 "paging": true,
                 "lengthChange": true,
@@ -166,28 +153,5 @@
                 ]
             });
         });
-
-        function confirma_salida(){
-            swal({
-                title: 'Confirmación',
-                text: 'Seguro de Salir, si ha realizado cambios estos no seran guardados ?',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('home') }}";
-                                    } 
-                    else { 
-                        swal("Cancelled", "Your imaginary file is safe :)", "error"); 
-                        }
-            });
-        }
     </script>
 @endsection

@@ -1,133 +1,127 @@
 @extends('adminlte::page')
+
 @section('css')
-	<style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
-        }
-        .numero{
-            text-align: right;
-        }
-        .moneda:after {
-            content: attr(data-numero);
-        }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
-        }
-        .dataTables_wrapper .row {
-            display: flex;
-            align-items: center; /* Alinea verticalmente los elementos */
-            justify-content: flex-start; /* Ajusta los elementos a la izquierda */
-        }
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <style type="text/css">
+        /* --- ESTILOS BASE --- */
+        .btn-guardar { background-color: #A5C890 !important; }
+        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: auto; }
 
-        .dataTables_wrapper .row .col-auto {
-            display: flex;
-            justify-content: flex-start; /* Alinea los elementos dentro de las columnas */
-        }
+        /* --- ESTRATEGIA MOBILE FIRST (Hasta 768px) --- */
+        @media (max-width: 768px) {
+            #tblprincipal thead { display: none; } /* Ocultar cabecera en móvil */
 
-        .dataTables_wrapper .row .col {
-            display: flex;
-            justify-content: flex-start;
+            #tblprincipal tr {
+                display: block;
+                margin-bottom: 1.2rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                background: #fff;
+                padding: 10px;
+            }
+
+            #tblprincipal td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+                padding: 0.75rem 0.5rem !important;
+                border-top: 1px solid #f2f2f2 !important;
+                width: 100% !important;
+                min-height: 45px;
+            }
+
+            #tblprincipal td:first-child { border-top: none !important; }
+
+            /* Generar etiquetas desde el atributo data-label */
+            #tblprincipal td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                color: #495057;
+                flex: 1;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+            }
+
+            /* Botones de acción más grandes para pulgares */
+            .btn-xs { padding: 0.5rem 0.7rem; font-size: 1rem; }
+            
+            /* Ajuste de controles de búsqueda */
+            .dataTables_wrapper .row { flex-direction: column; align-items: center; }
         }
     </style>
 @endsection
+
 @section('title', 'Ajustes')
-@section('content_header')
-    <br>
-@endsection
+
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12 col-lg-10 offset-lg-1">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header py-2" style="background-color: #E1E8ED;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 font-weight-bold text-secondary">Listado de Ajustes</h6>
-                            <div class="d-flex">
-                                <a href="{{ route('crear_ajuste') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
-                                    <i class="fas fa-plus-circle"></i>
-                                </a>
-                                <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                </a>
-                            </div>
+    <div class="row pt-3">
+        <div class="col-12 col-md-11 mx-auto">
+            <div class="card shadow-lg">
+                <div class="card-header" style="background-color: #E1E8ED;">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shield-alt mr-2"></i>Lista de Ajustes</h6>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a href="{{ route('crear_ajuste') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
+                                <i class="fas fa-plus-circle"></i>
+                            </a>
+                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
                         </div>
                     </div>
-
-                    <div class="card-body p-0 p-md-3">
-                        <div class="table-responsive">
-                            <table id="tblprincipal" class="table table-sm table-striped table-hover mb-0">
-                                <thead class="bg-light">
-                                    <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
-                                        <th class="text-left pl-3">Transacción / Número</th>
-                                        <th class="d-none d-sm-table-cell">Fecha</th>
-                                        <th style="width: 50px;">Acción</th>
-                                    </tr>   
-                                </thead>
-                                <tbody>
-                                    @foreach($lista as $l)
-                                        <tr class="text-center" style="font-size: 12px;">
-                                            <td class="text-left pl-3 align-middle">
-                                                <div class="font-weight-bold text-dark">{{ $l->transaccion_descripcion }}</div>
-                                                <small class="text-muted">{{ $l->correlativo }} - {{ $l->anio }}</small>
-                                                <div class="d-block d-sm-none mt-1">
-                                                    <i class="far fa-calendar-alt mr-1"></i>{{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
-                                                </div>
-                                            </td>
-                                            <td class="align-middle d-none d-sm-table-cell">
-                                                {{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
-                                            </td>
-                                            <td class="align-middle pr-3">
-                                                @php $Id= Crypt::encrypt($l->id); @endphp
-                                                <a href="{{ route('editar_ajuste', $Id) }}" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar Compra">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tblprincipal" class="table table-sm table-striped table-hover w-100">
+                            <thead class="bg-light">
+                                <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
+                                    <th class="text-left pl-3">Transacción / Número</th>
+                                    <th class="d-none d-sm-table-cell">Fecha</th>
+                                    <th style="width: 50px;">Acción</th>
+                                </tr>   
+                            </thead>
+                            <tbody>
+                                @foreach($lista as $l)
+                                    <tr class="text-center" style="font-size: 12px;">
+                                        <td class="text-left pl-3 align-middle">
+                                            <div class="font-weight-bold text-dark">{{ $l->transaccion_descripcion }}</div>
+                                            <small class="text-muted">{{ $l->correlativo }} - {{ $l->anio }}</small>
+                                            <div class="d-block d-sm-none mt-1">
+                                                <i class="far fa-calendar-alt mr-1"></i>{{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
+                                            </div>
+                                        </td>
+                                        <td class="align-middle d-none d-sm-table-cell">
+                                            {{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
+                                        </td>
+                                        <td class="align-middle pr-3">
+                                            @php $Id= Crypt::encrypt($l->id); @endphp
+                                            <a href="{{ route('editar_ajuste', $Id) }}" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar Compra">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @include('aseguradoras.partials.modals_aseguradoras')
+
 @endsection
+
 @section('js')
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    <script type="text/javascript">
-        $(function () {
+    <script>
+        $(document).ready(function() {
+            // Inicialización limpia de DataTable
             $('#tblprincipal').DataTable({
                 "paging": true,
                 "lengthChange": true,
@@ -162,6 +156,35 @@
                     }
                 ]
             });
+
+            $('#formaNuevoRegistro').on('submit', function() {
+                $('#submitButton').prop('disabled', true);
+            });
         });
+
+        function fn_agregar(){
+            $('#formaNuevoRegistro')[0].reset();
+            $('#agregarModalCenter').modal('show');
+        }
+
+        function fn_edicion(id){
+            $.ajax({
+                url: "{{ route('aseguradora_editar') }}",
+                type: "POST",
+                data: {"_token": "{{ csrf_token() }}", id : id},
+                success: function(res){
+                    $('#eid').val(id);
+                    $('#enombre').val(res.nombre);
+                    $('#edireccion').val(res.direccion);
+                    $('#etelefonos').val(res.telefonos);
+                    $('#econtacto').val(res.contacto);
+                    $('#efacturacion_nit').val(res.facturacion_nit);
+                    $('#efacturacion_nombre').val(res.facturacion_nombre);
+                    $('#efacturacion_direccion').val(res.facturacion_direccion);
+                    $('#eestado').prop('checked', res.estado == 'A');
+                    $('#editarModalCenter').modal('show');
+                }
+            });
+        }
     </script>
 @endsection
