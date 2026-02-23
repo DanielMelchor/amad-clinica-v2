@@ -35,6 +35,17 @@
                 <a href="#faq" class="text-slate-600 hover:text-blue-600 transition">Dudas</a>
             </div>
             <div class="flex items-center space-x-4">
+                @if (Route::has('login'))
+                    @auth
+                        <a href="{{ url('/home') }}" class="text-blue-600 hover:text-blue-700 font-bold text-sm uppercase tracking-wider transition">
+                            Mi Panel
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="text-slate-600 hover:text-blue-600 font-semibold text-sm uppercase tracking-wider transition">
+                            Iniciar Sesión
+                        </a>
+                    @endauth
+                @endif
                 <a href="#contacto" class="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-0.5">
                     Agendar Cita
                 </a>

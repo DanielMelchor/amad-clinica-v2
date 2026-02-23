@@ -58,20 +58,25 @@
 
 @section('content')
     <div class="row pt-3">
-        <div class="col-12 col-md-11 mx-auto">
+        <div class="col-12 col-lg-12 mx-auto">
             <div class="card shadow-lg">
                 <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shield-alt mr-2"></i>Lista de Pacientes</h6>
+                    <div class="row align-items-center flex-nowrap">
+                        <div class="col-auto flex-grow-1">
+                            <h6 class="mb-0 font-weight-bold text-truncate">
+                                <i class="fas fa-shield-alt mr-1 mr-sm-2"></i>Lista de Pacientes
+                            </h6>
                         </div>
-                        <div class="col-4 text-right">
-                            <a href="{{ route('crear_paciente') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
-                                <i class="fas fa-plus-circle"></i>
-                            </a>
-                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </a>
+
+                        <div class="col-auto text-right">
+                            <div class="d-flex align-items-center">
+                                <a href="{{ route('crear_paciente') }}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2 mr-2" title="Nuevo Paciente">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

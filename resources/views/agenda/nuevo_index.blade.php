@@ -541,7 +541,12 @@
                                      .css('pointer-events', 'none') // Evita clics físicos
                                      .attr('tabindex', '-1')        // Evita enfoque por teclado
                                      .removeClass('btn-outline-info')
-                                    .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                                     .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
+                        btnAdmision.addClass('disabled')
+                                     .css('pointer-events', 'none') // Evita clics físicos
+                                     .attr('tabindex', '-1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-info')
+                                     .addClass('btn-outline-secondary'); // Color gris para indicar estado inactivo
                         btnHistorico.addClass('disabled')
                                      .css('pointer-events', 'none') // Evita clics físicos
                                      .attr('tabindex', '-1')        // Evita enfoque por teclado
@@ -553,6 +558,11 @@
                                      .attr('tabindex', '1')        // Evita enfoque por teclado
                                      .removeClass('btn-outline-secondary')
                                      .addClass('btn-outline-info'); // Color gris para indicar estado inactivo
+                        btnAdmision.removeClass('disabled')
+                                     .css('pointer-events', 'auto') // Evita clics físicos
+                                     .attr('tabindex', '1')        // Evita enfoque por teclado
+                                     .removeClass('btn-outline-secondary')
+                                     .addClass('btn-outline-primary'); // Color gris para indicar estado inactivo
                         btnHistorico.removeClass('disabled')
                                      .css('pointer-events', 'auto') // Evita clics físicos
                                      .attr('tabindex', '1')        // Evita enfoque por teclado

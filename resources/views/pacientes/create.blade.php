@@ -461,15 +461,13 @@
             <script>
                 
                 setTimeout(function() {
-                    swal({
+                    Swal.fire({
                         title: "Trabajo Finalizado",
-                        text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        text: "{{ Session::get('message') }}",
+                        icon: 'success', // En v2 es 'icon', no 'type'
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
                 }, 1000);
             </script>
         @endif
@@ -478,15 +476,13 @@
         @if(Session::has('message'))
             <script>
                 setTimeout(function() {
-                    swal({
+                    Swal.fire({
                         title: "Error",
                         text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: 'error', // En v2 es 'icon', no 'type'
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar'
+                    });
                 }, 1000);
             </script>
         @endif

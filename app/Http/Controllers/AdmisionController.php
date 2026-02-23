@@ -58,8 +58,7 @@ class AdmisionController extends Controller
     }
 
 
-    public function index(Request $request)
-    {
+    public function index(Request $request){
         setlocale(LC_MONETARY, 'es_GT');
         $hoy = Carbon::now()->format('Y-m-d');
         $medicos       = Medico::where('empresa_id', Auth::user()->empresa_id)->where('estado','=',1)->get();
@@ -198,8 +197,6 @@ class AdmisionController extends Controller
             'adm_hospital_id'   => 'required|exists:hospitales,id'
         ], $mensajes);
 
-        dd($validData);
-        
         DB::beginTransaction();
         try {
             if ($request['admision_tercero']) {
