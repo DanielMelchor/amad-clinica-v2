@@ -255,7 +255,7 @@
                                 <td data-label="Motivo">${item.observaciones || ''}</td>
                                 <td data-label="Admisión">
                                     ${item.admision && item.admision.admision_no 
-                                        ? `<a href="${asset}medicos/nueva_admision/${item.paciente_id}/A" target="_blank" class="btn btn-xs btn-primary">${item.admision.admision_no}</a>` 
+                                        ? `<a href="${asset}medicos/nueva_admision/${item.paciente_id}" target="_blank" class="btn btn-xs btn-primary">${item.admision.admision_no}</a>` 
                                         : '<span class="text-muted small">Sin admisión</span>'}
                                 </td>
                             </tr>`;

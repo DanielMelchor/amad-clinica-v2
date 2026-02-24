@@ -67,229 +67,127 @@ class PacienteController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validación (se queda igual)
         $validData = $request->validate([
             'nombres'          => 'required|min:3',
             'apellidos'        => 'required|min:3',
             'fecha_nacimiento' => 'required|date',
             'expediente_no'    => 'required|numeric'
-
         ]);
 
-        $codigo_no = Correlativo::where('empresa_id', Auth::user()->empresa_id)
-                     ->where('tipo', 'P')
-                     ->max('correlativo');
-        $codigo_no += 1;
+        try {
+            return DB::transaction(function () use ($request, $validData) {
+                $empresa_id = Auth::user()->empresa_id;
 
-        if (isset($request->telefonos)) {
-            $totalTelefonos   = count($request->telefonos);
-            $dataTelefono     = (array) $request->telefonos;
-        }else{
-            $totalTelefonos   = 0;
+                // 2. Correlativo con bloqueo
+                $correlativo = Correlativo::where('empresa_id', $empresa_id)
+                    ->where('tipo', 'P')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$correlativo) {
+                    throw new \Exception("Configuración de correlativos no encontrada.");
+                }
+
+                $nuevoCodigo = $correlativo->correlativo + 1;
+                $correlativo->update(['correlativo' => $nuevoCodigo]);
+
+                $paciente = new Paciente();
+                $paciente->empresa_id             = Auth::user()->empresa_id;
+                $paciente->expediente_no          = $validData['expediente_no'];
+                $paciente->expediente_anterior_no = $request->expediente_anterior_no;
+                $paciente->codigo_id              = $nuevoCodigo;
+                $paciente->nombres                = $validData['nombres'];
+                $paciente->apellidos              = $validData['apellidos'];
+                $paciente->apellido_casada        = $request->apellido_casada;
+                if (isset($request->apellido_casada)) {
+                    $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos.' de '.$paciente->apellido_casada;
+                }else{
+                    $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos;
+                }
+                if (isset($request->genero)){
+                    $paciente->genero       = $request->genero;
+                }
+                $paciente->fecha_nacimiento = $validData['fecha_nacimiento'];
+                $paciente->profesion        = $request->profesion;
+                $paciente->estado_civil     = $request->estado_civil;
+                $paciente->referido_por     = $request->referido_por;
+                $paciente->religion         = $request->religion;
+                $paciente->antmedico_descripcion      = $request->antmedico_descripcion;
+                $paciente->antquirurgico_descripcion  = $request->antquirurgico_descripcion;
+                $paciente->antalergia_descripcion     = $request->antalergia_descripcion;
+                $paciente->antgineco_descripcion      = $request->antgineco_descripcion;
+                $paciente->antfamiliar_descripcion    = $request->antfamiliar_descripcion;
+                $paciente->antmedicamento_descripcion = $request->antmedicamento_descripcion;
+                $paciente->tabaco_cnt       = $request->tabaco_cnt;
+                $paciente->tabaco_tiempo    = $request->tabaco_tiempo;
+                $paciente->alcohol_cnt      = $request->alcohol_cnt;
+                $paciente->alcohol_tiempo   = $request->alcohol_tiempo;
+                if (isset($request['estado'])) {
+                    $paciente->estado = 1;
+                }else{
+                    $paciente->estado = 0;
+                }
+                $paciente->save();
+
+                return redirect()->back()
+                ->with([
+                    'message' => 'Registro almacenado con exito',
+                    'type'    => 'success'
+                ]);
+
+        } catch (\Exception $e) {
+
+            // 2. Retornamos una respuesta amigable al usuario
+            return redirect()->back()
+                ->withInput() // Mantiene lo que el usuario escribió
+                ->with([
+                    'message' => 'Hubo un problema técnico: ' . $e->getMessage(),
+                    'type'    => 'error'
+                ]);
+        }
+    }
+
+    private function generarNombreCompleto($request)
+    {
+        $nombreBase = trim($request->nombres) . ' ' . trim($request->apellidos);
+        
+        return $request->filled('apellido_casada') 
+            ? $nombreBase . ' de ' . trim($request->apellido_casada) 
+            : $nombreBase;
+    }
+
+    /**
+     * Función auxiliar para limpiar el store
+     */
+    private function guardarRelaciones($paciente, $request)
+    {
+        if ($request->filled('telefonos')) {
+            foreach ($request->telefonos as $tel) {
+                $paciente->telefonos()->create([
+                    'tipo_comunicacion_id' => $tel['tipocomunicacion_id'],
+                    'numero'               => $tel['numero'],
+                    'extension'            => $tel['extension'] ?? null,
+                ]);
+            }
+        }
+
+        // Guardar Direcciones si existen
+        if ($request->filled('direcciones')) {
+            foreach ($request->direcciones as $dir) {
+                $paciente->ubicaciones()->create([
+                    'empresa_id '          => $empresa_id,
+                    'tipo_ubicacion_id' => $dir['tipodireccion_id'],
+                    'direccion'         => $dir['direccion'],
+                    'municipio_id'      => 1, // Valores por defecto
+                    'departamento_id'   => 1,
+                    'pais_id'           => 1,
+                    'estado'            => 'A'
+                ]);
+            }
         }
         
-        if (isset($request->direcciones)) {
-            $totalDirecciones = count($request->direcciones);
-            $dataDireccion    = (array) $request->direcciones;
-        }else{
-            $totalDirecciones = 0;
-        }
-
-        if (isset($request->emails)) {
-            $totalEmails      = count($request->emails);
-            $dataEmail        = (array) $request->emails;
-        }else{
-            $totalEmails = 0;
-        }
-
-        if (isset($request->seguros)) {
-            $totalSeguros     = count($request->seguros);
-            $dataSeguro       = (array) $request->seguros;
-        }else{
-            $totalSeguros = 0;
-        }
-
-        if (isset($request->facturacion)) {
-            $totalFacturacion = count($request->facturacion);
-            $dataFacturacion  = (array) $request->facturacion;
-        }else{
-            $totalFacturacion = 0;
-        }
-
-        if (isset($request->familia)) {
-            $totalFamilia     = count($request->familia);
-            $dataFamilia      = (array) $request->familia;
-        }else{
-            $totalFamilia     = 0;
-        }
-        // dd($totalRegistros);
-
-        //===========================================================================
-        // Datos generales de paciente
-        //===========================================================================
-        $paciente = new Paciente();
-        $paciente->empresa_id             = Auth::user()->empresa_id;
-        $paciente->expediente_no          = $validData['expediente_no'];
-        $paciente->expediente_anterior_no = $request->expediente_anterior_no;
-        $paciente->codigo_id              = $codigo_no;
-        $paciente->nombres                = $validData['nombres'];
-        $paciente->apellidos              = $validData['apellidos'];
-        $paciente->apellido_casada        = $request->apellido_casada;
-        if (isset($request->apellido_casada)) {
-            $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos.' de '.$paciente->apellido_casada;
-        }else{
-            $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos;
-        }
-        if (isset($request->genero)){
-            $paciente->genero       = $request->genero;
-        }
-        $paciente->fecha_nacimiento = $validData['fecha_nacimiento'];
-        $paciente->profesion        = $request->profesion;
-        $paciente->estado_civil     = $request->estado_civil;
-        $paciente->referido_por     = $request->referido_por;
-        $paciente->religion         = $request->religion;
-        $paciente->antmedico_descripcion      = $request->antmedico_descripcion;
-        $paciente->antquirurgico_descripcion  = $request->antquirurgico_descripcion;
-        $paciente->antalergia_descripcion     = $request->antalergia_descripcion;
-        $paciente->antgineco_descripcion      = $request->antgineco_descripcion;
-        $paciente->antfamiliar_descripcion    = $request->antfamiliar_descripcion;
-        $paciente->antmedicamento_descripcion = $request->antmedicamento_descripcion;
-        $paciente->tabaco_cnt       = $request->tabaco_cnt;
-        $paciente->tabaco_tiempo    = $request->tabaco_tiempo;
-        $paciente->alcohol_cnt      = $request->alcohol_cnt;
-        $paciente->alcohol_tiempo   = $request->alcohol_tiempo;
-        if (isset($request['estado'])) {
-            $paciente->estado = 1;
-        }else{
-            $paciente->estado = 0;
-        }
-
-        /*if (isset($request->antecedente_importante)){
-            $paciente->antecedente_importante       = 'S';
-        }else
-        {
-            $paciente->antecedente_importante       = 'N';
-        }*/
-
-        $paciente->save();
-
-        //===========================================================================
-        // Actualización de correlativo
-        //===========================================================================
-        $corr = Correlativo::where('empresa_id', Auth::user()->empresa_id)->where('tipo', 'P')->first();
-        $corr->correlativo = $codigo_no;
-        $corr->save();
-
-        //===========================================================================
-        // Telefonos
-        //===========================================================================
-        if ($totalTelefonos > 0) {
-            for ($i=0; $i < $totalTelefonos; $i++) { 
-                $pacienteTelefono = new PacienteTelefono();
-                $pacienteTelefono->paciente_id          = $paciente->id;
-                $pacienteTelefono->tipo_comunicacion_id = $dataTelefono[$i]['tipocomunicacion_id'];
-                $pacienteTelefono->numero               = $dataTelefono[$i]['numero'];
-                $pacienteTelefono->extension            = $dataTelefono[$i]['extension'];
-                $pacienteTelefono->save();
-            }
-        }
-
-        //===========================================================================
-        // Direcciones
-        //===========================================================================
-        if ($totalDirecciones > 0) {
-            //print_r($dataDireccion); die;
-            for ($i=0; $i < $totalDirecciones; $i++) { 
-                //dd($dataDireccion[$i]['tipodireccion_id']);
-                $pacienteDireccion = new PacienteUbicacion();
-                $pacienteDireccion->paciente_id       = $paciente->id;
-                $pacienteDireccion->tipo_ubicacion_id = $dataDireccion[$i]['tipodireccion_id'];
-                $pacienteDireccion->direccion         = $dataDireccion[$i]['direccion'];
-                $pacienteDireccion->municipio_id      = 1;
-                $pacienteDireccion->departamento_id   = 1;
-                $pacienteDireccion->pais_id = 1;
-                $pacienteDireccion->estado            = 'A';
-                $pacienteDireccion->save();
-            }
-        }
-
-        //===========================================================================
-        // Emails
-        //===========================================================================
-        if ($totalEmails > 0) {
-            for ($i=0; $i < $totalEmails; $i++) { 
-                $pacienteEmail = new PacienteEmail();
-                $pacienteEmail->paciente_id = $paciente->id;
-                $pacienteEmail->email       = $dataEmail[$i]['email'];
-                $pacienteEmail->estado      = 'A';
-                $pacienteEmail->save();
-            }
-        }
-
-        //===========================================================================
-        // Seguros
-        //===========================================================================
-        if ($totalSeguros > 0) {
-            for ($i=0; $i < $totalSeguros; $i++) { 
-                $pacienteSeguro = new PacienteSeguro();
-                $pacienteSeguro->paciente_id    = $paciente->id;
-                $pacienteSeguro->aseguradora_id = $dataSeguro[$i]['aseguradora_id'];
-                $pacienteSeguro->poliza_no      = $dataSeguro[$i]['poliza'];
-                $pacienteSeguro->estado         = 'A';
-                $pacienteSeguro->save();
-            }
-        }
-
-        //===========================================================================
-        // Facturación
-        //===========================================================================
-        if ($totalFacturacion > 0) {
-            for ($i=0; $i < $totalFacturacion; $i++) { 
-                $pacienteFacturacion = new PacienteFacturacion();
-                $pacienteFacturacion->paciente_id = $paciente->id;
-                $pacienteFacturacion->nit         = $dataFacturacion[$i]['nit'];
-                $pacienteFacturacion->nombre      = $dataFacturacion[$i]['nombre'];
-                $pacienteFacturacion->direccion   = $dataFacturacion[$i]['direccion'];
-                $pacienteFacturacion->estado      = 'A';
-                $pacienteFacturacion->save();
-            }
-        }
-
-        //===========================================================================
-        // Familia
-        //===========================================================================
-        if ($totalFamilia > 0) {
-            for ($i=0; $i < $totalFamilia; $i++) { 
-                $pacienteFamilia = new PacienteFamilia();
-                $pacienteFamilia->paciente_id   = $paciente->id;
-                $pacienteFamilia->parentesco_id = $dataFamilia[$i]['parentesco_id'];
-                $pacienteFamilia->nombre        = $dataFamilia[$i]['nombre'];
-                $pacienteFamilia->telefono      = $dataFamilia[$i]['telefono'];
-                if (isset($dataFamilia[$i]['emergencia'])) {
-                    $pacienteFamilia->emergencia = 'S';
-                }else{
-                    $pacienteFamilia->emergencia = 'N';
-                }
-                $pacienteFamilia->estado         = 'A';
-                $pacienteFamilia->save();
-            }
-        }
-
-
-        //Session::flash('success', 'Se editó el medico con éxito.');
-        // Session::flash('success', 'Paciente grabado con exito !!!' );
-        $message = array(
-            'message' => 'Registro almacenado con exito !!!',
-            'type'    => 'success'
-        );
-
-        return redirect()->back()->with($message);
-
-        /*if ($origen == 'P') {
-            // return Redirect::route('pacientes');
-            return redirect()->back()->with($message);
-        } else {
-            return Redirect::route('nueva_edicion', $cita);
-        }*/
+        // ... puedes agregar direcciones, seguros, etc.
     }
 
     public function edit($id)

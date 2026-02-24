@@ -370,6 +370,8 @@ class MedicoController extends Controller
             return $item;
         });
 
+        //  var_dump($listado); die;
+
         array_push($final, $listado);
 
         return Response::json($final);
