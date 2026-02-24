@@ -99,7 +99,7 @@
                                             </span>
                                         </td>
                                         <td class="align-middle text-right">
-                                            @php $productoId= Crypt::encrypt($pProducto->id); @endphp
+                                            @php $productoId= Crypt::encryptString($pProducto->id); @endphp
                                             <a href="{{ route('editar_producto', $productoId) }}" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar">
                                                 <i class="fa fa-edit"></i>
                                             </a>

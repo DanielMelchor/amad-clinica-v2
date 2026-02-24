@@ -130,7 +130,7 @@ class ProductoController extends Controller
             'type'    => 'success'
         );
 
-        return redirect()->route('editar_producto', [$producto->id])->with($message);
+        return redirect()->route('editar_producto', [Crypt::encryptString((string)$producto->id)])->with($message);
     }
 
     public function edit($id){
@@ -139,7 +139,7 @@ class ProductoController extends Controller
         $familias    = InvFamilia::where('empresa_id', Auth::user()->empresa_id)->get();
         $medidas     = UnidadMedida::where('estado', 1)->where('aplica_receta', 'N')->get();
         $dosis       = UnidadMedida::where('estado', 1)->where('aplica_receta', 'S')->get();
-        $productoId  = Crypt::decrypt($id);
+        $productoId  = Crypt::decryptString($id);
         $producto    = Producto::findOrFail($productoId);
         $clasificaciones = InvClasificacion::where('estado', 1)->get();
         return view('productos.edit', compact('pUnidades', 'proveedores', 'producto', 'medidas', 'dosis', 'clasificaciones', 'familias'));

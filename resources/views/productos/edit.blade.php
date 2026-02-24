@@ -36,7 +36,7 @@
 @section('content')
 	<div class="container-fluid">
 	    <div class="row justify-content-center">
-	        <div class="col-12 col-md-10 col-lg-8">
+	        <div class="col-12 col-md-10">
 	            <form role="form" method="POST" action="{{route('actualizar_producto')}}">
 	                @csrf
 	                <div class="card shadow-sm">
@@ -178,6 +178,23 @@
 	                                            </table>
 	                                        </div>
 	                                    </div>
+	                                    <div class="tab-pane fade" id="dosis">
+	                                    	<div class="d-flex justify-content-end mb-2">
+	                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="fnAgregarDosis()"><i class="fas fa-plus"></i></button>
+	                                        </div>
+	                                        <div class="table-responsive">
+	                                            <table class="table table-sm table-striped w-100" id="tbldosis">
+	                                                <thead>
+	                                                    <tr class="text-center small">
+	                                                        <th style="width: 50%">Dosis</th>
+	                                                        <th style="width: 40%">Descripción</th>
+	                                                        <th style="width: 10%"></th>
+	                                                    </tr>
+	                                                </thead>
+	                                                <tbody></tbody>
+	                                            </table>
+	                                        </div>
+	                                    </div>
                                     </div>
 	                            </div>
 	                        </div>
@@ -253,41 +270,58 @@
             });
         });
 
-        $('select[name="inv_clasificacion_id"]').change(function() {
-    		let clasificacion_id = $(this).val();
-    		$.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('extras') }}",
-                method: "POST",
-                data: {id: clasificacion_id},
-                success: function(response){
-                    if (response['definir_medidas'] == 1) {
-                    	//document.getElementById('siglas').required = false;
-						document.getElementById('medida_id').required = true;
-						$("#grpsiglas").hide();
-						$("#grpmedida").show();
-						$("#panel_productos").show();
-                    }else{
-                    	//document.getElementById('siglas').required = false;
-						document.getElementById('medida_id').required = false;
-						$("#grpsiglas").hide();
-						$("#grpmedida").hide();
-						$("#panel_productos").hide();
-                    }
+        $(document).ready(function() {
+	        $('select[name="inv_clasificacion_id"]').change(function() {
+	    		let clasificacion_id = $(this).val();
+	    		$.ajax({
+	                headers: {
+	                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+	                },
+	                url: "{{ route('extras') }}",
+	                method: "POST",
+	                data: {id: clasificacion_id},
+	                success: function(response){
+	                    if (response['definir_medidas'] == 1) {
+	                    	//document.getElementById('siglas').required = false;
+							document.getElementById('medida_id').required = true;
+							$("#grpsiglas").hide();
+							$("#grpmedida").show();
+							$("#panel_productos").show();
+	                    }else{
+	                    	//document.getElementById('siglas').required = false;
+							document.getElementById('medida_id').required = false;
+							$("#grpsiglas").hide();
+							$("#grpmedida").hide();
+							$("#panel_productos").hide();
+	                    }
 
-                    if (response['definir_dosis'] == 1) {
-                    	$("#nav-link-dosis").removeClass('disabled');
-                    }else{
-                    	$("#nav-link-dosis").addClass('disabled');
-                    }
-                },
-                error: function(error){
-                    console.log(error);
-                }
-            });
-		});
+	                    const linkCaracteristicas = document.querySelector('a[href="#caracteristicas"]');
+
+	                    if (response['definir_caracteristica'] == 1) {
+	                    	linkCaracteristicas.classList.remove('disabled');
+							linkCaracteristicas.removeAttribute('aria-disabled', 'false');
+	                    }else{
+	                    	linkCaracteristicas.classList.add('disabled');
+							linkCaracteristicas.setAttribute('aria-disabled', 'true');
+	                    }
+	                    const linkDosis = document.querySelector('a[href="#dosis"]');
+
+	                    if (response['definir_dosis'] == 1) {
+	                    	linkDosis.classList.remove('disabled');
+							linkDosis.removeAttribute('aria-disabled', 'false');
+	                    }else{
+	                    	linkDosis.classList.add('disabled');
+							linkDosis.setAttribute('aria-disabled', 'true');
+	                    }
+	                },
+	                error: function(error){
+	                    console.log(error);
+	                }
+	            });
+			});
+
+			$('#inv_clasificacion_id').trigger('change');
+	    });
 
 		$(document).ready(function() {
         	let clasificacion_id = document.getElementById('inv_clasificacion_id').value;

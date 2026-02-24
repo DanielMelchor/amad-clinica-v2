@@ -30,6 +30,9 @@
         }
 	</style>
 @endsection
+@section('content_header')
+    <br>
+@endsection
 @section('content')
 	<div class="container-fluid">
 	    <div class="row justify-content-center">
@@ -167,7 +170,24 @@
 	                                            </table>
 	                                        </div>
 	                                    </div>
+	                                    <div class="tab-pane fade" id="dosis">
+	                                    	<div class="d-flex justify-content-end mb-2">
+	                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="fnAgregarDosis()"><i class="fas fa-plus"></i></button>
+	                                        </div>
+	                                        <div class="table-responsive">
+	                                            <table class="table table-sm table-striped w-100" id="tbldosis">
+	                                                <thead>
+	                                                    <tr class="text-center small">
+	                                                        <th style="width: 50%">Dosis</th>
+	                                                        <th style="width: 40%">Descripción</th>
+	                                                        <th style="width: 10%"></th>
+	                                                    </tr>
+	                                                </thead>
+	                                                <tbody></tbody>
+	                                            </table>
+	                                        </div>
 	                                    </div>
+                                    </div>
 	                            </div>
 	                        </div>
 	                    </div>
@@ -288,16 +308,23 @@
 						$("#panel_productos").hide();
                     }
 
+                    const linkCaracteristicas = document.querySelector('a[href="#caracteristicas"]');
+
                     if (response['definir_caracteristica'] == 1) {
-                    	$("#nav-link-caracteristicas").removeClass('disabled');
+                    	linkCaracteristicas.classList.remove('disabled');
+						linkCaracteristicas.removeAttribute('aria-disabled', 'false');
                     }else{
-                    	$("#nav-link-caracteristicas").addClass('disabled');
+                    	linkCaracteristicas.classList.add('disabled');
+						linkCaracteristicas.setAttribute('aria-disabled', 'true');
                     }
+                    const linkDosis = document.querySelector('a[href="#dosis"]');
 
                     if (response['definir_dosis'] == 1) {
-                    	$("#nav-link-dosis").removeClass('disabled');
+                    	linkDosis.classList.remove('disabled');
+						linkDosis.removeAttribute('aria-disabled', 'false');
                     }else{
-                    	$("#nav-link-dosis").addClass('disabled');
+                    	linkDosis.classList.add('disabled');
+						linkDosis.setAttribute('aria-disabled', 'true');
                     }
                 },
                 error: function(error){
@@ -311,7 +338,7 @@
             var html = '';
             html += '<tr>';
             html += '<td style="width: 50%">';
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="medidas['+nLineaT+'][unidad_medida_id]" name="medidas['+nLineaT+'][unidad_medida_id]" required>';
+            html += '<select class="custom-select custom-select-sm select2bs4" id="medidas['+nLineaT+'][unidad_medida_id]" name="medidas['+nLineaT+'][unidad_medida_id]" required>';
             html += '<option value="">Seleccionar...</option>';
             @foreach($pUnidades as $U)
             	html += '<option value="{{ $U->id }}">{{ $U->descripcion }}</option>';
@@ -356,7 +383,7 @@
             var html = '';
             html += '<tr>';
             html += '<td>';
-            html += '<select class="custom-select custom-select-sm select2 select2bs4" id="dosis['+nLineaD+'][dosis_id]" name="dosis['+nLineaD+'][dosis_id]" required>';
+            html += '<select class="custom-select custom-select-sm select2bs4" id="dosis['+nLineaD+'][dosis_id]" name="dosis['+nLineaD+'][dosis_id]" required>';
             html += '<option value="">Seleccionar...</option>';
             @foreach($dosis as $d)
             html += '<option value="{{$d->id}}">{{$d->descripcion}}</option>';
@@ -375,10 +402,6 @@
             $('#tbldosis tbody').append(html);
             $('.eliminar').on('click',eliminar);
             nLineaD += 1;
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
         }
 
         function eliminar(){
