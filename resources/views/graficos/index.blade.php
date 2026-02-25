@@ -260,7 +260,7 @@
                                                                 <h3><div id="total_facturado">0.00</div></h3>
                                                             </div>
                                                             <div class="icon">
-                                                                <i class="fas fa-percent"></i>
+                                                                <i class="fas fa-coins"></i>
                                                             </div>
                                                         </div>
                                                     </div>

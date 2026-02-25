@@ -29,8 +29,6 @@ class GraficaController extends Controller
         $arreglo_final          = [];
         $cargos_array           = [];
         $anulaciones_array      = [];
-        $antiguedad_label_array = [];
-        $antiguedad_data_array  = [];
         $admisiones_array       = [];
         $tipo_admision          = ['C', 'P', 'H'];
 
