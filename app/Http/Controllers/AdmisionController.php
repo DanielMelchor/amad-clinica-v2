@@ -68,14 +68,16 @@ class AdmisionController extends Controller
                          ->where('estado', 1)
                          ->orderBy('nombre_completo')
                          ->get();
-        $admisiones    = DB::table('admisiones as a')
-                         ->join('pacientes as p', 'a.paciente_id', 'p.id')
-                         ->leftjoin('detalle_movimientos as dm', 'a.id', 'dm.admision_id')
-                         ->where('a.empresa_id', Auth::user()->empresa_id)
-                         ->select('a.id', 'a.admision_no', 'a.fecha', 'p.expediente_no', 'p.nombre_completo', 'a.estado', DB::raw('SUM(dm.precio_total) as precio_total'))
-                         ->groupBy('a.id', 'a.admision_no', 'a.fecha', 'p.expediente_no', 'p.nombre_completo', 'a.estado')
-                         ->orderBy('a.fecha', 'desc')
-                         ->get();
+        $admisiones = Admision::with([
+                                    'paciente:id,expediente_no,nombre_completo', 
+                                    'medico:id,nombre_completo',
+                                    'hospital:id,nombre'
+                                ])
+                                ->where('empresa_id', auth()->user()->empresa_id)
+                                ->withSum('detalles as precio_total', 'precio_total')
+                                ->orderBy('fecha', 'desc')
+                                ->get();
+
         // $tipo_admisiones = DB::table('empresa_tipo_atenciones as eta')
         //                    ->join('tipo_atenciones as ta', 'eta.tipo_atencion_id', 'ta.id')
         //                    ->where('eta.empresa_id', Auth::user()->empresa_id)
@@ -265,14 +267,14 @@ class AdmisionController extends Controller
 
             if ($request->ajax()) {
                 return response()->json([
-                    'message' => '¡Admisión guardada con éxito!',
+                    'message' => '¡Admisión registrada con éxito!',
                     'type'    => 'success',
                     'admision_no' => $no_admision,
                     'admision_id' => $admision->id
                 ]);
             }
 
-            return redirect()->back()->with(['message' => '¡Éxito!', 'type' => 'success']);
+            return redirect()->back()->with(['message' => '¡Admisión '. $no_admision .' registrada con éxito!', 'type' => 'success']);
 
         }catch (Throwable $e) {
             DB::rollBack();

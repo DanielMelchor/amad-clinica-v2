@@ -1,364 +1,265 @@
 @extends('adminlte::page')
+
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
-        .btn-guardar{
-            background-color: #A5C890 !important;
+        /* --- ESTILOS BASE --- */
+        .btn-guardar { background-color: #A5C890 !important; }
+        .table-responsive { width: 100%; margin-bottom: 1rem; overflow-x: hidden; }
+
+        /* --- ESTRATEGIA MOBILE FIRST (Hasta 768px) --- */
+        @media (max-width: 768px) {
+            /* Forzamos a la tabla a no comportarse como tabla */
+            #tblAdmision, 
+            #tblAdmision thead, 
+            #tblAdmision tbody, 
+            #tblAdmision th, 
+            #tblAdmision td, 
+            #tblAdmision tr { 
+                display: block; 
+            }
+
+            /* Ocultar cabecera original */
+            #tblAdmision thead tr { 
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            #tblAdmision tr {
+                margin-bottom: 1.2rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                background: #fff;
+                padding: 10px;
+            }
+
+            #tblAdmision td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+                padding: 0.75rem 0.5rem !important;
+                border: none !important;
+                border-bottom: 1px solid #f2f2f2 !important;
+                position: relative;
+            }
+
+            #tblAdmision td:last-child { border-bottom: 0 !important; }
+
+            /* Generar etiquetas desde el atributo data-label */
+            #tblAdmision td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                color: #495057;
+                flex: 1;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                padding-right: 10px;
+            }
+
+            /* Botones de acción más amigables para touch */
+            .btn-xs { 
+                padding: 0.5rem 0.8rem !important; 
+                font-size: 0.9rem !important; 
+            }
         }
-        .btn-salir{
-            background-color: #dc3545 !important;
-            color: white;
+
+        /* Control de altura para que no desborde la pantalla */
+        #nuevaAdmisionModal .modal-dialog {
+            /* Centrado vertical y horizontal */
+            display: flex;
+            align-items: center;
+            min-height: calc(100% - 1rem);
+            margin: 0.5rem auto; /* Margen de seguridad en los 4 lados */
         }
-        .numero{
-            text-align: right;
+
+        @media (max-width: 576px) {
+            #nuevaAdmisionModal .modal-dialog {
+                /* Asegura que el modal no sea más ancho que el 95% de la pantalla */
+                width: 95vw !important;
+                max-width: 95vw !important;
+            }
         }
-        .moneda:after {
-            content: attr(data-numero);
+
+        #nuevaAdmisionModal .modal-content {
+            /* Altura máxima para que no se salga por arriba/abajo */
+            max-height: 92vh; 
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .table-responsive {
-            max-width: 100%; /* Ajusta el ancho según tus necesidades */
-            overflow-x: auto; /* Permite el desplazamiento horizontal */
+
+        #nuevaAdmisionModal .card-body {
+            /* Scroll interno suave */
+            overflow-y: auto;
+            overflow-x: hidden; /* Evita desbordamiento horizontal interno */
+            padding: 1rem !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Evitar que las filas (rows) de Bootstrap causen scroll horizontal */
+        #nuevaAdmisionModal .row {
+            margin-right: -5px;
+            margin-left: -5px;
+        }
+        #nuevaAdmisionModal .col-12, #nuevaAdmisionModal .col-6 {
+            padding-right: 5px;
+            padding-left: 5px;
+        }
+
+        /* Ajustes Mobile First */
+        @media (max-width: 576px) {
+            #nuevaAdmisionModal .modal-dialog {
+                margin: 0.5rem; /* Crea un margen pequeño alrededor para que no toque los bordes */
+                max-width: calc(100% - 1rem) !important; /* Fuerza a que no exceda el ancho disponible */
+            }
+
+            #nuevaAdmisionModal .modal-content {
+                border-radius: 0.5rem; /* Bordes redondeados para suavizar el diseño */
+            }
+
+            /* Evitar que el contenedor interno añada padding extra que empuje el contenido */
+            #nuevaAdmisionModal .container-fluid {
+                padding-right: 10px;
+                padding-left: 10px;
+            }
         }
     </style>
 @endsection
+
 @section('title', 'Admisiones')
+
 @section('content')
-    <div class="row">
-        <div class="col-md-12">
-            <br>
-            <div class="card" style="background-color: #E1E8ED;">
-                <div class="card-header d-flex align-items-center justify-content-between" style="background-color: #E1E8ED; display: flex; align-items: center; justify-content: space-between;">
-                    <h6 class="m-0">Admisiones</h6>
-
-                    <div class="d-flex align-items-center ml-auto">
-                        <a href="#" class="btn btn-xs btn-outline-info rounded-circle elevation-4 mr-2" title="Criterio de Busqueda" onclick="fnAbrirBusqueda();">
-                            <i class="fas fa-search"></i>
-                        </a>
-                        <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4 mr-2" title="Crear Admisión" onclick="fnNuevaAdmision();">
-                            <i class="fas fa-plus-circle"></i>
-                        </a>
-                        
-                        <div id="contenedor-boton-excel" class="mr-2" hidden></div>
-
-                        <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body" style="background-color: white">
-                    <div class="table-responsive">
-                        <table id="tblAdmision" class="table table-sm table-striped" width="100%" style="font-size: 12px;">
-                            <thead>
-                                <tr class="text-center">
-                                    <th>Admisión</th>
-                                    <th>Fecha</th>
-                                    <th>Medico</th>
-                                    <th>Hospital</th>
-                                    <th>Paciente</th>
-                                    <th>Estado</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Modal nueva admision-->
-    <div class="modal fade" id="nuevaAdmisionModal" role="dialog" aria-labelledby="nuevaAdmisionModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <form class="form-horizontal" id="admisionForm" name="admision" action="#">
-                <!--<form class="form" method="POST" action="{{route('grabar_admision')}}">-->
-                    @csrf
-                    <div class="card">
-                        <div class="card-header" style="background-color: #F4F6F7;">
-                            <div class="row">
-                                <div class="col-md-9">
-                                    <h5>Nueva Admisión</h5>
-                                </div>
-                                <div class="col-md-3" style="text-align: right;">
-                                    <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar"><i class="fas fa-save"></i></button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar"> <i class="fas fa-sign-out-alt"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <input type="hidden" id="adm_agenda_id" name="adm_agenda_id" value="0">
-                            <!-- fecha admision -->
-                            <div class="row">
-                                <div class="input-group input-group-sm col-md-10 offset-md-1 mb-1 ">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Fecha Admisión&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                                    </div>
-                                    <input type="date" class="form-control form-control-sm" id="adm_fecha" name="adm_fecha" required value="{{ $hoy }}" autofocus>
-                                </div>
-                            </div>
-                            <!-- /fecha admision -->
-                            <!-- paciente -->
-                            <div class="row">
-                                <div class="col-md-10 offset-md-1 input-group input-group-sm mb-1 ">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="adm_paciente_id">Paciente</label>
-                                    </div>
-                                    <select class="custom-select custom-select-sm select2 select2bs4" type="select" id="adm_paciente_id" name="adm_paciente_id" required>
-                                        <option value="">Seleccionar.....</option>
-                                        @foreach($pacientes as $p)
-                                            <option value="{{ $p->id }}"> {{ $p->nombre_completo }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- /paciente -->
-                            <!-- medico -->
-                            <div class="row">
-                                <div class="col-md-10 offset-md-1 input-group input-group-sm mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="adm_medico_id">Médico</label>
-                                    </div>
-                                    <select class="custom-select custom-select-sm select2 select2bs4" id="adm_medico_id" name="adm_medico_id" required>
-                                        <option value="" selected="selected">Seleccionar.....</option>
-                                        @foreach($medicos as $medico)
-                                            <option value="{{ $medico->id }}" @if($medico->principal == 'S') selected @endif> {{ $medico->nombre_completo}} </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- /medico -->
-                            <!-- hospital -->
-                            <div class="row">
-                                <div class="col-md-10 offset-md-1 input-group input-group-sm mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="adm_hospital_id">Hospital</label>
-                                    </div>
-                                    <select class="custom-select custom-select-sm select2 select2bs4" id="adm_hospital_id" name="adm_hospital_id" required>
-                                        <option value="" selected="selected">Seleccionar.....</option>
-                                        @foreach($hospitales as $hospital)
-                                            <option value="{{ $hospital->id }}" @if($hospital->principal_agenda == 'S') selected @endif> {{ $hospital->nombre}} </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- /hospital -->
-                            <!-- admision terceros -->
-                            <div class="row">
-                                <div class="input-group mb-1 input-group-sm col-md-10 offset-md-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Admisión Terceros</label>
-                                    </div>
-                                    <input type="text" class="form-control" id="admision_tercero" name="admision_tercero" value="{{ old('admision_tercero')}}">
-                                </div>
-                            </div>
-                            <!-- /admision terceros -->
-                            <!-- aseguradora -->
-                            <div class="row">
-                                <div class="input-group-sm col-md-10 offset-md-1 input-group input-group-sm mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="adm_aseguradora_id">Aseguradora</label>
-                                    </div>
-                                    <select class="custom-select custom-select-sm select2 select2bs4" id="adm_aseguradora_id" name="adm_aseguradora_id" onchange="fn_habilitar_poliza(this.value); return false;">
-                                        <option value="" selected="selected">Seleccionar.....</option>
-                                        @foreach($aseguradoras as $aseguradora)
-                                                <option value="{{ $aseguradora->id }}"> {{ $aseguradora->nombre}} </option>
-                                            @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- /aseguradora -->
-                            <!-- poliza -->
-                            <div class="row">
-                                <div class="col-md-10 offset-md-1 input-group input-group-sm mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Póliza No.</label>
-                                    </div>
-                                    <input type="text" class="form-control" id="poliza_no" name="poliza_no" value="{{ old('poliza_no')}}" disabled>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-10 offset-md-1 input-group input-group-sm mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Autorización No.</label>
-                                    </div>
-                                    <input type="text" class="form-control" id="autorizacion_no" name="autorizacion_no" value="{{ old('autorizacion_no')}}" disabled>
-                                </div>
-                            </div>
-                            <!-- /poliza -->
-                            <div class="row">
-                                <div class="col-md-5 offset-md-1 input-group input-group-sm mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">copago&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                                    </div>
-                                    <input type="text" class="form-control numero" id="copago" name="copago" placeholder="Q." disabled>
-                                </div>
-                                <div class="col-md-5 input-group input-group-sm mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">coaseguro</label>
-                                    </div>
-                                    <input type="text" class="form-control numero" id="coaseguro" name="coaseguro" placeholder="%" min="0" max="100" step="any" disabled>
-                                </div>
+    <div class="container-fluid pt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header" style="background-color: #E1E8ED;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 font-weight-bold">
+                                <i class="fas fa-shield-alt mr-2"></i>Admisiones
+                            </h6>
+                            <div>
+                                <button class="btn btn-sm btn-outline-info rounded-circle elevation-2 mr-1" onclick="fnAbrirBusqueda();">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary rounded-circle elevation-2 mr-1" onclick="fnNuevaAdmision();">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- /Modal nueva admision-->
-    <!-- Busqueda -->
-    <div class="modal fade" id="busquedaModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="busquedaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="card bg-light">
-                    <div class="card-header">
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <h6>Busqueda de Expediente</h6>
-                                </div>
-                                <div class="col-md-2" style="text-align: right;">
-                                    <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-1" title="Mostrar coincidencias" onclick="fnRealizarBusqueda();"><i class="fas fa-bars"></i></button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-1" title="Cerrar" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true"><i class="fas fa-sign-out-alt"></i></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="input-group input-group-sm col-md-4 mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="find_admision_no"># Admisión</label>
-                                    </div>
-                                    <input type="number" class="form-control " aria-label="Username" aria-describedby="basic-addon1" id="find_admision_no" name="find_admision_no" value="{{ old('find_admision_no') }}" autofocus>
-                                </div>
-                                <div class="input-group input-group-sm col-md-8 mb-1">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="find_nombre">Nombre</label>
-                                    </div>
-                                    <input type="text" style="text-transform: uppercase;" class="form-control " aria-label="Username" aria-describedby="basic-addon1" id="find_nombre" name="find_nombre" value="{{ old('find_nombre') }}" required>
-                                </div>
-                            </div>  
+                    <div class="card-body text-center p-2 p-md-3">
+                        <div class="table-responsive">
+                            <table id="tblAdmision" class="table table-sm table-hover" width="100%" style="font-size: 13px;">
+                                <thead class="thead-light">
+                                    <tr class="text-center">
+                                        <th>Admisión</th>
+                                        <th>Fecha</th>
+                                        <th>Médico</th>
+                                        <th>Hospital</th>
+                                        <th>Paciente</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{-- Ejemplo de fila con data-labels para Mobile --}}
+                                    @foreach($admisiones as $admision)
+                                    <tr>
+                                        <td data-label="Admisión">{{ $admision->admision_no }}</td>
+                                        <td data-label="Fecha">{{ \Carbon\Carbon::parse($admision->fecha)->format('d/m/Y') }}</td>
+                                        <td data-label="Médico">{{ $admision->medico->nombre_completo }}</td>
+                                        <td data-label="Hospital">{{ $admision->hospital->nombre }}</td>
+                                        <td data-label="Paciente">{{ $admision->paciente->nombre_completo }}</td>
+                                        <td data-label="Estado"><span class="badge badge-success">Activo</span></td>
+                                        <td data-label="Acciones">
+                                            <button class="btn btn-xs btn-warning rounded-circle elevation-2"><i class="fas fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- /Busqueda -->
+    @include('admisiones.partials.modals_admision')
 @endsection
-@section('js')
-    <script type="text/javascript">
-        //========================================================================
-        // inicializar librerias
-        //========================================================================
-        $(function () {
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
-        });
 
+@section('js')
+    {{-- Capturar Errores de Validación (como el unique:username) --}}
+    @if ($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Revisar Formulario',
+                    html: `<ul style="text-align: left;">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                    confirmButtonText: "Aceptar",
+                    customClass: { confirmButton: 'btn btn-danger' },
+                    buttonsStyling: false
+                });
+            });
+        </script>
+    @endif
+
+    {{-- Verifica los mensajes manuales del Controlador --}}
+    @if(session('type'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Trabajo Finalizado!' : '¡Error!' }}",
+                    text: "{!! session('message') !!}",
+                    icon: "{{ session('type') }}",
+                    confirmButtonText: "Aceptar",
+                    customClass: { 
+                        confirmButton: "{{ session('type') == 'success' ? 'btn btn-success' : 'btn btn-danger' }}" 
+                    },
+                    buttonsStyling: false
+                });
+            });
+        </script>
+    @endif
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Si usas DataTables, asegúrate de asignar los data-labels dinámicamente
+            // o mediante la propiedad 'createdRow'
+            $('#adm_aseguradora_id').on('change', function() {
+                const id = $(this).val();
+                fn_habilitar_poliza(id);
+            });
+        });
 
         function fnNuevaAdmision(){
             $('#nuevaAdmisionModal').modal('show');
         }
 
-        function fn_habilitar_poliza(id){
-            if (id != '') {
-                alert('1');
-                $('#poliza_no').prop('disabled', false);
-                $('#autorizacion_no').prop('disabled', false);
-                $('#copago').prop('disabled', false);
-                $('#copago').prop('required', true);
-                $('#coaseguro').prop('disabled', false);
-                $('#coaseguro').prop('required', true);
-                $('#poliza_no').prop('required', true);
-                $('#autorizacion_no').prop('required', true);
-            }else{
-                alert('2');
-                $('#poliza_no').prop('disabled', true);
-                $('#autorizacion_no').prop('disabled', true);
-                $('#copago').prop('disabled', true);
-                $('#copago').prop('required', false);
-                $('#coaseguro').prop('disabled', true);
-                $('#coaseguro').prop('required', false);
-                $('#poliza_no').prop('required', false);
-                $('#autorizacion_no').prop('required', false);
+        function fn_habilitar_poliza(id) {
+            // 1. Determinamos el estado basado en si el ID tiene valor
+            const tieneId = (id !== '' && id !== null && id !== undefined);
+            
+            // 2. Agrupamos los campos que comparten el mismo comportamiento
+            const $camposSeguro = $('#poliza_no, #autorizacion_no, #copago, #coaseguro');
+
+            // 3. Aplicamos los cambios de una sola vez
+            // El estado 'readonly' es lo opuesto a 'tieneId'
+            $camposSeguro.prop('readonly', !tieneId);
+            $camposSeguro.prop('required', tieneId);
+
+            // 4. Limpieza (Opcional pero recomendado)
+            // Si se deshabilita, podrías querer limpiar los valores previos
+            if (!tieneId) {
+                $camposSeguro.val('');
             }
-        }
-
-        //=====================================================================
-        // Submit nueva admision
-        //=====================================================================
-        $(function(){
-            $("#admisionForm").submit(function(){
-                grabarAdmision();
-                return false;
-            })
-        });
-
-        //=====================================================================
-        // Función para grabar admision
-        //=====================================================================
-        function grabarAdmision(){
-            var agenda_id          = document.getElementById('adm_agenda_id').value;
-            var tipo_admision      = $('input:radio[name=tipo_admision]:checked').val();
-            var adm_fecha          = document.getElementById('adm_fecha').value;
-            var adm_paciente_id    = document.getElementById('adm_paciente_id').value;
-            var adm_medico_id      = document.getElementById('adm_medico_id').value;
-            var adm_hospital_id    = document.getElementById('adm_hospital_id').value;
-            var admision_tercero   = document.getElementById('admision_tercero').value;
-            var adm_aseguradora_id = document.getElementById('adm_aseguradora_id').value;
-            var poliza_no          = document.getElementById('poliza_no').value;
-            var autorizacion_no    = document.getElementById('autorizacion_no').value;
-            var copago             = document.getElementById('copago').value;
-            var coaseguro          = document.getElementById('coaseguro').value;
-            $.ajax({
-                url: "{{ route('grabar_admision') }}",
-                type: "POST",
-                async: true,
-                data: {"_token": "{{ csrf_token() }}", 
-                       agenda_id          : agenda_id,
-                       tipo_admision      : tipo_admision,
-                       fecha              : adm_fecha, 
-                       paciente_id        : adm_paciente_id,
-                       medico_id          : adm_medico_id,
-                       hospital_id        : adm_hospital_id,
-                       admision_tercero   : admision_tercero,
-                       aseguradora_id     : adm_aseguradora_id,
-                       poliza_no          : poliza_no,
-                       autorizacion_no    : autorizacion_no,
-                       copago             : copago,
-                       coaseguro          : coaseguro
-                       },
-                success: function(response){
-                    console.log(response);
-                    var admision_id = response['admision_id'];
-                    Swal.fire({
-                        title: response['respuesta'],
-                        text: 'Trabajo Finalizado',
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    }).then((result) => {
-                        // Esta es la forma correcta de manejar el clic en el botón en SweetAlert2
-                        if (result.isConfirmed) {
-                            // Usamos la ruta de Laravel de forma dinámica
-                            var ruta = "{{ route('editar_admision', ':id') }}";
-                            ruta = ruta.replace(':id', admision_id);
-                            
-                            window.location.href = ruta;
-                        }
-                    });
-                    //alertify.success('Compra eliminada con exito');
-                },
-                error: function(error){
-                    console.log(error);
-                }
-            });
         }
 
         //=====================================================================
@@ -370,6 +271,9 @@
             $('#busquedaModal').modal('show');
         }
 
+        //=====================================================================
+        // Realizar busqueda
+        //=====================================================================
         function fnRealizarBusqueda(){
             event.preventDefault();
             var table;
@@ -421,7 +325,7 @@
                                 text: '<i class="fas fa-file-excel"></i>', 
                                 titleAttr: 'Descargar a Excel', // El tooltip que sale al pasar el mouse
                                 // Aplicamos las clases que solicitaste
-                                className: 'btn btn-xs btn-outline-success rounded-circle elevation-4',
+                                className: 'btn btn-xs btn-default',
                                 // Forzamos dimensiones para que sea un círculo perfecto y no un óvalo
                                 attr: {
                                     style: 'width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; padding: 0;'

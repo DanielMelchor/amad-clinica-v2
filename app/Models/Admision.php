@@ -34,4 +34,20 @@ class Admision extends Model
     {
         return $this->hasMany(AdmisionBitacora::class, 'admision_id');
     }
+
+    public function paciente() {
+        return $this->belongsTo(Paciente::class, 'paciente_id');
+    }
+
+    public function medico() {
+        return $this->belongsTo(Medico::class, 'medico_id');
+    }
+
+    public function hospital() {
+        return $this->belongsTo(Hospital::class, 'hospital_id');
+    }
+
+    public function detalles() {
+        return $this->hasMany(DetalleMovimiento::class, 'admision_id');
+    }
 }
