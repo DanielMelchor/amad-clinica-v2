@@ -19,7 +19,7 @@ class PacienteUbicacion extends Model
 
     protected $table = 'paciente_ubicaciones';
     
-    protected $fillable = ['id', 'paciente_id', 'tipo_ubicacion_id', 'direccion', 'municipio_id', 'departamento_id', 'pais_id'];
+    protected $fillable = ['id', 'paciente_id', 'tipo_ubicacion_id', 'direccion', 'municipio_id', 'departamento_id', 'pais_id', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

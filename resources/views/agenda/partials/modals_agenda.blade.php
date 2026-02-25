@@ -12,7 +12,7 @@
                                     <button type="submit" class="btn btn-sm btn-success rounded-circle elevation-2 mr-1" title="Guardar cambios">
                                         <i class="fas fa-save"></i>
                                     </button>
-                                    <a href="{{ route('crear_paciente',['P', 0]) }}" class="btn btn-sm btn-primary rounded-circle elevation-2 mr-1" title="Crear nuevo Paciente" target="_blank">
+                                    <a href="{{ route('crear_paciente') }}" class="btn btn-sm btn-primary rounded-circle elevation-2 mr-1" title="Crear nuevo Paciente" target="_blank">
                                         <i class="fas fa-plus-circle"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-danger rounded-circle elevation-2" data-dismiss="modal" title="Cerrar Ventana">

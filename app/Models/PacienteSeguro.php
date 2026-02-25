@@ -19,7 +19,7 @@ class PacienteSeguro extends Model
 
     protected $table = 'paciente_seguros';
     
-    protected $fillable = ['id', 'paciente_id', 'aseguradora_id', 'poliza_no'];
+    protected $fillable = ['id', 'paciente_id', 'aseguradora_id', 'poliza_no', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

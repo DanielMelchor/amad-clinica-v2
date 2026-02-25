@@ -1,11 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('plugins/select2/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         .nav-pills .nav-link.active,
         .show>.nav-pills .nav-link{
@@ -52,6 +47,7 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <input type="hidden" class="form-control" id="paciente_id" name="paciente_id" value="{{ Crypt::encryptString($registro->id) }}">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="row">
@@ -313,7 +309,7 @@
                         <div class="row">
                             <div class="form-group">
                                 <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="A">
+                                    <input type="checkbox" class="custom-control-input" id="estado" name="estado" value="1" @if($registro->estado = 1) checked @endif>
                                     <label class="custom-control-label" for="estado">Activar</label>
                                 </div>
                             </div>
@@ -325,7 +321,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-10 offset-md-1">
+                            <div class="col-md-12">
                                 <ul class="nav nav-pills nav-justified">
                                     <li class="nav-item">
                                         <a class="nav-link active" href="#medico" data-toggle="tab">Medico</a>
@@ -461,22 +457,44 @@
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('plugins/select2/js/select2.full.min.js') }}"></script>
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
+    {{-- Capturar Errores de Validación (como el unique:username) --}}
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Revisar Formulario',
+                // Unimos todos los mensajes de error en una lista
+                html: `
+                    <ul style="text-align: left;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonText: "Aceptar",
+                confirmButtonColor: "#dc3545",
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                buttonsStyling: false
+            });
+        </script>
+    @endif
     @if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
-                
                 setTimeout(function() {
-                    swal({
-                        title: "Trabajo Finalizado",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "success", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-success'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
@@ -485,15 +503,17 @@
         @if(Session::has('message'))
             <script>
                 setTimeout(function() {
-                    swal({
-                        title: "Error",
+                    Swal.fire({
+                        title: "¡Trabajo Finalizado!",
                         text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
+                        icon: "error", // Cambiado de 'type' a 'icon'
+                        confirmButtonText: "Aceptar",
+                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
                 }, 1000);
             </script>
         @endif
@@ -521,59 +541,54 @@
             var nLineaF  = 0;
             var nLineaF1 = 0;
             @foreach($pacienteTelefonos as $pacienteTelefono)
-                fnAgregarTelefono();
-                document.getElementById("telefonos["+nLineaT+"][tipocomunicacion_id]").value = {{ $pacienteTelefono->tipo_comunicacion_id}};
-                document.getElementById("telefonos["+nLineaT+"][numero]").value = {{ $pacienteTelefono->numero}};
-                @if($pacienteTelefono->extension)
-                    document.getElementById("telefonos["+nLineaT+"][extension]").value = {{ $pacienteTelefono->extension}};
-                @endif
-                document.getElementById("telefonos["+nLineaT+"][id]").value = {{ $pacienteTelefono->id }};
-                nLineaT ++;
+                fnAgregarTelefono(
+                    "{{ $pacienteTelefono->id }}",
+                    "{{ $pacienteTelefono->tipo_comunicacion_id }}",
+                    "{{ $pacienteTelefono->numero }}",
+                    "{{ $pacienteTelefono->extension ?? '' }}"
+                );
             @endforeach
 
             @foreach($pacienteDirecciones as $pacienteDireccion)
-                fnAgregarDireccion();
-                document.getElementById("direcciones["+nLineaD+"][tipodireccion_id]").value = {{ $pacienteDireccion->tipo_ubicacion_id}};
-                document.getElementById("direcciones["+nLineaD+"][direccion]").value = "{{ $pacienteDireccion->direccion }}";
-                document.getElementById("direcciones["+nLineaD+"][id]").value = {{ $pacienteDireccion->id }};
-                nLineaD ++;
+                fnAgregarDireccion(
+                    "{{ $pacienteDireccion->id }}",
+                    "{{ $pacienteDireccion->tipo_ubicacion_id }}",
+                    {!! json_encode(e($pacienteDireccion->direccion)) !!}
+                );
             @endforeach
 
             @foreach($pacienteEmails as $pacienteEmail)
-                fnAgregarEmail();
-                document.getElementById("emails["+nLineaE+"][email]").value = "{{ $pacienteEmail->email}}";
-                document.getElementById("emails["+nLineaE+"][id]").value = {{ $pacienteEmail->id }};
-                nLineaE ++;
+                fnAgregarEmail(
+                    "{{ $pacienteEmail->id }}",
+                    "{{ $pacienteEmail->email }}"
+                );
             @endforeach
 
             @foreach($pacienteSeguros as $pacienteSeguro)
-                fnAgregarSeguro();
-                document.getElementById("seguros["+nLineaS+"][aseguradora_id]").value = "{{ $pacienteSeguro->aseguradora_id}}";
-                document.getElementById("seguros["+nLineaS+"][poliza]").value = "{{ $pacienteSeguro->poliza_no}}";
-                document.getElementById("seguros["+nLineaS+"][id]").value = {{ $pacienteSeguro->id }};
-                nLineaS ++;
+                fnAgregarSeguro(
+                    "{{ $pacienteSeguro->id }}",
+                    "{{ $pacienteSeguro->aseguradora_id }}",
+                    "{{ $pacienteSeguro->poliza_no }}",
+                );
             @endforeach
 
             @foreach($pacienteFacturaciones as $pacienteFacturacion)
-                fnAgregarFacturacion();
-                document.getElementById("facturacion["+nLineaF+"][nit]").value = "{{ $pacienteFacturacion->nit}}";
-                document.getElementById("facturacion["+nLineaF+"][nombre]").value = "{{ $pacienteFacturacion->nombre}}";
-                document.getElementById("facturacion["+nLineaF+"][direccion]").value = "{{ $pacienteFacturacion->direccion}}";
-                document.getElementById("facturacion["+nLineaF+"][id]").value = {{ $pacienteFacturacion->id }};
-                nLineaF ++;
+                fnAgregarFacturacion(
+                    "{{ $pacienteFacturacion->id}}",
+                    "{{ $pacienteFacturacion->nit}}",
+                    "{{ $pacienteFacturacion->nombre}}",
+                    "{{ $pacienteFacturacion->direccion}}",
+                );
             @endforeach
 
             @foreach($pacienteFamilias as $pacienteFamilia)
-                fnAgregarFamilia();
-                @foreach($parentescos as $parentesco)
-                    document.getElementById("familia["+nLineaF1+"][parentesco_id]").value = "{{ $pacienteFamilia->parentesco_id}}";
-                @endforeach
-                document.getElementById("familia["+nLineaF1+"][nombre]").value = "{{ $pacienteFamilia->nombre}}";
-                document.getElementById("familia["+nLineaF1+"][telefono]").value = "{{ $pacienteFamilia->telefono}}";
-                @if($pacienteFamilia->emergencia == 'S')
-                    $("#familia["+nLineaF1+"][emergencia]").prop('checked', true);
-                @endif
-                document.getElementById("familia["+nLineaF1+"][id]").value = {{ $pacienteFamilia->id }};
+                fnAgregarFamilia(
+                    "{{ $pacienteFamilia->id}}",
+                    "{{ $pacienteFamilia->parentesco_id}}",
+                    "{{ $pacienteFamilia->nombre}}",
+                    "{{ $pacienteFamilia->telefono}}",
+                    "{{ $pacienteFamilia->emergencia}}",
+                );
                 nLineaF1 ++;
             @endforeach
         });
@@ -606,207 +621,171 @@
 
         }
 
-        function fnAgregarRegistro(){
-            var html   = '';
-            html += '<tr>';
-            html += '<td>';
-            html += '<select id="seguros['+nLinea+'][aseguradora_id]" name="seguros['+nLinea+'][aseguradora_id]" class="form-control mi_articulo" data-required="true">';
-            html += '<option value="">Seleccionar...</option>';
-            @foreach($aseguradoras as $aseguradora)
-                html += '<option value="{{ $aseguradora->id }}">{{ $aseguradora->nombre }}</option>';
-            @endforeach
-            html += '</select>'
-            html += '</td>';
-            html += '<td>';
-            html += '<input type="text" class="form-control ccantidad" id="seguros['+nLinea+'][poliza]" name="seguros['+nLinea+'][poliza]"/>';
-            html += '</td>';
-            html += '<td style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
-            html += '</td>';    
-            html += '</tr>';
-            $('#tblseguros tbody').append(html);
-            $('.eliminar').on('click',eliminar);
-            nLinea += 1;
-        }
-
-        function fnAgregarTelefono(){
-            event.preventDefault();
+        function fnAgregarTelefono(id = 0, tipoId = "", numero = "", extension = ""){
+            if (typeof event !== 'undefined') event.preventDefault();
+            
             var html = '';
             html += '<tr>';
             html += '<td>';
-            html += '<select id="telefonos['+nLineaT+'][tipocomunicacion_id]" name="telefonos['+nLineaT+'][tipocomunicacion_id]" class="form-control custom-select-sm" data-required="true">';
+            html += '<select name="telefonos['+nLineaT+'][tipocomunicacion_id]" class="form-control custom-select-sm" data-required="true">';
             html += '<option value="">Seleccionar...</option>';
             @foreach($tipoTelefonos as $tipoTelefono)
-                html += '<option value="{{ $tipoTelefono->id }}">{{ $tipoTelefono->nombre }}</option>';
+                // Verificamos si este option debe estar seleccionado
+                var selected = (tipoId == {{ $tipoTelefono->id }}) ? 'selected' : '';
+                html += '<option value="{{ $tipoTelefono->id }}" ' + selected + '>{{ $tipoTelefono->nombre }}</option>';
             @endforeach
-            html += '</select>'
-            html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="number" step="1" min="0" class="form-control numero" id="telefonos['+nLineaT+'][numero]" name="telefonos['+nLineaT+'][numero]"/>';
-            html += '</div>';
-            html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="number" step="1" min="0" class="form-control numero" id="telefonos['+nLineaT+'][extension]" name="telefonos['+nLineaT+'][extension]"/>';
-            html += '</div>';
-            html += '</td>';
-            html += '<td class="text-center" style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
+            html += '</select></td>';
+            
+            html += '<td><input type="number" class="form-control form-control-sm" name="telefonos['+nLineaT+'][numero]" value="'+numero+'"/></td>';
+            html += '<td><input type="number" class="form-control form-control-sm" name="telefonos['+nLineaT+'][extension]" value="'+extension+'"/></td>';
+            
+            html += '<td class="text-right">';
+            html += '<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar"><i class="fas fa-minus-circle"></i></button>';
             html += '</td>';    
-            html += '<td>';
-            html += '<input type="hidden" step="1" min="0" class="form-control " id="telefonos['+nLineaT+'][id]" name="telefonos['+nLineaT+'][id]" value="0"/>';
-            html += '</td>';
+            
+            html += '<input type="hidden" name="telefonos['+nLineaT+'][id]" value="'+id+'"/>';
             html += '</tr>';
+
             $('#tbltelefonos tbody').append(html);
-            $('.eliminar').on('click',eliminar);
-            nLineaT += 1;
+            nLineaT++; // Incrementamos el índice global
         }
 
-        function fnAgregarDireccion(){
-            event.preventDefault();
+        function fnAgregarDireccion(id = 0, tipodireccion_id = "", direccion = ""){
+            if (typeof event !== 'undefined') event.preventDefault();
+
             var html = '';
             html += '<tr>';
+
             html += '<td>';
             html += '<select id="direcciones['+nLineaD+'][tipodireccion_id]" name="direcciones['+nLineaD+'][tipodireccion_id]" class="form-control custom-select-sm" data-required="true">';
             html += '<option value="">Seleccionar...</option>';
             @foreach($tipoDirecciones as $tipoDireccion)
-                html += '<option value="{{ $tipoDireccion->id }}">{{ $tipoDireccion->nombre }}</option>';
+                // Verificamos si este option debe estar seleccionado
+                var selected = (tipodireccion_id == {{ $tipoDireccion->id }}) ? 'selected' : '';
+                html += '<option value="{{ $tipoDireccion->id }}" ' + selected + '>{{ $tipoDireccion->nombre }}</option>';
             @endforeach
             html += '</select>'
-            html += '</td>';
+
+            html += '<td><input type="text" class="form-control form-control-sm" name="direcciones['+nLineaD+'][direccion]" value="'+direccion+'"/></td>';
+            html += '<td class="text-right">';
+            html += '<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar"><i class="fas fa-minus-circle"></i></button>';
+            html += '</td>';    
+            
+            
             html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="direcciones['+nLineaD+'][direccion]" name="direcciones['+nLineaD+'][direccion]"/>';
-            html += '</div>';
+            html += '<input type="hidden" name="direcciones['+nLineaD+'][id]" value="'+id+'"/>';
             html += '</td>';
-            html += '<td class="text-center" style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
-            html += '</td>';
-            html += '<td>';
-            html += '<input type="hidden" step="1" min="0" class="form-control " id="direcciones['+nLineaD+'][id]" name="direcciones['+nLineaD+'][id]" value="0"/>';
-            html += '</td>';
+
             html += '</tr>';
             $('#tbldirecciones tbody').append(html);
             $('.eliminar').on('click',eliminar);
             nLineaD += 1;
         }
 
-        function fnAgregarEmail(){
-            event.preventDefault();
+        function fnAgregarEmail(id = 0, email = ""){
+            if (typeof event !== 'undefined') event.preventDefault();
+
             var html = '';
             html += '<tr>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="email" class="form-control" id="emails['+nLineaE+'][email]" name="emails['+nLineaE+'][email]" required/>';
-            html += '</div>';
+
+            html += '<td><input type="email" class="form-control form-control-sm" name="emails['+nLineaE+'][email]" value="'+email+'"/></td>'
+
+            html += '<td class="text-right">';
+            html += '<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar"><i class="fas fa-minus-circle"></i></button>';
             html += '</td>';
-            html += '<td class="text-center" style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
-            html += '</td>';
-            html += '<td>';
-            html += '<input type="hidden" step="1" min="0" class="form-control " id="emails['+nLineaE+'][id]" name="emails['+nLineaE+'][id]" value="0"/>';
-            html += '</td>';    
+
+            html += '<td><input type="hidden" class="form-control form-control-sm" name="emails['+nLineaE+'][id]" value="'+id+'"/></td>'
+
             html += '</tr>';
             $('#tblemails tbody').append(html);
             $('.eliminar').on('click',eliminar);
             nLineaT += 1;
         }
 
-        function fnAgregarSeguro(){
-            event.preventDefault();
+        function fnAgregarSeguro(id = 0, aseguradora_id = "", poliza_no = ""){
+            if (typeof event !== 'undefined') event.preventDefault();
+
             var html = '';
             html += '<tr>';
+
             html += '<td>';
-            html += '<select id="seguros['+nLineaS+'][aseguradora_id]" name="seguros['+nLineaS+'][aseguradora_id]" class="form-control custom-select-sm" data-required="true">';
+            html += '<select name="seguros['+nLineaS+'][aseguradora_id]" class="form-control custom-select-sm" data-required="true">';
             html += '<option value="">Seleccionar...</option>';
             @foreach($aseguradoras as $aseguradora)
-                html += '<option value="{{ $aseguradora->id }}">{{ $aseguradora->nombre }}</option>';
+                var selected = (aseguradora_id == {{ $aseguradora->id }}) ? 'selected' : '';
+                html += '<option value="{{ $aseguradora->id }}" ' + selected + '>{{ $aseguradora->nombre }}</option>';
             @endforeach
             html += '</select>'
             html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="seguros['+nLineaS+'][poliza]" name="seguros['+nLineaS+'][poliza]" required/>';
-            html += '</div>';
-            html += '</td>';
-            html += '<td class="text-center" style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
-            html += '</td>';
-            html += '<td>';
-            html += '<input type="hidden" step="1" min="0" class="form-control " id="seguros['+nLineaS+'][id]" name="seguros['+nLineaS+'][id]" value="0"/>';
+
+            html += '<td><input type="text" class="form-control form-control-sm" name="seguros['+nLineaS+'][poliza]" value="'+poliza_no+'"/></td>';
+
+            html += '<td class="text-right">';
+            html += '<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar"><i class="fas fa-minus-circle"></i></button>';
             html += '</td>';    
+            
+            html += '<input type="hidden" name="seguros['+nLineaS+'][id]" value="'+id+'"/>';
+
             html += '</tr>';
             $('#tblseguros tbody').append(html);
             $('.eliminar').on('click',eliminar);
             nLineaS += 1;
         }
 
-        function fnAgregarFacturacion(){
+        function fnAgregarFacturacion(id = 0, nit = "", nombre = "", direccion = ""){
             event.preventDefault();
             var html = '';
             html += '<tr>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="facturacion['+nLineaF+'][nit]" name="facturacion['+nLineaF+'][nit]" required/>';
-            html += '</div>';
-            html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="facturacion['+nLineaF+'][nombre]" name="facturacion['+nLineaF+'][nombre]" required/>';
-            html += '</div>';
-            html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="facturacion['+nLineaF+'][direccion]" name="facturacion['+nLineaF+'][direccion]" required/>';
-            html += '</div>';
-            html += '</td>';
+
+            html += '<td><input type="text" class="form-control form-control-sm" name="facturacion['+nLineaF+'][nit]" value="'+nit+'"/></td>';
+            html += '<td><input type="text" class="form-control form-control-sm" name="facturacion['+nLineaF+'][nombre]" value="'+nombre+'"/></td>';
+            html += '<td><input type="text" class="form-control form-control-sm" name="facturacion['+nLineaF+'][direccion]" value="'+direccion+'"/></td>';
+            html += '<td><input type="hidden" class="form-control form-control-sm" name="facturacion['+nLineaF+'][id]" value="'+id+'"/></td>';
+
             html += '<td class="text-center" style="text-align: right">';
             html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
             html += '</td>';    
-            html += '<td>';
-            html += '<input type="hidden" step="1" min="0" class="form-control " id="facturacion['+nLineaF+'][id]" name="facturacion['+nLineaF+'][id]" value="0"/>';
-            html += '</td>';
+
             html += '</tr>';
             $('#tblfacturacion tbody').append(html);
             $('.eliminar').on('click',eliminar);
             nLineaF += 1;
         }
 
-        function fnAgregarFamilia(){
-            event.preventDefault();
+        function fnAgregarFamilia(id = 0, parentesco_id = "", nombre = "", telefono = "", emergencia = ""){
+            if (typeof event !== 'undefined') event.preventDefault();
+
+            var valorEmergencia = String(emergencia).trim();
+            var isChecked = (valorEmergencia === 'S') ? 'checked="checked"' : '';
+
             var html = '';
             html += '<tr>';
+            
             html += '<td>';
-            html += '<select id="familia['+nLineaF1+'][parentesco_id]" name="familia['+nLineaF1+'][parentesco_id]" class="form-control custom-select-sm" data-required="true">';
+            html += '<select name="familia['+nLineaF1+'][parentesco_id]" class="form-control custom-select-sm" data-required="true">';
             html += '<option value="">Seleccionar...</option>';
             @foreach($parentescos as $parentesco)
-                html += '<option value="{{ $parentesco->id }}">{{ $parentesco->nombre }}</option>';
+                var selected = (parentesco_id == {{ $parentesco->id }}) ? 'selected' : '';
+                html += '<option value="{{ $parentesco->id }}" ' + selected + '>{{ addslashes(e($parentesco->nombre)) }}</option>';
             @endforeach
             html += '</select>'
             html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="familia['+nLineaF1+'][nombre]" name="familia['+nLineaF1+'][nombre]" required/>';
-            html += '</div>';
-            html += '</td>';
-            html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="familia['+nLineaF1+'][telefono]" name="familia['+nLineaF1+'][telefono]" required/>';
-            html += '</div>';
-            html += '</td>';
+
+            html += '<td><input type="text" class="form-control form-control-sm" name="parentesco['+nLineaF1+'][nombre]" value="'+nombre+'"/></td>';
+            html += '<td><input type="text" class="form-control form-control-sm" name="parentesco['+nLineaF1+'][telefono]" value="'+telefono+'"/></td>';
+
             html += '<td class="text-center">';
-            html += '<div class="input-group input-group-sm mb-1 text-center">'
-            html += ' <input style="width:30px;" type="checkbox" id="familia['+nLineaF1+'][emergencia]" name="familia['+nLineaF1+'][emergencia]" class="icheck-primary" aria-label="Checkbox for following text input">';
-            html += '</div>';
+            html += '<input type="checkbox" name="familia['+nLineaF1+'][emergencia]" value="S" '+isChecked+' style="width:20px; height:20px;">';
             html += '</td>';
+
+            html += '<td><input type="hidden" class="form-control form-control-sm" name="parentesco['+nLineaF1+'][id]" value="'+id+'"/></td>';
+
             html += '<td class="text-center" style="text-align: right">';
             html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
             html += '</td>';    
-            html += '<td>';
-            html += '<input type="hidden" step="1" min="0" class="form-control " id="familia['+nLineaF1+'][id]" name="familia['+nLineaF1+'][id]" value="0"/>';
-            html += '</td>';
+
             html += '</tr>';
+
             $('#tblfamilia tbody').append(html);
             $('.eliminar').on('click',eliminar);
             nLineaF1 += 1;
@@ -820,72 +799,22 @@
         }
 
         function confirma_salida(){
-            swal({
+            Swal.fire({
                 title: 'Confirmación',
-                Swal.fire({
-
-                title: 'Confirmación',
-
                 text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
-
-text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
                 icon: 'warning',
-
                 showCancelButton: true,
-
-                confirmButtonClass: 'btn-success',
-
-                cancelButtonClass: 'btn-danger',
-
-                confirmButtonText: 'Si',
-
+                confirmButtonColor: '#28a745', // Color success de AdminLTE
+                cancelButtonColor: '#dc3545',  // Color danger de AdminLTE
+                confirmButtonText: 'Si Salir',
                 cancelButtonText: 'No',
-
-                closeOnConfirm: false,
-
-                allowEscapeKey: true
-
-                },
-
-                function(isConfirm) {
-
-                    if (isConfirm) { 
-
-                        if (origen == 'P') {
-
-                            window.location.href = "{{ route('pacientes') }}";
-
-                        }
-
-                        if (origen == 'A') {
-
-                            window.location.href = "{{ route('nueva_agenda') }}";
-
-                        }
-
-                        // history.back();
-
-                        
-
-                    } 
-
-                }
-
-            );
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('pacientes') }}";  
-                    }
-                }
-            );
+                allowEscapeKey: true,
+                reverseButtons: true // Opcional: pone el botón de confirmar a la derecha
+            }).then((result) => {
+                if (result.isConfirmed) { 
+                    window.location.href = "{{ route('pacientes') }}";
+                } 
+            });
         }
     </script>
 @endsection

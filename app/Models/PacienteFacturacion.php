@@ -19,7 +19,7 @@ class PacienteFacturacion extends Model
 
     protected $table = 'paciente_facturaciones';
     
-    protected $fillable = ['id', 'paciente_id', 'nit', 'nombre', 'direccion'];
+    protected $fillable = ['id', 'paciente_id', 'nit', 'nombre', 'direccion', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

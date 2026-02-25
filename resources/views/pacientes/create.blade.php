@@ -1,16 +1,11 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         .nav-pills .nav-link.active,
         .show>.nav-pills .nav-link{
             background: #7FB3D5 !important;
             color: #000000 !important;
-        }
-        .numero{
-            text-align: right;
         }
         .nav-link {
             font-family: monospace;
@@ -459,63 +454,35 @@
     {{-- Capturar Errores de Validación (como el unique:username) --}}
     @if ($errors->any())
         <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Revisar Formulario',
-                // Unimos todos los mensajes de error en una lista
-                html: `
-                    <ul style="text-align: left;">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                `,
-                confirmButtonText: "Aceptar",
-                confirmButtonColor: "#dc3545",
-                customClass: {
-                    confirmButton: 'btn btn-danger'
-                },
-                buttonsStyling: false
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Revisar Formulario',
+                    html: `<ul style="text-align: left;">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                    confirmButtonText: "Aceptar",
+                    customClass: { confirmButton: 'btn btn-danger' },
+                    buttonsStyling: false
+                });
             });
         </script>
     @endif
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "¡Trabajo Finalizado!",
-                        text: "{!! Session::get('message') !!}",
-                        icon: "success", // Cambiado de 'type' a 'icon'
-                        confirmButtonText: "Aceptar",
-                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
-                        customClass: {
-                            confirmButton: 'btn btn-success'
-                        },
-                        buttonsStyling: false
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "¡Trabajo Finalizado!",
-                        text: "{!! Session::get('message') !!}",
-                        icon: "error", // Cambiado de 'type' a 'icon'
-                        confirmButtonText: "Aceptar",
-                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
-                        customClass: {
-                            confirmButton: 'btn btn-danger'
-                        },
-                        buttonsStyling: false
-                    });
-                }, 1000);
-            </script>
-        @endif
+
+    {{-- Verifica los mensajes manuales del Controlador --}}
+    @if(session('type'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Trabajo Finalizado!' : '¡Error!' }}",
+                    text: "{!! session('message') !!}",
+                    icon: "{{ session('type') }}",
+                    confirmButtonText: "Aceptar",
+                    customClass: { 
+                        confirmButton: "{{ session('type') == 'success' ? 'btn btn-success' : 'btn btn-danger' }}" 
+                    },
+                    buttonsStyling: false
+                });
+            });
+        </script>
     @endif
     <script type="text/javascript">
         var nLinea   = 0;
@@ -560,58 +527,46 @@
 
         }
 
-        function fnAgregarRegistro(){
-            var html   = '';
-            html += '<tr>';
-            html += '<td>';
-            html += '<select id="seguros['+nLinea+'][aseguradora_id]" name="seguros['+nLinea+'][aseguradora_id]" class="form-control mi_articulo" data-required="true">';
-            html += '<option value="">Seleccionar...</option>';
-            @foreach($aseguradoras as $aseguradora)
-                html += '<option value="{{ $aseguradora->id }}">{{ $aseguradora->nombre }}</option>';
-            @endforeach
-            html += '</select>'
-            html += '</td>';
-            html += '<td>';
-            html += '<input type="text" class="form-control ccantidad" id="seguros['+nLinea+'][poliza]" name="seguros['+nLinea+'][poliza]"/>';
-            html += '</td>';
-            html += '<td style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
-            html += '</td>';    
-            html += '</tr>';
-            $('#tblseguros tbody').append(html);
-            $('.eliminar').on('click',eliminar);
-            nLinea += 1;
-        }
-
         function fnAgregarTelefono(){
-            event.preventDefault();
+            if (typeof event !== 'undefined') event.preventDefault();
+
             var html = '';
             html += '<tr>';
+            
             html += '<td>';
-            html += '<select class="custom-select custom-select-sm select2bs4" id="telefonos['+nLineaT+'][tipocomunicacion_id]" name="telefonos['+nLineaT+'][tipocomunicacion_id]">';
+            html += '<select name="telefonos['+nLineaT+'][tipocomunicacion_id]" class="form-control form-control-sm select-comunicacion" required>';
             html += '<option value="">Seleccionar...</option>';
             @foreach($tipoTelefonos as $tipoTelefono)
-                html += '<option value="{{ $tipoTelefono->id }}">{{ $tipoTelefono->nombre }}</option>';
+                html += '<option value="{{ $tipoTelefono->id }}">{{ addslashes(e($tipoTelefono->nombre)) }}</option>';
             @endforeach
             html += '</select>'
             html += '</td>';
+            
             html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="number" step="1" min="0" class="form-control numero" id="telefonos['+nLineaT+'][numero]" name="telefonos['+nLineaT+'][numero]"/>';
-            html += '</div>';
+            html += '<input type="number" step="1" min="0" class="form-control form-control-sm numero" name="telefonos['+nLineaT+'][numero]" required/>';
             html += '</td>';
+            
             html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="number" step="1" min="0" class="form-control numero" id="telefonos['+nLineaT+'][extension]" name="telefonos['+nLineaT+'][extension]"/>';
-            html += '</div>';
+            html += '<input type="number" step="1" min="0" class="form-control form-control-sm numero" name="telefonos['+nLineaT+'][extension]"/>';
             html += '</td>';
+            
             html += '<td style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
+            html += '<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>';
             html += '</td>';    
             html += '</tr>';
+
             $('#tbltelefonos tbody').append(html);
-            $('.eliminar').on('click',eliminar);
+
+            $('.select-comunicacion').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            $('.select-comunicacion').removeClass('select-comunicacion');
+
+            $('.eliminar').off('click').on('click', eliminar);
             nLineaT += 1;
+
         }
 
         function fnAgregarDireccion(){
@@ -658,29 +613,45 @@
             nLineaT += 1;
         }
 
-        function fnAgregarSeguro(){
-            event.preventDefault();
+        function fnAgregarSeguro() {
+            if (typeof event !== 'undefined') event.preventDefault();
+
             var html = '';
             html += '<tr>';
             html += '<td>';
-            html += '<select id="seguros['+nLineaS+'][aseguradora_id]" name="seguros['+nLineaS+'][aseguradora_id]" class="custom-select custom-select-sm select2bs4" data-required="true">';
+            // ELIMINAMOS EL ID DEL SELECT: Laravel no lo necesita, solo necesita el NAME.
+            // Usamos la clase 'select-seguro-dinamico' para aplicar Select2.
+            html += '<select name="seguros[' + nLineaS + '][aseguradora_id]" class="form-control form-control-sm select-seguro-dinamico" required>';
             html += '<option value="">Seleccionar...</option>';
+            
             @foreach($aseguradoras as $aseguradora)
-                html += '<option value="{{ $aseguradora->id }}">{{ $aseguradora->nombre }}</option>';
+                // Usamos json_encode para que PHP prepare el string perfectamente para JS, evitando cualquier error de comillas.
+                html += '<option value="{{ $aseguradora->id }}">' + {!! json_encode(e($aseguradora->nombre)) !!} + '</option>';
             @endforeach
-            html += '</select>'
+            
+            html += '</select>';
             html += '</td>';
+            
             html += '<td>';
-            html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="text" class="form-control" id="seguros['+nLineaS+'][poliza]" name="seguros['+nLineaS+'][poliza]" required/>';
-            html += '</div>';
+            // También quitamos el ID aquí para evitar que el motor de JS se confunda con los corchetes
+            html += '<input type="text" class="form-control form-control-sm" name="seguros['+nLineaS+'][poliza]" required/>';
             html += '</td>';
+            
             html += '<td style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
+            html += '<button type="button" class="btn btn-xs btn-outline-danger rounded-circle eliminar" title="Eliminar"><i class="fas fa-minus-circle"></i></button>';
             html += '</td>';    
             html += '</tr>';
+
             $('#tblseguros tbody').append(html);
-            $('.eliminar').on('click',eliminar);
+
+            // Inicializamos Select2 solo para la nueva fila
+            $('.select-seguro-dinamico').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            }).removeClass('select-seguro-dinamico'); // Quitamos la clase para que no se re-inicialice luego
+
+            $('.eliminar').off('click').on('click', eliminar);
+            
             nLineaS += 1;
         }
 
@@ -752,7 +723,6 @@
         {
             var whichtr = $(this).closest("tr");
             whichtr.remove(); 
-            total_tabla();
             return false;
         }
 

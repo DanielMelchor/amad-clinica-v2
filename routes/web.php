@@ -395,7 +395,7 @@ use Illuminate\Support\Facades\Route;
             Route::get('agregar', [PacienteController::class, 'create'])->name('crear_paciente');
             Route::post('grabar', [PacienteController::class, 'store'])->name('grabar_paciente');
             Route::get('editar/{paciente_id}', [PacienteController::class, 'edit'])->name('editar_paciente');
-            Route::post('actualizar/{paciente_id}', [PacienteController::class, 'update'])->name('actualizar_paciente');
+            Route::post('actualizar', [PacienteController::class, 'update'])->name('actualizar_paciente');
             Route::get('paciente_admision/{paciente_id}', [PacienteController::class, 'show'])->name('paciente_admision');
             Route::get('consultas/{paciente_id}', [PacienteController::class, 'consultas'])->name('paciente_consultas');
             Route::post('datos_facturacion', [PacienteController::class, 'trae_datos_facturacion'])->name('datos_facturacion');

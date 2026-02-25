@@ -19,7 +19,7 @@ class PacienteTelefono extends Model
 
     protected $table = 'paciente_telefonos';
     
-    protected $fillable = ['id', 'paciente_id', 'tipo_comunicacion_id', 'numero', 'extension'];
+    protected $fillable = ['id', 'paciente_id', 'tipo_comunicacion_id', 'numero', 'extension', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

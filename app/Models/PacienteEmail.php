@@ -19,7 +19,7 @@ class PacienteEmail extends Model
 
     protected $table = 'paciente_emails';
     
-    protected $fillable = ['id', 'paciente_id', 'email'];
+    protected $fillable = ['id', 'paciente_id', 'email', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }
