@@ -19,7 +19,7 @@ class PacienteFamilia extends Model
 
     protected $table = 'paciente_familias';
     
-    protected $fillable = ['id', 'paciente_id', 'parentesco_id', 'nombre', 'emergencia', 'estado'];
+    protected $fillable = ['id', 'paciente_id', 'parentesco_id', 'telefono', 'nombre', 'emergencia', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 }

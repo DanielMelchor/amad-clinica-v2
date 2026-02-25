@@ -601,7 +601,7 @@
             html += '<tr>';
             html += '<td>';
             html += '<div class="input-group input-group-sm mb-1">'
-            html += '<input type="email" class="form-control" id="emails['+nLineaD+'][email]" name="emails['+nLineaT+'][email]" required/>';
+            html += '<input type="email" class="form-control" id="emails['+nLineaE+'][email]" name="emails['+nLineaE+'][email]" required/>';
             html += '</div>';
             html += '</td>';
             html += '<td style="text-align: right">';
@@ -610,7 +610,7 @@
             html += '</tr>';
             $('#tblemails tbody').append(html);
             $('.eliminar').on('click',eliminar);
-            nLineaT += 1;
+            nLineaE += 1;
         }
 
         function fnAgregarSeguro() {

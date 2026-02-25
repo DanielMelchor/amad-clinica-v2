@@ -103,9 +103,9 @@
                                         @else
                                             <td>Baja</td>
                                         @endif
-                                        @php $pacienteId= Crypt::encrypt($pPaciente->id); @endphp
+                                        @php $pacienteId= Crypt::encryptString($pPaciente->id); @endphp
                                         <td>
-                                            <a href="{{route('editar_paciente' , $pacienteId )}}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Empresa"><i class="fas fa-edit"></i></a>
+                                            <a href="{{route('editar_paciente' , (string)$pacienteId )}}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Empresa"><i class="fas fa-edit"></i></a>
                                             <a href="{{route('nueva_admision' , ['paciente_id' => $pacienteId] )}}" class="btn btn-xs btn-outline-info rounded-circle elevation-4" title="ver Admisiones"><i class="fas fa-book-medical"></i></a>
                                         </td>
                                     </tr>

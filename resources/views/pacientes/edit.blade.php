@@ -678,7 +678,7 @@
 
             html += '</tr>';
             $('#tbldirecciones tbody').append(html);
-            $('.eliminar').on('click',eliminar);
+            // $('.eliminar').on('click',eliminar);
             nLineaD += 1;
         }
 
@@ -698,8 +698,8 @@
 
             html += '</tr>';
             $('#tblemails tbody').append(html);
-            $('.eliminar').on('click',eliminar);
-            nLineaT += 1;
+            // $('.eliminar').on('click',eliminar);
+            nLineaE += 1;
         }
 
         function fnAgregarSeguro(id = 0, aseguradora_id = "", poliza_no = ""){
@@ -728,7 +728,7 @@
 
             html += '</tr>';
             $('#tblseguros tbody').append(html);
-            $('.eliminar').on('click',eliminar);
+            // $('.eliminar').on('click',eliminar);
             nLineaS += 1;
         }
 
@@ -748,7 +748,7 @@
 
             html += '</tr>';
             $('#tblfacturacion tbody').append(html);
-            $('.eliminar').on('click',eliminar);
+            // $('.eliminar').on('click',eliminar);
             nLineaF += 1;
         }
 
@@ -771,14 +771,14 @@
             html += '</select>'
             html += '</td>';
 
-            html += '<td><input type="text" class="form-control form-control-sm" name="parentesco['+nLineaF1+'][nombre]" value="'+nombre+'"/></td>';
-            html += '<td><input type="text" class="form-control form-control-sm" name="parentesco['+nLineaF1+'][telefono]" value="'+telefono+'"/></td>';
+            html += '<td><input type="text" class="form-control form-control-sm" name="familia['+nLineaF1+'][nombre]" value="'+nombre+'"/></td>';
+            html += '<td><input type="text" class="form-control form-control-sm" name="familia['+nLineaF1+'][telefono]" value="'+telefono+'"/></td>';
 
             html += '<td class="text-center">';
             html += '<input type="checkbox" name="familia['+nLineaF1+'][emergencia]" value="S" '+isChecked+' style="width:20px; height:20px;">';
             html += '</td>';
 
-            html += '<td><input type="hidden" class="form-control form-control-sm" name="parentesco['+nLineaF1+'][id]" value="'+id+'"/></td>';
+            html += '<td><input type="hidden" class="form-control form-control-sm" name="familia['+nLineaF1+'][id]" value="'+id+'"/></td>';
 
             html += '<td class="text-center" style="text-align: right">';
             html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-minus-circle"></i></button>'
@@ -787,9 +787,13 @@
             html += '</tr>';
 
             $('#tblfamilia tbody').append(html);
-            $('.eliminar').on('click',eliminar);
+            // $('.eliminar').on('click',eliminar);
             nLineaF1 += 1;
         }
+
+        $(document).on('click', '.eliminar', function() {
+            $(this).closest('tr').remove();
+        });
 
         function eliminar()
         {

@@ -222,7 +222,12 @@ class PacienteController extends Controller
                     }
                 }
 
-                return Redirect::route('editar_paciente', [Crypt::encryptString($paciente->id)])->with('message','Registro almacenado con exito');
+                $message = array(
+                    'message' => 'Registro almacenado con exito !!!',
+                    'type'    => 'success'
+                );
+
+                return Redirect::route('editar_paciente', [Crypt::encryptString((string)$paciente->id)])->with('message',$message);
             });
         } catch (\Exception $e){
             return redirect()->back()
@@ -290,8 +295,6 @@ class PacienteController extends Controller
         $pacienteSeguros       = PacienteSeguro::where('paciente_id', $pacienteId)->where('estado', 1)->get();
         $pacienteFacturaciones = PacienteFacturacion::where('paciente_id', $pacienteId)->where('estado', 1)->get();
         $pacienteFamilias      = PacienteFamilia::where('paciente_id', $pacienteId)->where('estado', 1)->get();
-        //dd($pacienteEmails);
-
 
         //$pAdmisiones   = vw_admision::where('paciente_id', $id)->orderByRaw('fecha_creacion DESC')->get();
 
@@ -314,77 +317,80 @@ class PacienteController extends Controller
 
         $pacienteId = Crypt::decryptString($validData['paciente_id']);
 
-        $paciente = Paciente::findOrFail($pacienteId);
-        $paciente->expediente_no          = $validData['expediente_no'];
-        $paciente->expediente_anterior_no = $request->expediente_anterior_no;
-        $paciente->codigo_id              = $validData['codigo_id'];
-        $paciente->nombres                = $validData['nombres'];
-        $paciente->apellidos              = $validData['apellidos'];
-        $paciente->apellido_casada        = $request->apellido_casada;
-        if (isset($request->apellido_casada)) {
-            $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos.' de '.$paciente->apellido_casada;
-        }else{
-            $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos;
-        }
-        if (isset($request->genero)){
-            $paciente->genero       = $request->genero;
-        }
-        $paciente->fecha_nacimiento = $validData['fecha_nacimiento'];
-        $paciente->profesion        = $request->profesion;
-        $paciente->estado_civil     = $request->estado_civil;
-        $paciente->referido_por     = $request->referido_por;
-        $paciente->religion         = $request->religion;
-        $paciente->antmedico_descripcion      = $request->antmedico_descripcion;
-        $paciente->antquirurgico_descripcion  = $request->antquirurgico_descripcion;
-        $paciente->antalergia_descripcion     = $request->antalergia_descripcion;
-        $paciente->antgineco_descripcion      = $request->antgineco_descripcion;
-        $paciente->antfamiliar_descripcion    = $request->antfamiliar_descripcion;
-        $paciente->antmedicamento_descripcion = $request->antmedicamento_descripcion;
-        $paciente->tabaco_cnt       = $request->tabaco_cnt;
-        $paciente->tabaco_tiempo    = $request->tabaco_tiempo;
-        $paciente->alcohol_cnt      = $request->alcohol_cnt;
-        $paciente->alcohol_tiempo   = $request->alcohol_tiempo;
-        if (isset($request['estado'])) {
-            $paciente->estado = 1;
-        }else{
-            $paciente->estado = 0;
-        }
-        
-        $paciente->save();
+        try{
+            // ************************************************************ //
+            // ************** Actualizar Paciente ************************* //
+            // ************************************************************ //
+            $paciente = Paciente::findOrFail($pacienteId);
+            $paciente->expediente_no          = $validData['expediente_no'];
+            $paciente->expediente_anterior_no = $request->expediente_anterior_no;
+            $paciente->codigo_id              = $validData['codigo_id'];
+            $paciente->nombres                = $validData['nombres'];
+            $paciente->apellidos              = $validData['apellidos'];
+            $paciente->apellido_casada        = $request->apellido_casada;
+            if (isset($request->apellido_casada)) {
+                $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos.' de '.$paciente->apellido_casada;
+            }else{
+                $paciente->nombre_completo  = $paciente->nombres .' '.$paciente->apellidos;
+            }
+            if (isset($request->genero)){
+                $paciente->genero       = $request->genero;
+            }
+            $paciente->fecha_nacimiento = $validData['fecha_nacimiento'];
+            $paciente->profesion        = $request->profesion;
+            $paciente->estado_civil     = $request->estado_civil;
+            $paciente->referido_por     = $request->referido_por;
+            $paciente->religion         = $request->religion;
+            $paciente->antmedico_descripcion      = $request->antmedico_descripcion;
+            $paciente->antquirurgico_descripcion  = $request->antquirurgico_descripcion;
+            $paciente->antalergia_descripcion     = $request->antalergia_descripcion;
+            $paciente->antgineco_descripcion      = $request->antgineco_descripcion;
+            $paciente->antfamiliar_descripcion    = $request->antfamiliar_descripcion;
+            $paciente->antmedicamento_descripcion = $request->antmedicamento_descripcion;
+            $paciente->tabaco_cnt       = $request->tabaco_cnt;
+            $paciente->tabaco_tiempo    = $request->tabaco_tiempo;
+            $paciente->alcohol_cnt      = $request->alcohol_cnt;
+            $paciente->alcohol_tiempo   = $request->alcohol_tiempo;
+            if (isset($request['estado'])) {
+                $paciente->estado = 1;
+            }else{
+                $paciente->estado = 0;
+            }
+            
+            $paciente->save();
 
-        //===========================================================================
-        // Telefonos
-        //===========================================================================
-        if ($request->has('telefonos')) {
-    
-            // 2. "Eliminación lógica": Ponemos en estado 2 todos los teléfonos actuales del paciente
-            PacienteTelefono::where('paciente_id', $paciente->id)->update(['estado' => 2]);
+            //===========================================================================
+            // Telefonos
+            //===========================================================================
+            if ($request->has('telefonos')) {
+                // 2. "Eliminación lógica": Ponemos en estado 2 todos los teléfonos actuales del paciente
+                PacienteTelefono::where('paciente_id', $paciente->id)->update(['estado' => 2]);
 
-            foreach ($request->telefonos as $tel) {
-                if (!empty($tel['numero'])) {
-                    // 3. updateOrCreate
-                    // El primer array son las columnas para BUSCAR el registro
-                    // El segundo array son las columnas para ACTUALIZAR o CREAR
-                    PacienteTelefono::updateOrCreate(
-                        [
-                            'id' => $tel['id'] ?? 0, // Si no tiene ID (es nuevo), buscamos el ID 0
-                            'paciente_id' => $paciente->id
-                        ],
-                        [
-                            'tipo_comunicacion_id' => $tel['tipocomunicacion_id'],
-                            'numero'               => $tel['numero'],
-                            'extension'            => $tel['extension'] ?? null,
-                            'estado'               => 1 // Lo reactivamos o lo creamos como activo
-                        ]
-                    );
+                foreach ($request->telefonos as $tel) {
+                    if (!empty($tel['numero'])) {
+                        // 3. updateOrCreate
+                        // El primer array son las columnas para BUSCAR el registro
+                        // El segundo array son las columnas para ACTUALIZAR o CREAR
+                        PacienteTelefono::updateOrCreate(
+                            [
+                                'id' => $tel['id'] ?? 0, // Si no tiene ID (es nuevo), buscamos el ID 0
+                                'paciente_id' => $paciente->id
+                            ],
+                            [
+                                'tipo_comunicacion_id' => $tel['tipocomunicacion_id'],
+                                'numero'               => $tel['numero'],
+                                'extension'            => $tel['extension'] ?? null,
+                                'estado'               => 1 // Lo reactivamos o lo creamos como activo
+                            ]
+                        );
+                    }
                 }
             }
-        }
 
-        //===========================================================================
-        // Direcciones
-        //===========================================================================
-        PacienteUbicacion::where('paciente_id', $paciente->id)->update(['estado' => 2]);
+            //===========================================================================
+            // Direcciones
+            //===========================================================================
+            PacienteUbicacion::where('paciente_id', $paciente->id)->update(['estado' => 2]);
 
             if ($request->has('direcciones')) {
                 foreach ($request->direcciones as $data) {
@@ -413,130 +419,135 @@ class PacienteController extends Controller
                 }
             }
 
-        //===========================================================================
-        // Emails
-        //===========================================================================
-        PacienteEmail::where('paciente_id', $paciente->id)->update(['estado' => 2]);
+            //===========================================================================
+            // Emails
+            //===========================================================================
+            PacienteEmail::where('paciente_id', $paciente->id)->update(['estado' => 2]);
 
-        if ($request->has('emails')) {
-            foreach ($request->emails as $data) {
-                // Validamos que el campo email no esté vacío y sea un formato válido
-                if (!empty($data['email'])) {
-                    
-                    // 2. Usamos updateOrCreate para procesar cada registro
-                    PacienteEmail::updateOrCreate(
-                        [
-                            // Criterios de búsqueda:
-                            // Si el id es 0, null o no viene, se creará uno nuevo.
-                            'id' => $data['id'] ?? 0, 
-                            'paciente_id' => $paciente->id
-                        ],
-                        [
-                            // Valores a actualizar o insertar:
-                            'email'  => $data['email'],
-                            'estado' => 1 // Se activa o reactiva
-                        ]
-                    );
+            if ($request->has('emails')) {
+                foreach ($request->emails as $data) {
+                    // Validamos que el campo email no esté vacío y sea un formato válido
+                    if (!empty($data['email'])) {
+                        
+                        // 2. Usamos updateOrCreate para procesar cada registro
+                        PacienteEmail::updateOrCreate(
+                            [
+                                // Criterios de búsqueda:
+                                // Si el id es 0, null o no viene, se creará uno nuevo.
+                                'id' => $data['id'] ?? 0, 
+                                'paciente_id' => $paciente->id
+                            ],
+                            [
+                                // Valores a actualizar o insertar:
+                                'email'  => $data['email'],
+                                'estado' => 1 // Se activa o reactiva
+                            ]
+                        );
+                    }
                 }
             }
-        }
 
-        //===========================================================================
-        // Seguros
-        //===========================================================================
-        PacienteSeguro::where('paciente_id', $paciente->id)->update(['estado' => 2]);
+            //===========================================================================
+            // Seguros
+            //===========================================================================
+            PacienteSeguro::where('paciente_id', $paciente->id)->update(['estado' => 2]);
 
-        if ($request->has('seguros')) {
-            foreach ($request->seguros as $data) {
-                // Validamos que se haya seleccionado una aseguradora
-                if (isset($data['aseguradora_id']) && !empty($data['aseguradora_id'])) {
-                    // 2. Sincronizamos con updateOrCreate
-                    PacienteSeguro::updateOrCreate(
-                        [
-                            'id' => $data['id'] ?? 0, 
-                            'paciente_id' => $paciente->id
-                        ],
-                        [
-                            'aseguradora_id' => $data['aseguradora_id'],
-                            'poliza_no'      => $data['poliza'] ?? null, // 'poliza' viene del JS
-                            'estado'         => 1
-                        ]
-                    );
+            if ($request->has('seguros')) {
+                foreach ($request->seguros as $data) {
+                    // Validamos que se haya seleccionado una aseguradora
+                    if (isset($data['aseguradora_id']) && !empty($data['aseguradora_id'])) {
+                        // 2. Sincronizamos con updateOrCreate
+                        PacienteSeguro::updateOrCreate(
+                            [
+                                'id' => $data['id'] ?? 0, 
+                                'paciente_id' => $paciente->id
+                            ],
+                            [
+                                'aseguradora_id' => $data['aseguradora_id'],
+                                'poliza_no'      => $data['poliza'] ?? null, // 'poliza' viene del JS
+                                'estado'         => 1
+                            ]
+                        );
+                    }
                 }
             }
-        }
 
-        //===========================================================================
-        // Facturación
-        //===========================================================================
-        PacienteFacturacion::where('paciente_id', $paciente->id)->update(['estado' => 2]);
+            //===========================================================================
+            // Facturación
+            //===========================================================================
+            PacienteFacturacion::where('paciente_id', $paciente->id)->update(['estado' => 2]);
 
-        if ($request->has('facturacion')) {
-            foreach ($request->facturacion as $data) {
-                // Validamos que el NIT no esté vacío para procesar la fila
-                if (isset($data['nit']) && !empty($data['nit'])) {
-                    
-                    // 2. Sincronizamos con updateOrCreate
-                    PacienteFacturacion::updateOrCreate(
-                        [
-                            // Criterio de búsqueda
-                            'id' => $data['id'] ?? 0, 
-                            'paciente_id' => $paciente->id
-                        ],
-                        [
-                            // Valores a insertar o actualizar
-                            'nit'       => $data['nit'],
-                            'nombre'    => $data['nombre'] ?? 'Consumidor Final',
-                            'direccion' => $data['direccion'] ?? 'Ciudad',
-                            'estado'    => 1
-                        ]
-                    );
+            if ($request->has('facturacion')) {
+                foreach ($request->facturacion as $data) {
+                    // Validamos que el NIT no esté vacío para procesar la fila
+                    if (isset($data['nit']) && !empty($data['nit'])) {
+                        
+                        // 2. Sincronizamos con updateOrCreate
+                        PacienteFacturacion::updateOrCreate(
+                            [
+                                // Criterio de búsqueda
+                                'id' => $data['id'] ?? 0, 
+                                'paciente_id' => $paciente->id
+                            ],
+                            [
+                                // Valores a insertar o actualizar
+                                'nit'       => $data['nit'],
+                                'nombre'    => $data['nombre'] ?? 'Consumidor Final',
+                                'direccion' => $data['direccion'] ?? 'Ciudad',
+                                'estado'    => 1
+                            ]
+                        );
+                    }
                 }
             }
-        }
 
-        //===========================================================================
-        // Familia
-        //===========================================================================
-        PacienteFamilia::where('paciente_id', $paciente->id)->update(['estado' => 2]);
-
-        if ($request->has('familia')) {
-            foreach ($request->familia as $data) {
-                // Validamos que el nombre no esté vacío para procesar la fila
-                if (isset($data['nombre']) && !empty($data['nombre'])) {
-                    $idFamiliar = (isset($data['id']) && is_numeric($data['id'])) ? $data['id'] : 0;
-                    // 2. Sincronizamos con updateOrCreate
-                    PacienteFamilia::updateOrCreate(
-                        [
-                            'id' => $idFamiliar,
-                            'paciente_id' => $paciente->id
-                        ],
-                        [
-                            'parentesco_id' => $data['parentesco_id'],
-                            'nombre'        => $data['nombre'],
-                            'telefono'      => $data['telefono'],
-                            /**
-                             * Lógica del Checkbox:
-                             * Si la llave 'emergencia' existe en el array, es 'S'.
-                             * De lo contrario, el usuario lo desmarcó o no lo marcó, es 'N'.
-                             */
-                            'emergencia'    => isset($data['emergencia']) ? 'S' : 'N',
-                            'estado'        => 1
-                        ]
-                    );
+            //===========================================================================
+            // Familia
+            //===========================================================================
+            PacienteFamilia::where('paciente_id', $paciente->id)->update(['estado' => 2]);
+            if ($request->has('familia')) {
+                foreach ($request->familia as $data) {
+                    // Validamos que el nombre no esté vacío para procesar la fila
+                    if (isset($data['nombre']) && !empty($data['nombre'])) {
+                        $idFamiliar = (isset($data['id']) && is_numeric($data['id'])) ? $data['id'] : 0;
+                        // 2. Sincronizamos con updateOrCreate
+                        PacienteFamilia::updateOrCreate(
+                            [
+                                'id' => $idFamiliar,
+                                'paciente_id' => $paciente->id
+                            ],
+                            [
+                                'parentesco_id' => $data['parentesco_id'],
+                                'nombre'        => $data['nombre'],
+                                'telefono'      => $data['telefono'],
+                                /**
+                                 * Lógica del Checkbox:
+                                 * Si la llave 'emergencia' existe en el array, es 'S'.
+                                 * De lo contrario, el usuario lo desmarcó o no lo marcó, es 'N'.
+                                 */
+                                'emergencia'    => isset($data['emergencia']) ? 'S' : 'N',
+                                'estado'        => 1
+                            ]
+                        );
+                    }
                 }
             }
+
+            $message = array(
+                'message' => 'Registro almacenado con exito !!!',
+                'type'    => 'success'
+            );
+
+            return redirect()->back()->with($message);
+
+        } catch (\Exception $e){
+            return redirect()->back()
+                ->withInput() // Mantiene lo que el usuario escribió
+                ->with([
+                    'message' => 'Hubo un problema técnico: ' . $e->getMessage(),
+                    'type'    => 'error'
+            ]);
         }
-
-        //Session::flash('success', 'Se editó el medico con éxito.');
-        $message = array(
-            'message' => 'Registro almacenado con exito !!!',
-            'type'    => 'success'
-        );
-
-        // return redirect()->back()->with($message);
-        // return Redirect::route('pacientes')->with('message','Paciente grabado con exito');
-        return redirect()->back()->with($message);
     }
 
     public function get_telefono_x_paciente(){
