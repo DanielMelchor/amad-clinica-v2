@@ -128,7 +128,7 @@
                                     <div class="tab-pane fade show active" id="admisiones" role="tabpanel" aria-labelledby="admisiones-tab">
                                         <div class="row">
                                             <div class="col-lg-3 col-12" style="color: black;">
-                                                <div class="small-box" style="background-color: #cca988;">
+                                                <div class="small-box bg-success" >
                                                     <div class="inner">
                                                         <h3><div id="total_admisiones"></div></h3>
                                                         <h4>Cantidad de Admisiones</h4>
@@ -144,7 +144,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-3 col-12" style="color: black;">
-                                                <div class="small-box" style="background-color: #c3ab95;">
+                                                <div class="small-box bg-info">
                                                     <div class="inner">
                                                         <h3><div id="admisiones_activas"></div></h3>
                                                         <h4>Admisiones Activas</h4>
@@ -160,7 +160,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-3 col-12" style="color: black;">
-                                                <div class="small-box" style="background-color: #b9aca2;">
+                                                <div class="small-box bg-danger">
                                                     <div class="inner">
                                                         <h3><div id="admisiones_con_saldo"></div></h3>
                                                         <h4>Admisiones con Saldo</h4>
@@ -176,7 +176,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-3 col-12" style="color: black;">
-                                                <div class="small-box" style="background-color: #adaeaf;">
+                                                <div class="small-box bg-warning">
                                                     <div class="inner">
                                                         <h3><div id="ocupacion_agenda"></div></h3>
                                                         <h4>Agenda Ocupación</h4>
@@ -186,7 +186,7 @@
                                                     </div>
                                                     <a href="#" class="small-box-footer">
                                                         <a href="#" class="small-box-footer" disabled>
-                                                            <i class="fas fa-times"></i>
+                                                            <i class="fas fa-percent"></i>
                                                         </a>
                                                     </a>
                                                 </div>

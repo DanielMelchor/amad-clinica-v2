@@ -138,16 +138,17 @@ class empresaController extends Controller
                 'message' => 'Registro almacenado con exito !!!',
                 'type'    => 'success'
             );
+
+            return redirect()->route('editar_empresa', [$idEncriptado])->with($message);
             
         }catch (\Exception $e) {
             DB::rollBack();
-            $message = array(
-                'message' => '! Error al almacenar la información ! '. $e->getMessage(),
-                'type'    => 'error'
-            );
+
+            return response()->json([
+                'message' => 'Error al guardar: ' . $e->getMessage()
+            ], 500);
         }
 
-        return redirect()->route('editar_empresa', [$idEncriptado])->with($message);
         // return redirect()->route('empresas')->with($message);
     }
 
