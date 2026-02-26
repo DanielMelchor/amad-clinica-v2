@@ -1,9 +1,5 @@
 @extends('adminlte::page')
 @section('css')
-    <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         .btn-guardar{
             background-color: #A5C890 !important;
@@ -18,6 +14,21 @@
             max-width: 100%; /* Ajusta el ancho según tus necesidades */
             overflow-x: auto; /* Permite el desplazamiento horizontal */
         }
+        .dataTables_wrapper .row {
+            display: flex;
+            align-items: center; /* Alinea verticalmente los elementos */
+            justify-content: flex-start; /* Ajusta los elementos a la izquierda */
+        }
+
+        .dataTables_wrapper .row .col-auto {
+            display: flex;
+            justify-content: flex-start; /* Alinea los elementos dentro de las columnas */
+        }
+
+        .dataTables_wrapper .row .col {
+            display: flex;
+            justify-content: flex-start;
+        }
     </style>
 @endsection
 @section('title', 'Cajas')
@@ -25,35 +36,37 @@
 @section('content_header')
     <br>
 @endsection
+
 @section('content')
-    <div class="row">
-        <div class="col-lg-10 col-sm-10 offset-lg-1 offset-sm-1">
-            <div class="card">
-                <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <h6>Cajas</h6>
-                        </div>
-                        <div class="col-md-3" style="text-align: right;">
-                            <a href="{{ route('crear_caja') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Nuevo Registro"><i class="fas fa-plus-circle"></i></a>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" onclick="confirma_salida(); return false;" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-lg-10 offset-lg-1">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex align-items-center" style="background-color: #E1E8ED;">
+                        <h6 class="mb-0 flex-grow-1 font-weight-bold">Listado de Cajas</h6>
+                        
+                        <div class="ml-auto">
+                            <a href="{{ route('crear_caja') }}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2 btn-fixed-size">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                            <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2 btn-fixed-size">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
                         </div>
                     </div>
-                </div>
-                <form class="form-horizontal">
-                    <div class="card-body">
+                    <div class="card-body p-1 p-md-3">
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-12">
                                 <div class="table-responsive">
-                                    <table id="tblprincipal"  class="table table-sm table-striped" width="100%" style="font-size: 12px;">
-                                        <thead class="thead-primary">
+                                    <table id="tblprincipal" class="table table-sm table-striped table-hover text-center w-100">
+                                        <thead class="thead-light" style="font-size: 13px;">
                                             <tr>
-                                                <th class="text-center">Descripción</th>
-                                                <th class="text-center">Estado</th>
-                                                <th>&nbsp;</th>
+                                                <th>Descripción</th>
+                                                <th>Estado</th>
+                                                <th></th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody style="font-size: 13px;">
                                             @foreach($pCajas as $pCaja)
                                                 <tr class="text-center">
                                                     <td>{{ $pCaja->nombre_maquina }}</td>
@@ -63,7 +76,8 @@
                                                         <td>Baja</td>
                                                     @endif
                                                     <td>
-                                                        <a href="{{route('editar_caja' , $pCaja->id)}}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Caja"><i class="fas fa-edit"></i></a>
+                                                        @php $Id= Crypt::encryptString($pCaja->id); @endphp
+                                                        <a href="{{ route('editar_caja' , $Id) }}" class="btn btn-xs btn-warning rounded-circle elevation-2" title="Editar Caja"><i class="fas fa-edit"></i></a>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -73,47 +87,27 @@
                             </div>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                
-                setTimeout(function() {
-                    swal({
-                        title: "Trabajo Finalizado",
-                        text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    swal({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    }
-                    // , function() {
-                    //     window.location = "{{ route('empresas') }}";
-                    // }
-                    );
-                }, 1000);
-            </script>
-        @endif
+    @if(session('message'))
+        <script>
+            setTimeout(function() {
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Trabajo Finalizado!' : '¡Atención!' }}",
+                    text: "{!! session('message') !!}",
+                    icon: "{{ session('type', 'info') }}", 
+                    confirmButtonText: "Aceptar",
+                    customClass: {
+                        confirmButton: "btn btn-{{ session('type') == 'success' ? 'success' : 'danger' }} elevation-2"
+                    },
+                    buttonsStyling: false
+                });
+            }, 500); // Bajé el tiempo a 500ms para que la respuesta se sienta más rápida
+        </script>
     @endif
     <script type="text/javascript">
         $(function () {
@@ -152,77 +146,5 @@
                 ]
             });
         });
-
-        //===================================================================
-        // Confirmar salida de pantalla
-        //===================================================================
-        function confirma_salida(){
-            swal({
-                title: 'Confirmación',
-                Swal.fire({
-
-                title: 'Confirmación',
-
-                text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
-
-text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
-                icon: 'warning',
-
-                showCancelButton: true,
-
-                confirmButtonClass: 'btn-success',
-
-                cancelButtonClass: 'btn-danger',
-
-                confirmButtonText: 'Si',
-
-                cancelButtonText: 'No',
-
-                closeOnConfirm: false,
-
-                allowEscapeKey: true
-
-                },
-
-                function(isConfirm) {
-
-                    if (isConfirm) { 
-
-                        if (origen == 'P') {
-
-                            window.location.href = "{{ route('pacientes') }}";
-
-                        }
-
-                        if (origen == 'A') {
-
-                            window.location.href = "{{ route('nueva_agenda') }}";
-
-                        }
-
-                        // history.back();
-
-                        
-
-                    } 
-
-                }
-
-            );
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('home') }}";
-                    } 
-                }
-            );
-        }
     </script>
 @endsection

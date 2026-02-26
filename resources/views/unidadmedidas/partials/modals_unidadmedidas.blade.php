@@ -27,7 +27,7 @@
 
 	                        <div class="form-group mb-3">
 	                            <label class="small font-weight-bold text-muted" for="siglas">Siglas</label>
-	                            <input type="text" class="form-control form-control-sm" placeholder="Ej: KG, LT" id="siglas" name="siglas" required value="{{ old('siglas')}}">
+	                            <input type="text" class="form-control form-control-sm" placeholder="Ej: KG, LT" id="siglas" name="siglas" maxlength="5" required value="{{ old('siglas')}}">
 	                        </div>
 
 	                        <div class="row">
@@ -92,7 +92,7 @@
 
 	                        <div class="form-group mb-3">
 	                            <label class="small font-weight-bold text-muted" for="esiglas">Siglas</label>
-	                            <input type="text" class="form-control form-control-sm" placeholder="Siglas" id="esiglas" name="esiglas" required>
+	                            <input type="text" class="form-control form-control-sm" placeholder="Siglas" id="esiglas" name="esiglas" maxlength="5" required>
 	                        </div>
 
 	                        <div class="row">

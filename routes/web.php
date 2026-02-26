@@ -8,6 +8,7 @@ use App\Http\Controllers\AseguradoraController;
 use App\Http\Controllers\BancoController;
 use App\Http\Controllers\BodegaController;
 use App\Http\Controllers\CajaController;
+use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\InvClasificacionController;
 use App\Http\Controllers\InvFamiliaController;
 use App\Http\Controllers\CorrelativoController;
@@ -251,6 +252,17 @@ use Illuminate\Support\Facades\Route;
             Route::get('graficas_index/{fecha_inicial}/{fecha_final}', [GraficaController::class, 'index'])->name('graficas_index');
             Route::post('grp_data', [VentaController::class, 'trae_datos'])->name('grp_data');
             Route::get('admisiones_unificado/{fecha_inicial}/{fecha_final}/{tipo_admision}/{saldo}/{estado}', [ReporteController::class, 'adm_unificado_idx'])->name('rpt_admisiones_unificado');
+        });
+
+        // Bodegas
+        Route::group(['prefix' => 'hospitales',
+                      'middleware' => ['permission:ver-catalogo-hospitales']
+        ], function () {
+            Route::get('listado',[HospitalController::class, 'index'])->name('hospitales');
+            Route::get('agregar',[HospitalController::class, 'create'])->name('crear_hospital');
+            Route::post('grabar',[HospitalController::class, 'store'])->name('hospital_grabar');
+            Route::get('editar/{hospital_id}',[HospitalController::class, 'edit'])->name('hospital_editar');
+            Route::post('actualizar',[HospitalController::class, 'update'])->name('hospital_actualizar');
         });
 
 

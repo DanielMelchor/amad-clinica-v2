@@ -156,14 +156,14 @@ class empresaController extends Controller
     {
         try {
             // Intentamos desencriptar
-            $realId = Crypt::decrypt($id);
+            $realId = Crypt::decryptString($id);
             $empresa = Empresa::findOrFail($realId);
-
+            $correlativos = Correlativo::where('empresa_id', $empresa->id)->get();
             $paises = Pais::where('estado', 1)->get();
             $departamentos = Departamento::where('pais_id', $empresa->pais_id)->get();
             $municipios = Municipio::where('departamento_id', $empresa->departamento_id)->get();
 
-            return view('empresas.edit', compact('empresa', 'paises', 'departamentos', 'municipios', 'id'));
+            return view('empresas.edit', compact('empresa', 'paises', 'departamentos', 'municipios', 'id', 'correlativos'));
             
             // ... resto de tu lógica
         } catch (DecryptException $e) {
@@ -173,66 +173,114 @@ class empresaController extends Controller
                 'type' => 'error'
             ]);
         }
-        // $empresaId = decrypt($id);
-        // $empresa = Empresa::findOrFail($empresaId);
-        // $paises = Pais::where('estado', 1)->get();
-        // $departamentos = Departamento::where('pais_id', $empresa->pais_id)->get();
-        // $municipios = Municipio::where('departamento_id', $empresa->departamento_id)->get();
-        // return view('empresas.edit', compact('empresa', 'paises', 'departamentos', 'municipios', 'id'));
     }
 
     public function update(REQUEST $request, $id)
     {
         $validData = $request->validate([
-            'razon_social' => 'required',
-            'nombre_comercial' => 'required',
-            'direccion' => 'required',
-            'municipio_id' => 'required',
-            'departamento_id' => 'required',
-            'pais_id' => 'required',
-            'codigo_postal' => 'required',
-            'email' => 'required|email',
-            'telefonos' => 'required',
-            'afiliacion_iva' => 'required',
-            'porcentaje_impuesto' => 'required'
-        ]);
+                'razon_social'        => 'required',
+                'nombre_comercial'    => 'required',
+                'direccion'           => 'required',
+                'municipio_id'        => 'required',
+                'departamento_id'     => 'required',
+                'pais_id'             => 'required',
+                'codigo_postal'       => 'required',
+                'telefonos'           => 'required',
+                'porcentaje_impuesto' => 'required',
+                'correlativo_pacientes'  => 'required',
+                'correlativo_admisiones' => 'required'
+            ],[
+                'razon_social'     => 'La Razón Social es de caracter obligatorio.',
+                'nombre_comercial' => 'El Nombre Comercial es de caracter obligatorio.',
+                'direccion'        => 'La Dirección es de caracter obligatorio.',
+                'codigo_postal'    => 'El Codigo Postal es de caracter obligatorio.',
+                'telefonos'        => 'El Telefono es de caracter obligatorio.',
+                'porcentaje_impuesto' => 'El Porcentaje de Impuesto es de caracter obligatorio.'
+            ]);
 
-        $empresaId = decrypt($id);
+        $empresaId = Crypt::decryptString($id);
 
-        $empresa = Empresa::findOrFail($empresaId);
+        DB::beginTransaction();
 
-        $empresa->razon_social        = $validData['razon_social'];
-        $empresa->nombre_comercial    = $validData['nombre_comercial'];
-        $empresa->direccion           = $validData['direccion'];
-        $empresa->municipio_id        = $validData['municipio_id'];
-        $empresa->departamento_id     = $validData['departamento_id'];
-        $empresa->pais_id             = $validData['pais_id'];
-        $empresa->codigo_postal       = $validData['codigo_postal'];
-        $empresa->email               = $validData['email'];
-        $empresa->telefonos           = $validData['telefonos'];
-        $empresa->afiliacion_iva      = $validData['afiliacion_iva'];
-        $empresa->porcentaje_impuesto = $validData['porcentaje_impuesto'];
-        $empresa->nit_empresa         = $request->nit_empresa;
-        $empresa->igss_empresa        = $request->igss_empresa;
-        $empresa->fecha_constitucion  = $request->fecha_constitucion;
-        $empresa->alias               = $request->alias;
-        $empresa->formato             = $request->formato;
-        $empresa->llave_firma         = $request->llave_firma;
-        $empresa->llave_certifica     = $request->llave_certifica;
+        try{
+            $empresa = Empresa::findOrFail($empresaId);
+            $empresa->razon_social        = $validData['razon_social'];
+            $empresa->nombre_comercial    = $validData['nombre_comercial'];
+            $empresa->direccion           = $validData['direccion'];
+            $empresa->municipio_id        = $validData['municipio_id'];
+            $empresa->departamento_id     = $validData['departamento_id'];
+            $empresa->pais_id             = $validData['pais_id'];
+            $empresa->codigo_postal       = $validData['codigo_postal'];
+            $empresa->email               = $request->email;
+            $empresa->telefonos           = $validData['telefonos'];
+            $empresa->afiliacion_iva      = $request->afiliacion_iva;
+            $empresa->porcentaje_impuesto = $validData['porcentaje_impuesto'];
+            $empresa->nit_empresa         = $request->nit_empresa;
+            $empresa->igss_empresa        = $request->igss_empresa;
+            $empresa->fecha_constitucion  = $request->fecha_constitucion;
+            $empresa->alias               = $request->alias;
+            $empresa->formato             = $request->formato;
+            $empresa->llave_firma         = $request->llave_firma;
+            $empresa->llave_certifica     = $request->llave_certifica;
+            if (!empty($request->logo_empresa))
+            {
+                $logo = $request->file('logo_empresa')->getClientOriginalName();
+                $request->file('logo_empresa')->move('logos', $logo);
+                $empresa->ruta_logo = 'logos/' . $logo;
+            }
+            
+            if (isset($request->estado)) {
+                $empresa->estado = 1;
+            }else{
+                $empresa->estado = 0;
+            }
+            $empresa->save();
 
-        if (!empty($request->logo_empresa))
-        {
-        	$logo = $request->file('logo_empresa')->getClientOriginalName();
-        	$request->file('logo_empresa')->move('logos', $logo);
-        	$empresa->ruta_logo = 'logos/' . $logo;
+            // **************************************************************** //
+            // ************************* Correlativos ************************* //
+            // **************************************************************** //
+            $tipos = [
+                'P' => $request->correlativo_pacientes,
+                'A' => $request->correlativo_admisiones
+            ];
+
+            foreach ($tipos as $tipo => $valor) {
+                Correlativo::updateOrCreate(
+                    [
+                        // Atributos de búsqueda (si coinciden ambos, se actualiza)
+                        'empresa_id' => $empresa->id,
+                        'tipo'       => $tipo,
+                    ],
+                    [
+                        // Atributos que se crean o actualizan
+                        'correlativo' => $valor,
+                    ]
+                );
+            }
+
+            DB::commit();
+
+            $message = array(
+                'message' => 'Registro almacenado con exito !!!',
+                'type'    => 'success'
+            );
+
+            return back()->withInput()->with($message);
+
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Error al guardar: ' . $e->getMessage()
+            ], 500);
         }
+
         
-        if (isset($request->estado)) {
-            $empresa->estado = 1;
-        }else{
-            $empresa->estado = 0;
-        }
-        $empresa->save();
+
+        
+
+        
 
         // return Redirect::route('empresas')->with('message','Empresa grabada con exito');
         $message = array(

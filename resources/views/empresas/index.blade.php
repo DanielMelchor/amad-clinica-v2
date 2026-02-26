@@ -66,9 +66,9 @@
                                                     {{ $l->estado == 1 ? 'Alta' : 'Baja' }}
                                                 </span>
                                             </td>
-                                            @php $Id= Crypt::encrypt($l->id); @endphp
+                                            @php $Id= Crypt::encryptString($l->id); @endphp
                                             <td class="text-center">
-                                                <a href="{{route('editar_empresa' , $Id )}}" class="btn btn-xs btn-warning rounded-circle shadow-sm">
+                                                <a href="{{route('editar_empresa' , $Id )}}" class="btn btn-xs btn-warning rounded-circle elevation-2 shadow-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </td>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Response;
+use Crypt;
 use Session;
 use Auth;
 use DB;
@@ -37,52 +38,64 @@ class CajaController extends Controller
             'caja_nombre' => 'required'
         ]);
 
-        $caja = new Caja();
-        $caja->empresa_id       = Auth::user()->empresa_id;
-        $caja->nombre_maquina   = $validData['caja_nombre'];
-        if (isset($request['editar_documento'])) {
-            $caja->editar_documento = 1;
-        }else{
-            $caja->editar_documento = 0;
-        }
-        if (isset($request['estado'])) {
-            $caja->estado = 1;
-        }else{
-            $caja->estado = 0;
-        }
-        $caja->save();
-
-        if (isset($request['resoluciones'])) {
-            foreach ($request['resoluciones'] as $key => $registro) {
-                $resolucion = new CajaResolucion();
-                $resolucion->caja_id             = $caja->id;
-                $resolucion->tipo_documento_id   = $registro['tipo_documento_id'];
-                $resolucion->serie               = $registro['serie'];
-                $resolucion->correlativo_inicial = $registro['inicial'];
-                $resolucion->correlativo_final   = $registro['final'];
-                $resolucion->ultimo_correlativo  = $registro['ultimo'];
-                if (isset($registro['estado'])) {
-                    $resolucion->estado          = 1;
-                }else{
-                    $resolucion->estado          = 0;
-                }
-                $resolucion->save();
+        DB::beginTransaction();
+        try{
+            $caja = new Caja();
+            $caja->empresa_id       = Auth::user()->empresa_id;
+            $caja->nombre_maquina   = $validData['caja_nombre'];
+            if (isset($request['editar_documento'])) {
+                $caja->editar_documento = 1;
+            }else{
+                $caja->editar_documento = 0;
             }
+            if (isset($request['estado'])) {
+                $caja->estado = 1;
+            }else{
+                $caja->estado = 0;
+            }
+            $caja->save();
+
+            //===========================================================================
+            // Telefonos
+            //===========================================================================
+            if ($request->has('resoluciones')) {
+                foreach ($request->resoluciones as $registro) {
+                    $resolucion = new CajaResolucion();
+                    $resolucion->caja_id             = $caja->id;
+                    $resolucion->tipo_documento_id   = $registro['tipo_documento_id'];
+                    $resolucion->serie               = $registro['serie'];
+                    $resolucion->correlativo_inicial = $registro['inicial'];
+                    $resolucion->correlativo_final   = $registro['final'];
+                    $resolucion->ultimo_correlativo  = $registro['ultimo'];
+                    if (isset($registro['estado'])) {
+                        $resolucion->estado          = 1;
+                    }else{
+                        $resolucion->estado          = 0;
+                    }
+                    $resolucion->save();
+                }
+            }
+
+            DB::commit();
+
+            return back()->withInput()->with([
+                'message' => '! Registro almacenado con exito !',
+                'type' => 'success'
+            ]);
+        } catch(\Exception $e){
+            DB::rollBack();
+            return back()->withInput()->with([
+                'message' => 'Error al guardar: ' . $e->getMessage(),
+                'type' => 'error'
+            ]);
         }
-
-        $message = array(
-            'message' => 'Registro almacenado con exito !!!',
-            'type'    => 'success'
-        );
-        return redirect()->back()->with($message);
-
     }
 
     public function edit($id){
-        $pCaja = Caja::findOrFail($id);
-        $pResoluciones = CajaResolucion::where('caja_id', $id)->get();
+        $pCaja = Caja::findOrFail(Crypt::decryptString($id));
+        $resoluciones = CajaResolucion::where('caja_id', $pCaja->id)->get();
         $tipo_documentos = TipoDocumento::all();
-        return view('cajas.edit', compact('pCaja', 'pResoluciones', 'tipo_documentos'));
+        return view('cajas.edit', compact('pCaja', 'resoluciones', 'tipo_documentos'));
     }
 
     public function update(Request $request){
@@ -91,85 +104,74 @@ class CajaController extends Controller
             'caja_nombre' => 'required'
         ]);
 
-        $caja = Caja::findOrFail($validData['caja_id']);
-        $caja->nombre_maquina   = $validData['caja_nombre'];
-        if (isset($request['editar_documento'])) {
-            $caja->editar_documento = 1;
-        }else{
-            $caja->editar_documento = 0;
-        }
-        if (isset($request['estado'])) {
-            $caja->estado = 1;
-        }else{
-            $caja->estado = 0;
-        }
-        $caja->save();
+        DB::beginTransaction();
 
-        if (isset($request['resoluciones'])) {
-            $resoluciones = array_values($request['resoluciones']);
-            $totalRegistrosResoluciones = count($resoluciones);
-            $registroActual = CajaResolucion::where('caja_id', $caja->id)
-                              ->where('estado', 1)
-                              ->get();
+        try {
+            $caja = Caja::findOrFail(Crypt::decryptString($validData['caja_id']));
+            $caja->nombre_maquina   = $validData['caja_nombre'];
 
-            foreach ($registroActual as $key => $registro) {
-                $resolucionEncontrada = false;
-                foreach ($resoluciones as $resolucion) {
-                    if ($registro->tipo_documento_id == $validData['caja_id'] && $registro->tipo_documento_id == $resolucion['tipo_documento_id']) {
-                        $resolucionEncontrada = true;
-                    }
-                }
-                if (!$resolucionEncontrada) {
-                    $eliminar = CajaResolucion::where('caja_id', $caja->id)
-                                ->where('tipo_documento_id', $registro['tipo_documento_id'])
-                                ->first();
-                    $eliminar->estado = 0;
-                    $eliminar->save();
+            if (isset($request['editar_documento'])) {
+                $caja->editar_documento = 1;
+            }else{
+                $caja->editar_documento = 0;
+            }
+
+            if (isset($request['estado'])) {
+                $caja->estado = 1;
+            }else{
+                $caja->estado = 0;
+            }
+            $caja->save();
+
+            $idsExistentes = CajaResolucion::where('caja_id', $caja->id)->pluck('id')->toArray();
+
+            $idsProcesados = [];
+
+            if ($request->has('resoluciones')) {
+                foreach ($request->resoluciones as $registro) {
+                    // 2. Usamos updateOrCreate
+                    // El primer array son las llaves de búsqueda, el segundo los datos a actualizar
+                    $resolucion = CajaResolucion::updateOrCreate(
+                        [
+                            'id' => $registro['id'] ?? null, // Si no tiene ID, lo creará
+                            'caja_id' => $caja->id
+                        ],
+                        [
+                            'tipo_documento_id'   => $registro['tipo_documento_id'],
+                            'serie'               => $registro['serie'],
+                            'correlativo_inicial' => $registro['inicial'],
+                            'correlativo_final'   => $registro['final'],
+                            'ultimo_correlativo'  => $registro['ultimo'],
+                            'estado'              => isset($registro['estado']) ? 1 : 0,
+                        ]
+                    );
+
+                    // Guardamos el ID que acabamos de procesar
+                    $idsProcesados[] = $resolucion->id;
                 }
             }
 
-            for ($i=0; $i < $totalRegistrosResoluciones ; $i++) {
-                $existe_registro = CajaResolucion::where('caja_id', $caja->id)
-                                   ->where('tipo_documento_id', $resoluciones[$i]['tipo_documento_id'])
-                                   ->count();
-                if ($existe_registro == 0) {
-                    $resolucion = new CajaResolucion();
-                    $resolucion->caja_id             = $caja->id;
-                    $resolucion->tipo_documento_id   = $resoluciones[$i]['tipo_documento_id'];
-                    $resolucion->serie               = $resoluciones[$i]['serie'];
-                    $resolucion->correlativo_inicial = $resoluciones[$i]['inicial'];
-                    $resolucion->correlativo_final   = $resoluciones[$i]['final'];
-                    $resolucion->ultimo_correlativo  = $resoluciones[$i]['ultimo'];
-                    if (isset($resoluciones[$i]['estado'])) {
-                        $resolucion->estado          = 1;
-                    }else{
-                        $resolucion->estado          = 0;
-                    }
-                    $resolucion->save();
-                    
-                }else{
-                    $resolucion = CajaResolucion::where('caja_id', $caja->id)
-                                  ->where('tipo_documento_id', $resoluciones[$i]['tipo_documento_id'])
-                                  ->first();
-                    $resolucion->serie               = $resoluciones[$i]['serie'];
-                    $resolucion->correlativo_inicial = $resoluciones[$i]['inicial'];
-                    $resolucion->correlativo_final   = $resoluciones[$i]['final'];
-                    $resolucion->ultimo_correlativo  = $resoluciones[$i]['ultimo'];
-                    if (isset($resoluciones[$i]['estado'])) {
-                        $resolucion->estado          = 1;
-                    }else{
-                        $resolucion->estado          = 0;
-                    }
-                    $resolucion->save();
-                }
-            }
-        }
+            $idsEliminar = array_diff($idsExistentes, $idsProcesados);
 
-        $message = array(
-            'message' => 'Registro almacenado con exito !!!',
-            'type'    => 'success'
-        );
-        return redirect()->back()->with($message);
+            // 4. Cambiar estado a 2 para los registros que "desaparecieron" del frontend
+            if (!empty($idsEliminar)) {
+                CajaResolucion::whereIn('id', $idsEliminar)->update(['estado' => 2]);
+            }
+
+            DB::commit();
+
+            return back()->withInput()->with([
+                'message' => '! Registro actualizado con exito !',
+                'type' => 'success'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with([
+                'message' => 'Error al guardar: ' . $e->getMessage(),
+                'type' => 'error'
+            ]);
+        }
     }
 
 

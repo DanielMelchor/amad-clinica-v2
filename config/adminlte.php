@@ -615,6 +615,12 @@ return [
                             'can'   => 'ver-catalogo-dosis'
                         ],
                         [
+                            'text' => 'Hospitales',
+                            'route'  => 'hospitales',
+                            'icon' => 'fas fa-hospital-alt',
+                            'can'   => 'ver-catalogo-hospitales'
+                        ],
+                        [
                             'text' => 'Especialidad Medica',
                             'route'  => 'especialidades',
                             'icon' => 'fas fa-user-nurse',

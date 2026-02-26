@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
+use DB;
 use Response;
 use Session;
 use App\Models\Hospital;
@@ -44,46 +45,50 @@ class HospitalController extends Controller
             'nombre' => 'required'
         ]);
 
-        $hospital = new Hospital();
-        $hospital->nombre = $validData['nombre'];
-        $hospital->direccion = $request->direccion;
-        $hospital->telefonos = $request->telefonos;
-        $hospital->contacto = $request->contacto;
-        $hospital->principal_agenda = $request->principal_agenda;
-        if (isset($request->referencia)) {
-            $hospital->referencia = 'S';
-        }else{
-            $hospital->referencia = 'N';
-        }
-        if (isset($request->estado)) {
-            $hospital->estado = 'A';
-        }else{
-            $hospital->estado = 'I';
-        }
-        if (isset($request->principal_agenda)) {
-            $hospital->principal_agenda = 'S';
-        }else{
-            $hospital->principal_agenda = 'N';
-        }
-        $hospital->save();
+        DB::beginTransaction();
+        try{
+            $hospital = new Hospital();
+            $hospital->nombre = $validData['nombre'];
+            $hospital->direccion = $request->direccion;
+            $hospital->telefonos = $request->telefonos;
+            $hospital->contacto = $request->contacto;
+            $hospital->principal_agenda = $request->principal_agenda;
+            if (isset($request->referencia)) {
+                $hospital->referencia = 'S';
+            }else{
+                $hospital->referencia = 'N';
+            }
+            if (isset($request->estado)) {
+                $hospital->estado = 1;
+            }else{
+                $hospital->estado = 0;
+            }
+            if (isset($request->principal_agenda)) {
+                $hospital->principal_agenda = 'S';
+            }else{
+                $hospital->principal_agenda = 'N';
+            }
+            $hospital->save();
 
-        //Session::flash('success', 'Se editó el medico con éxito.');
+            DB::commit();
 
-        //return Redirect::route('hospitales')->with('message','Hospital grabado con exito');
-        // Session::flash('success', 'Hospital Guardado con exito !!!' );
-        // return redirect(route('hospitales'));
-        $message = array(
-            'message' => 'Registro almacenado con exito !!!',
-            'type'    => 'success'
-        );
-        return redirect()->back()->with($message);
+            return back()->withInput()->with([
+                'message' => '! Registro almacenado con exito !',
+                'type' => 'success'
+            ]);
+
+        } catch (\Exception $e){
+            DB::rollBack();
+            return back()->withInput()->with([
+                'message' => 'Error al guardar: ' . $e->getMessage(),
+                'type' => 'error'
+            ]);
+        }
     }
 
-    public function edit()
+    public function edit($hospital_id)
     {
-        $id         = $_POST['id'];
-        $hospitalId = Crypt::decrypt($id);
-        $registro   = Hospital::findOrFail($hospitalId);
+        $registro   = Hospital::findOrFail(Crypt::decryptString($hospital_id));
         return Response::json($registro);
     }
 
@@ -94,40 +99,46 @@ class HospitalController extends Controller
         ]);
 
         $id         = $_POST['eid'];
-        $hospitalId = Crypt::decrypt($id);
+        $hospitalId = Crypt::decryptString($id);
 
-        $hospital = Hospital::findOrFail($hospitalId);
-        $hospital->nombre    = $validData['enombre'];
-        $hospital->direccion = $request->edireccion;
-        $hospital->telefonos = $request->etelefonos;
-        $hospital->contacto  = $request->econtacto;
-        if (isset($request->eprincipal_agenda)) {
-            $hospital->principal_agenda = 'S';
-        }else{
-            $hospital->principal_agenda = 'N';
-        }
-        if (isset($request->ereferencia)) {
-            $hospital->referencia = 'S';
-        }else{
-            $hospital->referencia = 'N';
-        }
-        if (isset($request->eestado)) {
-            $hospital->estado = 'A';
-        }else{
-            $hospital->estado = 'I';
-        }
-        $hospital->save();
+        DB::beginTransaction();
+        try{
+            $hospital = Hospital::findOrFail($hospitalId);
+            $hospital->nombre    = $validData['enombre'];
+            $hospital->direccion = $request->edireccion;
+            $hospital->telefonos = $request->etelefonos;
+            $hospital->contacto  = $request->econtacto;
+            if (isset($request->eprincipal_agenda)) {
+                $hospital->principal_agenda = 'S';
+            }else{
+                $hospital->principal_agenda = 'N';
+            }
+            if (isset($request->ereferencia)) {
+                $hospital->referencia = 'S';
+            }else{
+                $hospital->referencia = 'N';
+            }
+            if (isset($request->eestado)) {
+                $hospital->estado = 1;
+            }else{
+                $hospital->estado = 0;
+            }
+            $hospital->save();
 
-        //Session::flash('success', 'Se editó el medico con éxito.');
+            DB::commit();
 
-        //return Redirect::route('hospitales')->with('message','Hospital grabado con exito');
-        // Session::flash('success', 'Hospital Actualizado con exito !!!' );
-        // return redirect(route('hospitales'));
-        $message = array(
-            'message' => 'Registro actualizado con exito !!!',
-            'type'    => 'success'
-        );
-        return redirect()->back()->with($message);
+            return back()->withInput()->with([
+                'message' => '! Registro actualizado con exito !',
+                'type' => 'success'
+            ]);
+
+        } catch (\Exception $e){
+            DB::rollBack();
+            return back()->withInput()->with([
+                'message' => 'Error al guardar: ' . $e->getMessage(),
+                'type' => 'error'
+            ]);
+        }
     }
 
     /*public function show($id){

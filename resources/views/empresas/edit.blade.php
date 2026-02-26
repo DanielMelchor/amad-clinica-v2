@@ -111,7 +111,7 @@
                                                 <div class="input-group-prepend">
                                                     <label class="input-group-text" for="email">Email</label>
                                                 </div>
-                                                <input type="mail" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="email" name="email" value="{{ $empresa->email }}">
+                                                <input type="email" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1" id="email" name="email" value="{{ $empresa->email }}">
                                             </div>
                                         </div>
                                         <div class="row">
@@ -210,6 +210,38 @@
                                                                 <option value="{{ $m->id }}" @if($empresa->municipio_id == $m->id) selected @endif>{{ $m->nombre }}</option>
                                                             @endforeach
                                                         </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-10 offset-md-1">
+                                        <div class="card">
+                                            <div class="card-header" style="background-color: #E1E8ED;">
+                                                <h6>Correlativos</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="row">
+                                                            <div class="input-group input-group-sm mb-1 col-md-12">
+                                                                <div class="input-group-prepend">
+                                                                    <label class="input-group-text w-100">Correlativo Pacientes</label>
+                                                                </div>
+                                                                <input type="number" step="1" min="0" class="form-control numero" placeholder="000000" aria-label="Username" aria-describedby="basic-addon1" placeholder="00000" id="correlativo_pacientes" name="correlativo_pacientes" autofocus required value="{{ old('correlativo_pacientes', $correlativos->firstWhere('tipo', 'P')->correlativo ?? '') }}">
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="input-group input-group-sm mb-1 col-md-12">
+                                                                <div class="input-group-prepend">
+                                                                    <label class="input-group-text w-100">Correlativo Admisiones</label>
+                                                                </div>
+                                                                <input type="number" step="1" min="0" class="form-control numero" placeholder="000000" aria-label="Username" aria-describedby="basic-addon1" id="correlativo_admisiones" name="correlativo_admisiones" required value="{{ old('correlativo_pacientes', $correlativos->firstWhere('tipo', 'A')->correlativo ?? '') }}">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
