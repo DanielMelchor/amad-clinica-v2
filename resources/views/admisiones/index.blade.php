@@ -157,7 +157,7 @@
                     </div>
                     <div class="card-body text-center p-2 p-md-3">
                         <div class="table-responsive">
-                            <table id="tblAdmision" class="table table-sm table-hover" width="100%" style="font-size: 13px;">
+                            <table id="tblAdmision" class="table table-sm table-striped table-hover" width="100%" style="font-size: 13px;">
                                 <thead class="thead-light">
                                     <tr class="text-center">
                                         <th>Admisión</th>
@@ -171,19 +171,7 @@
                                 </thead>
                                 <tbody>
                                     {{-- Ejemplo de fila con data-labels para Mobile --}}
-                                    @foreach($admisiones as $admision)
-                                    <tr>
-                                        <td data-label="Admisión">{{ $admision->admision_no }}</td>
-                                        <td data-label="Fecha">{{ \Carbon\Carbon::parse($admision->fecha)->format('d/m/Y') }}</td>
-                                        <td data-label="Médico">{{ $admision->medico->nombre_completo }}</td>
-                                        <td data-label="Hospital">{{ $admision->hospital->nombre }}</td>
-                                        <td data-label="Paciente">{{ $admision->paciente->nombre_completo }}</td>
-                                        <td data-label="Estado"><span class="badge badge-success">Activo</span></td>
-                                        <td data-label="Acciones">
-                                            <button class="btn btn-xs btn-warning rounded-circle elevation-2"><i class="fas fa-edit"></i></button>
-                                        </td>
-                                    </tr>
-                                    @endforeach
+                                    
                                 </tbody>
                             </table>
                         </div>
@@ -293,7 +281,7 @@
                         $('#tblAdmision').DataTable().destroy();
                     }
                     $("#tblAdmision tbody").empty();
-                    table = $('#tblAdmision').DataTable({
+                    /*table = $('#tblAdmision').DataTable({
                         data: response, // Datos cargados a través de AJAX
                         columns: [
                           { data: 'admision_no' },
@@ -322,7 +310,7 @@
 
                                 // title: 'Datos Exportados',  // Título del archivo Excel
                                 // className: 'btn btn-default'  // Puedes personalizar el estilo del botón
-                                text: '<i class="fas fa-file-excel"></i>', 
+                                text: 'EXCEL', 
                                 titleAttr: 'Descargar a Excel', // El tooltip que sale al pasar el mouse
                                 // Aplicamos las clases que solicitaste
                                 className: 'btn btn-xs btn-default',
@@ -330,6 +318,57 @@
                                 attr: {
                                     style: 'width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; padding: 0;'
                                 }
+                            }
+                        ],
+                        order: [[0, 'desc']]
+                    });*/
+                    $('#tblAdmision').DataTable({
+                        data: response,
+                        columns: [
+                            { data: 'admision_no' },
+                            { data: 'fecha_formateada' },
+                            { data: 'medico.nombre_completo', defaultContent: "Sin médico" },
+                            { data: 'hospital.nombre', defaultContent: "Sin hospital" },
+                            { data: 'paciente.nombre_completo', defaultContent: "Sin paciente" },
+                            { 
+                                data: 'estado',
+                                render: function(data, type, row) {
+                                    // Si el estado es 'Activo' (o 1, según tu base de datos), muestra el badge
+                                    switch (data){
+                                        case 0:
+                                            return '<span class="badge badge-success">Activo</span>';
+                                            break;
+                                        default:
+                                            return '<span class="badge badge-secondary">Cerrada</span>';
+                                    }
+                                }
+                            },
+                            {
+                                render: function(data, type, row) {
+                                    var editUrl = "{{ route('editar_admision', ':id') }}";
+                                    editUrl = editUrl.replace(':id', row['id']);
+                                    return '<a href="' + editUrl + '" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar" target="_blank"><i class="fas fa-edit"></i></a>';
+                                }
+                            }
+                        ],
+                        // ... resto de tu configuración (paging, language, dom, buttons, etc.)
+                        "paging": true,
+                        "lengthChange": true,
+                        "searching": true,
+                        "ordering": true,
+                        "info": true,
+                        "autoWidth": false,
+                        "pageLength": 25,
+                        "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
+                        "language": {
+                            // ... tu configuración de idioma actual
+                        },
+                        "dom": '<"row"<"col-sm-4"l><"col-sm-4 text-center"B><"col-sm-4"f>>rtip',
+                        "buttons": [
+                            {
+                                extend: 'excelHtml5',
+                                text: 'Excel',
+                                className: 'btn btn-md btn-default'
                             }
                         ],
                         order: [[0, 'desc']]

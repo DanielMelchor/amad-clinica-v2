@@ -1662,23 +1662,42 @@ class AdmisionController extends Controller
         $admision_no = strtoupper($_POST['admision_no']);
         $nombre      = strtoupper($_POST['nombre']);
 
-        $registros = DB::table('admisiones as a')
+        /*$registros = DB::table('admisiones as a')
                      ->join('pacientes as p', 'p.id', 'a.paciente_id')
                      // ->join('tipo_atenciones as ta', 'a.tipo_admision', 'ta.id')
                      ->join('medicos as m', 'a.medico_id', 'm.id')
                      ->join('hospitales as h', 'a.hospital_id', 'h.id')
                      ->select('a.id', 'a.admision_no', DB::raw('DATE_FORMAT(a.fecha, "%d/%m/%Y") as fecha'), 'p.nombre_completo as paciente_nombre', 'a.edad', 'm.nombre_completo as medico_nombre', 'h.nombre as hospital_nombre', 
-                        DB::raw('CASE WHEN a.estado = "0" THEN "Proceso" ELSE "Cerrada" END as estado'));
+                        DB::raw('CASE WHEN a.estado = "0" THEN "Proceso" ELSE "Cerrada" END as estado'));*/
+        $registros = Admision::with([
+                                    'paciente:id,expediente_no,nombre_completo', 
+                                    'medico:id,nombre_completo',
+                                    'hospital:id,nombre'
+                                ])
+                                ->where('empresa_id', auth()->user()->empresa_id)
+                                ->withSum('detalles as precio_total', 'precio_total')
+                                ->orderBy('fecha', 'desc');
+
         
         if ($admision_no != null) {
-            $registros->where('admision', $admision_no);
+            $registros->where('admision_no', $admision_no);
         }
 
-        if ($nombre != null) {
-            $registros->orWhere('p.nombre_completo', 'like', '%' . str_replace(' ', '%', $nombre) . '%');
+        /*if ($nombre != null) {
+            $registros->orWhere('nombre_completo', 'like', '%' . str_replace(' ', '%', $nombre) . '%');
+        }*/
+        if (!empty($nombre)) {
+            $registros->whereHas('paciente', function($q) use ($nombre) {
+                $nombreBusqueda = '%' . str_replace(' ', '%', strtoupper($nombre)) . '%';
+                $q->where('nombre_completo', 'like', $nombreBusqueda);
+            });
         }
-        $registros = $registros->get();
-
+        $registros = $registros->get()
+                     ->map(function($item) {
+                        // Creamos un campo nuevo llamado 'fecha_formateada'
+                        $item->fecha_formateada = \Carbon\Carbon::parse($item->fecha)->format('d/m/Y');
+                        return $item;
+                    });;
 
         return Response::json($registros);  
     }
