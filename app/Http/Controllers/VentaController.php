@@ -334,23 +334,24 @@ class VentaController extends Controller
 
                 // Actualizas el total...
                 $maestroVenta->update(['total' => $totalDocumento]);
-
                 if (isset($request->mpago)) {
                     $totalPago = 0;
                     $recibo = TipoDocumento::where('tipo_interno', 'RP')->where('estado', 1)->first();
+
                     $resolucion = CajaResolucion::where('caja_id', $request->caja_id)
                                                  ->where('tipo_documento_id', $recibo->id)
                                                  ->where('estado', 1)
                                                  ->lockForUpdate()
-                                                 ->select('ultimo_correlativo')
+                                                 ->select('serie', 'ultimo_correlativo')
                                                  ->first();
 
-                    return back()->withInput()->with([
-                        'message' => 'Error al guardar: Caja no cuenta con una resolucion Aciva para emitir recibos',
-                        'type'    => 'error'
-                    ]);
+                    if (!isset($resolucion->ultimo_correlativo)) {
+                        return back()->withInput()->with([
+                            'message' => 'Error al guardar: Caja no cuenta con una resolucion Aciva para emitir recibos',
+                            'type'    => 'error'
+                        ]);
+                    }
                     
-                    // dd($ultimo); <--- ESTO MATABA EL CÓDIGO. ELIMINADO.
                     $nuevoCorrelativo = ($resolucion->ultimo_correlativo ?? 0) + 1;
                     
                     $maestroPago = new PagoMaestro();
@@ -368,21 +369,24 @@ class VentaController extends Controller
                 foreach($request->mpago as $pago){
                     $detallePago = new PagoDetalle();
                     $detallePago->pago_maestro_id = $maestroPago->id;
-                    $detallePago->forma_pago      = $pago->fpago_id;
-                    $detallePago->banco_id        = $pago->banco_id;
-                    $detallePago->cuenta_no       = $pago->cuenta_no;
-                    $detallePago->documento_no    = $pago->documento_no;
-                    $detallePago->autoriza_no     = $pago->autoriza_no;
-                    $detallePago->monto           = $pago->monto;
+                    $detallePago->forma_pago      = $pago['fpago_id'];
+                    $detallePago->banco_id        = $pago['casa_id'];
+                    $detallePago->cuenta_no       = $pago['cuenta_no'];
+                    $detallePago->documento_no    = $pago['documento_no'];
+                    $detallePago->autoriza_no     = $pago['autoriza_no'];
+                    $detallePago->monto           = $pago['monto'];
+                    $detallePago->estado          = 1;
                     $detallePago->save();
                     $totalPago += $detallePago->monto;
+
                 }
 
                 $documentoPagado = new PagoDocumento();
                 $documentoPagado->pago_maestro_id   = $maestroPago->id;
                 $documentoPagado->documentoventa_id = $maestroVenta->id;
-                $documentoPagado->saldo_pendiente   = 0;
+                $documentoPagado->saldo_pendiente   = $totalDocumento;
                 $documentoPagado->monto_aplicado    = $totalPago;
+                $documentoPagado->estado            = 1;
                 $documentoPagado->save();
 
             });
