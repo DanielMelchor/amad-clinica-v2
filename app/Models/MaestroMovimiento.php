@@ -53,4 +53,40 @@ class MaestroMovimiento extends Model
     {
         return $this->hasMany(DetalleMovimiento::class, 'maestro_movimiento_id');
     }
+
+    /**
+     * Lógica para obtener el encabezado existente o uno nuevo
+     */
+    public static function obtenerOInstanciar($admisionId, $invTransaccionId)
+    {
+        if (!empty($admisionId)) {
+            $maestroId = DetalleMovimiento::where('admision_id', $admisionId)
+                        ->value('maestro_movimiento_id');
+
+            if ($maestroId) {
+                return self::findOrNew($maestroId);
+            }
+        }
+
+        // Si no hay admision_id o no se encontró el maestro, instanciamos uno nuevo con valores base
+        $nuevo = new self();
+        $nuevo->empresa_id = Auth::user()->empresa_id;
+        $nuevo->inventario_transaccion_id = $invTransaccionId;
+        return $nuevo;
+    }
+
+    /**
+     * Asigna los valores técnicos de la transacción
+     */
+    public function cargarDatosTransaccion($invTransaccion, $correlativo, $anio, $maestroDocId)
+    {
+        $this->fill([
+            'signo'                => $invTransaccion->signo,
+            'correlativo'          => $correlativo,
+            'anio'                 => $anio,
+            'bodega_origen_id'     => 1, // Podrías pasarlo por parámetro si cambia
+            'maestro_documento_id' => $maestroDocId,
+            'estado'               => 1,
+        ]);
+    }
 }

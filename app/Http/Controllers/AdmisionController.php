@@ -451,7 +451,7 @@ class AdmisionController extends Controller
                     $inv_transaccion = DB::table('inventario_transacciones as it')
                                        ->where('it.empresa_id', Auth::user()->empresa_id)
                                        ->where('it.tipo_transaccion', 'V')
-                                       ->where('it.estado', 'A')
+                                       ->where('it.estado', 1)
                                        ->first();
                     $correlativo = DB::table('maestro_movimientos as mm')
                                    ->where('mm.empresa_id', Auth::user()->empresa_id)

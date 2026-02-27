@@ -19,7 +19,7 @@ class PagoDetalle extends Model
 
     protected $table = 'pago_detalles';
     
-    protected $fillable = ['forma_pago', 'banco_id', 'cuenta_no', 'documento_no', 'autoriza_no', 'monto', 'motivo_rechazo_id', 'rechazo_observaciones', 'estado'];
+    protected $fillable = ['pago_maestro_id', 'forma_pago', 'banco_id', 'cuenta_no', 'documento_no', 'autoriza_no', 'monto', 'motivo_rechazo_id', 'rechazo_observaciones', 'estado'];
     
     protected $hidden = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
 

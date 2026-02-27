@@ -22,4 +22,14 @@ class Producto extends Model
     protected $fillable = ['id', 'empresa_id', 'clasificacion', 'siglas', 'descripcion', 'descripcion_a_mostrar', 'medida_id', 'estado'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
+
+    public function getFactorConversion($medidaId)
+    {
+        $registro = self::where('producto_id', $productoId)
+                        ->where('unidad_medida_id', $medidaId)
+                        ->first();
+
+        // Si existe, devuelve la cantidad (factor), si no, devuelve 1 por defecto
+        return $registro ? $registro->cantidad : 1;
+    }
 }

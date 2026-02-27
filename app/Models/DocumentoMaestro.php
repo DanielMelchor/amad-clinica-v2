@@ -22,7 +22,7 @@ class DocumentoMaestro extends Model
 
     protected $table = 'documentoventa_maestros';
     
-    protected $fillable = ['id', 'empresa_id', 'caja_id', 'corte_id', 'tipodocumento_id', 'resolucion_id', 'fecha_emision', 'serie', 'correlativo', 'paciente_id', 'condicion', 'nit', 'nombre', 'direccion', 'tipodocumentoafecto_id', 'serie_afecta', 'correlativo_afecto', 'motivoanulacion_id', 'fecha_anulacion', 'estado'];
+    protected $fillable = ['id', 'empresa_id', 'caja_id', 'corte_id', 'tipodocumento_id', 'resolucion_id', 'fecha_emision', 'serie', 'correlativo', 'paciente_id', 'condicion', 'nit', 'nombre', 'direccion', 'tipodocumentoafecto_id', 'serie_afecta', 'correlativo_afecto', 'motivoanulacion_id', 'fecha_anulacion', 'estado', 'total'];
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 
@@ -42,7 +42,7 @@ class DocumentoMaestro extends Model
         );
     }
 
-    public function getTotalAttribute(){
+    public function getCalculoTotalAttribute(){
         return $this->DocumentoTotal(
             $this->tipodocumento_id,
             $this->serie,

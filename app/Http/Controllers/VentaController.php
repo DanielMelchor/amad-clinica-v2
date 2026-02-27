@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 use DB;
 use Auth;
@@ -21,6 +22,7 @@ use App\Models\CajaResolucion;
 use App\Models\DetalleMovimiento;
 use App\Models\DocumentoDetalle;
 use App\Models\DocumentoMaestro;
+use App\Models\Empresa;
 use App\Models\FormaPago;
 use App\Models\Inventario_Transaccion;
 use App\Models\MaestroMovimiento;
@@ -43,11 +45,6 @@ class VentaController extends Controller
     }
 
     public function index(){
-        $detalle = DB::table('documentoventa_detalles')
-                   ->groupBy('documentoventa_maestro_id')
-                   ->where('estado', 1)
-                   ->select('documentoventa_maestro_id', DB::raw('SUM(precio_neto) as total'));
-
         $nc = DB::table('documentoventa_maestros as dvm')
               ->join('documentoventa_detalles as dvd', 'dvm.id', '=', 'dvd.documentoventa_maestro_id')
               ->where('dvm.empresa_id', Auth::user()->empresa_id)
@@ -66,9 +63,6 @@ class VentaController extends Controller
         $listado = DB::table('documentoventa_maestros as dvm')
                    ->join('tipo_documentos as td', 'dvm.tipodocumento_id', '=', 'td.id')
                    ->join('cajas as c', 'dvm.caja_id', '=', 'c.id')
-                   ->JoinSub($detalle, 'det', function($join){
-                        $join->on('dvm.id', '=', 'det.documentoventa_maestro_id');
-                   })
                    ->leftJoinSub($nc, 'nc', function($join){
                         $join->on('dvm.tipodocumento_id', '=', 'nc.tipodocumentoafecto_id');
                         $join->on('dvm.serie', '=', 'nc.serie_afecta');
@@ -81,9 +75,9 @@ class VentaController extends Controller
                    ->where('dvm.empresa_id', Auth::user()->empresa_id)
                    ->whereIn('dvm.tipodocumento_id', [1,3])
                    ->groupBy('dvm.id', 'c.nombre_maquina', 'dvm.corte_id', 'td.descripcion', 'dvm.fecha_emision', 'dvm.serie', 'dvm.correlativo', 'dvm.paciente_id', 'dvm.nit', 'dvm.nombre', 'p.nombre_completo', 'nc.total_nc')
-                   ->select('dvm.id', 'c.nombre_maquina', 'dvm.corte_id', 'td.descripcion', 'dvm.fecha_emision', 'dvm.serie', 'dvm.correlativo', 'dvm.paciente_id', 'dvm.nit', 'dvm.nombre', 'p.nombre_completo as paciente_nombre', 'det.total', 'nc.total_nc', 'pago.total_pagado',
+                   ->select('dvm.id', 'c.nombre_maquina', 'dvm.corte_id', 'td.descripcion', 'dvm.fecha_emision', 'dvm.serie', 'dvm.correlativo', 'dvm.paciente_id', 'dvm.nit', 'dvm.nombre', 'p.nombre_completo as paciente_nombre', 'dvm.total', 'nc.total_nc', 'pago.total_pagado',
                             DB::raw("CASE WHEN dvm.condicion = 0 THEN 'Contado' ELSE 'Credito' END as condicion"),  
-                            DB::raw('det.total - IFNULL(nc.total_nc, 0) - IFNULL(pago.total_pagado, 0) as saldo'),
+                            DB::raw('dvm.total - IFNULL(nc.total_nc, 0) - IFNULL(pago.total_pagado, 0) as saldo'),
                             DB::raw('CASE WHEN dvm.estado = 1 THEN "Vigente" ELSE "Anulado" END as estado'))
                    ->get();
         
@@ -122,30 +116,14 @@ class VentaController extends Controller
     }
 
     public function factura_create(string $parametro_admision){
-        // dd($parametro_admision);
-        // $admision_id = Crypt::decrypt($parametro_admision_id);
-        // $paciente_id = Crypt::decrypt($paciente_id);
-        // $origen      = Crypt::decrypt($origen);
-        // $tipo_facturacion = Crypt::decrypt($tipo_facturacion);
         $hoy         = Carbon::now()->format('Y-m-d');
         $documento   = TipoDocumento::where('tipo_interno', 'VT')->where('estado', 1)->get();
-        $productos   = Producto::where('estado', '1')->get();
         $pacientes   = Paciente::all();
         $caja        = Caja::where('id', Auth::user()->caja_id)->first();
-        $formas_pago = FormaPago::where('estado', 'A')->get();
-        $bancos      = Banco::where('tipo_referencia', 'B')->where('estado', 'A')->get();
-        $tarjetas    = Banco::where('tipo_referencia', 'T')->where('estado', 'A')->get();
-        $productos   = Producto::where('empresa_id', Auth::user()->empresa_id)
-                       ->where('estado', '1')->get();
-
-        // if ($admision_id != 0) {
-        //     $admision = Admision::where('id', $admision_id)->select('admision', 'aseguradora_id')->first();
-        //     $no_admision    = $admision->admision;
-        //     $aseguradora_id = $admision->aseguradora_id;
-        // }else{
-        //     $no_admision    = 0;
-        //     $aseguradora_id = 0;
-        // }
+        $formas_pago = FormaPago::where('estado', 1)->get();
+        $bancos      = Banco::where('tipo_referencia', 'B')->where('estado', 1)->get();
+        $tarjetas    = Banco::where('tipo_referencia', 'T')->where('estado', 1)->get();
+        $productos   = Producto::where('empresa_id', Auth::user()->empresa_id)->where('estado', 1)->get();
 
         $no_admision    = 0;
         $aseguradora_id = 0;
@@ -221,308 +199,206 @@ class VentaController extends Controller
     }
 
     public function factura_store(Request $request){
-        // dd($request->all());
-        $validData = $request->validate([
-            'caja_id'           => 'required',
-            'resolucion_id'     => 'required',
-            'tipo_documento_id' => 'required',
-            'condicion'         => 'required',
-            'fecha_emision'     => 'required',
-            'serie'             => 'required',
-            'correlativo'       => 'required',
-            'nit'               => 'required',
-            'nombre'            => 'required',
-            'direccion'         => 'required'
-        ]);
+        // 1. Definir Mensajes
+        $messages = [
+            'required'                 => 'El campo :attribute es obligatorio.',
+            'tipo_documento_id.exists' => 'El tipo de documento seleccionado no es válido o está inactivo.',
+            'caja_id.unique'           => 'Este documento (Serie y Correlativo) ya fue registrado previamente.',
+            'cargos.required'          => 'Debe agregar productos a la factura.',
+            'cargos.array'             => 'La estructura de los cargos es inválida.',
+            'cargos.min'               => 'Debe agregar al menos un detalle de cargo.',
+            'cargos.*.producto_id.required' => 'Cada cargo debe tener un producto.',
+            'cargos.*.producto_id.exists'   => 'Un producto seleccionado no es válido.',
+            'cargos.*.precio.required' => 'El precio es obligatorio en todos los cargos.',
+            'mpago.min'                => 'Debe registrar al menos una forma de pago.',
+            'mpago.*.fpago_id.exists'  => 'La forma de pago seleccionada no es válida.',
+            'mpago.required_if'        => 'Debe registrar al menos un medio de pago para ventas al contado.',
+            'mpago.*.fpago_id.required_with' => 'El campo forma de pago es obligatorio.'
+        ];
 
-        // dd($request);
+        // 2. Definir Reglas en una variable
+        $rules = [
+            'caja_id' => [
+                'required',
+                Rule::unique('documentoventa_maestros')->where(function ($query) use ($request) {
+                    return $query->where('tipodocumento_id', $request->tipo_documento_id)
+                                 ->where('serie', $request->serie)
+                                 ->where('correlativo', $request->correlativo);
+                }),
+            ],
+            'resolucion_id'     => 'required',
+            'tipo_documento_id' => [
+                'required',
+                Rule::exists('tipo_documentos', 'id')->where(fn($q) => $q->where('estado', 1)),
+            ],
+            'condicion'            => 'required',
+            'mpago'                => 'required_if:condicion,0|array', // Se quitó min:1 temporalmente para evitar choques con el IF
+            'mpago.*.fpago_id'     => 'required_with:mpago|exists:formas_pago,id',
+            'mpago.*.monto'        => 'required_with:mpago|numeric|min:0.01',
+            'fecha_emision'        => 'required',
+            'serie'                => 'required',
+            'correlativo'          => 'required',
+            'nit'                  => 'required',
+            'nombre'               => 'required',
+            'direccion'            => 'required',
+            'cargos'               => 'required|array|min:1',
+            'cargos.*.producto_id' => 'required|exists:productos,id',
+            'cargos.*.precio'      => 'required|numeric', // En tu form frontend el name es "precio", verifica esto.
+            'cargos.*.descripcion' => 'required|string'
+        ];
+
+        // 3. Ejecutar validación (Si falla, Laravel regresa automáticamente atrás con la variable $errors)
+        $validData = $request->validate($rules, $messages);
+
         $hoy = Carbon::now()->format('Y-m-d');
         $empresaId = Auth::user()->empresa_id;
-        $totalDocumento = 0;
-        //==============================================================================
-        //verifica que exista el tipo de documento
-        //==============================================================================
-        $tipo_documento = TipoDocumento::where('id',$validData['tipo_documento_id'])->first();
-        if (!$tipo_documento) {
-            // Si es una petición AJAX (JSON)
-            if ($request->ajax()) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => '¡Tipo de Documento no permitido o no encontrado!'
-                ], 422);
-            }
+        $anio = Carbon::now()->format('Y');
 
-            // Si es un formulario normal (Redirect con SweetAlert/AdminLTE)
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Tipo de Documento no permitido');
-        }
-
-        //==============================================================================
-        //verifica si la factura ya existe grabada
-        //==============================================================================
-        // 2. Validar si ya existe el documento (Combinación Única)
-        $existeDocumento = DocumentoMaestro::where('tipodocumento_id', $request['tipo_documento_id'])
-                                           ->where('serie', $request['serie'])
-                                           ->where('correlativo', $request['correlativo'])
-                                           ->exists();
-
-        if ($existeDocumento) {
-            // Si es AJAX devolvemos JSON, si no, Redirect Back
-            if ($request->ajax()) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => "El documento con Serie {$request->serie} y Correlativo {$request->correlativo} ya fue registrado anteriormente."
-                ], 422);
-            }
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "¡Ya existe el documento! Serie: {$request->serie}, Correlativo: {$request->correlativo}.");
-        }
-
-        //==============================================================================
-        //verifica que se haya recibido detalle para factura
-        //==============================================================================
-        if (!isset($request->cargos)) {
-            // Si es AJAX devolvemos JSON, si no, Redirect Back
-            if ($request->ajax()) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => "! Documento no contiene cargos a Facturar !"
-                ], 422);
-            }
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "¡ Documento no contiene cargos a Facturar !");
-        }
-
-        //==============================================================================
-        //si la factura es de contado verifica que se haya ingresado medio de pago
-        //==============================================================================
-        if ($request->condicion == 0 && !isset($request->mpago)) {
-            // Si es AJAX devolvemos JSON, si no, Redirect Back
-            if ($request->ajax()) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => "! Documento no contiene medio de pago !"
-                ], 422);
-            }
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "¡ Documento no contiene medio de pago !");
-        }
-
+        // 4. Validar Inventario
         $inv_transaccion = DB::table('tipo_documentos as td')
                            ->join('inventario_transacciones as it', 'td.inventario_transaccion_id', 'it.id')
-                           ->where('td.id', $request['tipo_documento_id'])
-                           ->where('it.empresa_id', Auth::user()->empresa_id)
-                           ->where('it.estado', 'A')
+                           ->where('td.id', $request->tipo_documento_id)
+                           ->where('it.empresa_id', $empresaId)
+                           ->where('it.estado', 1)
                            ->select('it.id', 'it.signo')
                            ->first();
 
-        if (!isset($inv_transaccion)) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => "! Documento no tiene asociado movimiento en inventarios !"
-                ], 422);
-            }
-
+        if (!$inv_transaccion) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', "¡ Documento no tiene asociado movimiento en inventarios !");
+                ->with(['message' => '¡ Documento no tiene asociado movimiento en inventarios !', 'type' => 'error']);
         }
 
-        $anio = Carbon::now()->format('Y');
-        $correlativo = DB::table('maestro_movimientos as mm')
-                       ->where('mm.empresa_id', Auth::user()->empresa_id)
-                       ->where('mm.inventario_transaccion_id', $inv_transaccion->id)
-                       ->where('mm.anio', $anio)
-                       ->select(DB::raw('IFNULL(MAX(correlativo),0) as ultimo_correlativo'))
-                       ->first();
-
-        if (!isset($correlativo)) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => "! Documento sin correlativo definido !"
-                ], 422);
-            }
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "¡ Documento sin correlativo definido !");
-        }else{
-            $nuevo_correlativo = $correlativo->ultimo_correlativo + 1;
-        }
-
+        // 5. Transacción de Base de Datos
         try {
-            //==============================================================================
-            //Graba encabezado de documento de Venta
-            //==============================================================================
-            $maestro                   = new DocumentoMaestro();
-            $maestro->empresa_id       = Auth::user()->empresa_id;
-            $maestro->caja_id          = Auth::user()->caja_id;
-            $maestro->tipodocumento_id = $validData['tipo_documento_id'];
-            $maestro->resolucion_id    = $validData['resolucion_id'];
-            $maestro->fecha_emision    = $validData['fecha_emision'];
-            $maestro->serie            = $validData['serie'];
-            $maestro->correlativo      = $validData['correlativo'];
-            if (strlen($request->paciente_id) > 0) {
-                $maestro->paciente_id      = intval($request->paciente_id);
-            }
-            $maestro->condicion        = $validData['condicion'];
-            $maestro->nit              = $validData['nit'];
-            $maestro->nombre           = $validData['nombre'];
-            $maestro->direccion        = $validData['direccion'];
-            $maestro->email            = $request->email;
-            $maestro->estado           = 1;
-            $maestro->save();
+            // DB::transaction maneja el begin, commit y rollback automáticamente
+            DB::transaction(function () use ($request, $inv_transaccion, $anio, $empresaId) {
+                $totalDocumento = 0;
+                $porcentajeImpuesto = Empresa::obtenerImpuesto($empresaId);
+                $ultimo = DB::table('maestro_movimientos')
+                    ->where('empresa_id', $empresaId)
+                    ->where('inventario_transaccion_id', $inv_transaccion->id)
+                    ->where('anio', $anio)
+                    ->lockForUpdate()
+                    ->max('correlativo');
 
-            
-            if (($request['admision_id'] ?? 0) == 0) {
-                $encabezado = new MaestroMovimiento();
-                $encabezado->empresa_id                = Auth::user()->empresa_id;
-                $encabezado->inventario_transaccion_id = $inv_transaccion->id;            
-            }else{
-                $maestroMovimientoId = DetalleMovimiento::where('admision_id', $request['admision_id'])
-                                       ->select('maestro_movimiento_id')
-                                       ->first();
-                                       
-                $encabezado = MaestroMovimiento::findOrFail($maestroMovimientoId->maestro_movimiento_id);
-            }
+                // dd($ultimo); <--- ESTO MATABA EL CÓDIGO. ELIMINADO.
+                $nuevoCorrelativo = ($ultimo ?? 0) + 1;
 
-            $encabezado->signo                     = $inv_transaccion->signo;
-            $encabezado->correlativo               = $nuevo_correlativo;
-            $encabezado->anio                      = $anio;
-            $encabezado->bodega_origen_id          = 1;
-            $encabezado->maestro_documento_id      = $maestro->id;
-            $encabezado->estado                    = 1;
-            $encabezado->save();
-            foreach ($request->cargos as $key => $cargo) {
-                // dd($cargo);
-                $producto = Producto::findOrFail($cargo['producto_id']);
+                $maestroVenta = new DocumentoMaestro(); 
+                $maestroVenta->fill($request->all());
 
-                if ($producto->clasificacion == 'PROD') {
-                    $medida = ProductoMedida::where('producto_id',$cargo['producto_id'])
-                                            ->where('unidad_medida_id', $cargo['medida_id'])
-                                            ->first();
+                $maestroVenta->empresa_id = $empresaId;
+                $maestroVenta->tipodocumento_id = $request->tipo_documento_id;
+                $maestroVenta->estado = 1; 
 
-                    $vCantidadMedida = $medida_cantidad;
-                }else{
-                    $vCantidadMedida = 1;
-                }
-                if (isset($cargo['movimiento_id'])) {
-                    $registroDM = DetalleMovimiento::where('id', $cargo['movimiento_id'])->first();
-                }else{
-                    $registroDM = new DetalleMovimiento();
-                    $registroDM->maestro_movimiento_id = $encabezado->id;
-                }
-                $registroDM->maestro_documento_id      = $maestro->id;                
-                $registroDM->producto_id               = $producto->id;
-                $registroDM->descripcion               = $producto->descripcion;
-                $registroDM->unidad_medida_id          = $cargo['medida_id'];
-                $registroDM->cantidad                  = $cargo['cantidad'];
-                $registroDM->cantidad_medida           = $vCantidadMedida;
-                $registroDM->cantidad_x_medida         = $cargo['cantidad'] * $vCantidadMedida;
-                $registroDM->precio_unitario           = $cargo['precio'];
-                $registroDM->precio_bruto              = $cargo['total'];
-                $registroDM->descuento                 = 0;
-                $registroDM->recargo                   = 0;
-                $registroDM->precio_neto               = $registroDM->precio_bruto + $registroDM->cargo - $registroDM->descuento;
-                $registroDM->precio_base               = $registroDM->precio_neto / 1.12;
-                $registroDM->precio_impuesto           = $registroDM->precio_neto - ($registroDM->precio_neto / 1.12);
-                $registroDM->precio_total              = $cargo['total'];
-                $registroDM->copago                    = 0;
-                $registroDM->deducible                 = 0;
-                $registroDM->precio_cliente            = 0;
-                $registroDM->precio_aseguradora        = 0;
-                $registroDM->estado                    = 1;
-                $registroDM->save();
+                $maestroVenta->serie            = $request->serie;
+                $maestroVenta->correlativo      = $request->correlativo;
 
-                
-                //==============================================================================
-                //Graba detalle de documento de Venta
-                //==============================================================================
-                $registroVD = new DocumentoDetalle();
-                $registroVD->documentoventa_maestro_id = $maestro->id;
-                $registroVD->detalle_movimiento_id     = $registroDM->id;
-                $registroVD->tipo_facturacion          = 'N';
-                $registroVD->cantidad                  = $registroDM->cantidad;
-                $registroVD->cantidad_medida           = $registroDM->cantidad_medida;
-                $registroVD->cantidad_x_medida         = $registroDM->cantidad_x_medida;
-                $registroVD->precio_unitario           = $registroDM->precio_unitario;
-                $registroVD->precio_bruto              = $registroDM->precio_unitario * $registroDM->cantidad_x_medida;
-                $registroVD->descuento                 = $registroDM->descuento;
-                $registroVD->recargo                   = $registroDM->recargo;
-                $registroVD->precio_neto               = $registroDM->precio_bruto + $registroDM->recargo - $registroDM->descuento;
-                $registroVD->precio_base               = $registroVD->precio_neto / 1.12;
-                $registroVD->precio_impuesto           = $registroVD->precio_neto - ($registroVD->precio_neto / 1.12);
-                $registroVD->estado                    = 1;
-                $registroVD->save();
+                $maestroVenta->save();
 
-                $totalDocumento += $registroVD->precio_neto;
+                $encabezadoInv = MaestroMovimiento::obtenerOInstanciar($request->admision_id, $inv_transaccion->id);
+                $encabezadoInv->cargarDatosTransaccion($inv_transaccion, $nuevoCorrelativo, $anio, $maestroVenta->id);
+                $encabezadoInv->save();
 
-            }
+                // Aquí procesas tus $request->cargos ...
+                foreach ($request->cargos as $detalle) {
+                    $factor = ProductoMedida::obtenerFactor(
+                        $detalle['producto_id'], 
+                        $detalle['medida_id']
+                    );
 
-            if (isset($request->mpago)) {
-                $registroPago = new PagoMaestro();
-                $registroPago->empresa_id = $empresaId;
-                $registroPago->caja_id = $validData['caja_id'];
-                $registroPago->tipo_documento_id = $validData['tipo_documento_id'];
-                $registroPago->resolucion_id = $validData['resolucion_id'];
-                $registroPago->fecha_emision = $validData['fecha_emision'];
-                $registroPago->serie         = $validData['serie'];
-                $registroPago->correlativo   = $validData['correlativo'];
-                $registroPago->estado        = 1;
-                $registroPago->save();
+                    // 1. Crear el detalle de la venta
+                    $nuevoDetalle = new DocumentoDetalle(); // Ajusta al nombre real de tu modelo
+                    $nuevoDetalle->documentoventa_maestro_id = $maestroVenta->id;
+                    $nuevoDetalle->detalle_movimiento_id = $detalle['movimiento_id'];
+                    $nuevoDetalle->tipo_facturacion      = 'X';
+                    $nuevoDetalle->cantidad              = $detalle['cantidad'];
+                    $nuevoDetalle->cantidad_medida       = $factor;
+                    $nuevoDetalle->cantidad_x_medida     = $detalle['cantidad'] * $factor;
+                    $nuevoDetalle->precio_unitario       = $detalle['precio'];
+                    $nuevoDetalle->precio_bruto          = $detalle['precio'];
+                    $nuevoDetalle->descuento             = 0;
+                    $nuevoDetalle->recargo               = 0;
+                    $nuevoDetalle->precio_neto           = $detalle['precio'];
+                    $nuevoDetalle->precio_base           = $nuevoDetalle->precio_neto / $porcentajeImpuesto;
+                    $nuevoDetalle->precio_impuesto       = $nuevoDetalle->precio_neto - $nuevoDetalle->precio_base;
+                    $nuevoDetalle->estado                = 1;
+                    $nuevoDetalle->save();
 
-                foreach ($request->mpago as $key => $pago) {
-                    $registroPagoDetalle = new PagoDetalle();
-                    $registroPagoDetalle->pago_maestro_id = $registroPago->id;
-                    $registroPagoDetalle->forma_pago      = $pago['fpago_id'];
-                    if (isset($pago['casa_id'])) {
-                        $registroPagoDetalle->banco_id        = $pago['casa_id'];
-                    }
-                    if (isset($pago['cuenta_no'])) {
-                        $registroPagoDetalle->cuenta_no       = $pago['cuenta_no'];
-                    }
-                    
-                    if (isset($pago['documento_no'])) {
-                        $registroPagoDetalle->documento_no    = $pago['documento_no'];
-                    }
-                    
-                    if (isset($pago['autoriza_no'])) {
-                        $registroPagoDetalle->autoriza_no     = $pago['autoriza_no'];
-                    }
-                    
-                    $registroPagoDetalle->monto           = $pago['monto'];
-                    $registroPagoDetalle->estado          = 1;
-                    $registroPagoDetalle->save();
+                    $totalDocumento += $nuevoDetalle->precio_neto;
+
+                    // 2. Aquí podrías rebajar el inventario usando $encabezadoInv->id
+                    // que ya tenías instanciado más arriba.
                 }
 
-                $registroPagoDocumento = new PagoDocumento();
-                $registroPagoDocumento->pago_maestro_id   = $registroPago->id;
-                $registroPagoDocumento->documentoventa_id = $maestro->id;
-                $registroPagoDocumento->saldo_pendiente   = $totalDocumento;
-                $registroPagoDocumento->monto_aplicado    = $totalDocumento;
-                $registroPagoDocumento->estado            = 1;
-                $registroPagoDocumento->save();
-            }
+                // Actualizas el total...
+                $maestroVenta->update(['total' => $totalDocumento]);
 
-            return DB::transaction(function () use ($request) {
-                
-                return response()->json(['message' => 'Guardado con éxito'], 201);
+                if (isset($request->mpago)) {
+                    $totalPago = 0;
+                    $recibo = TipoDocumento::where('tipo_interno', 'RP')->where('estado', 1)->first();
+                    $resolucion = CajaResolucion::where('caja_id', $request->caja_id)
+                                                 ->where('tipo_documento_id', $recibo->id)
+                                                 ->where('estado', 1)
+                                                 ->lockForUpdate()
+                                                 ->select('ultimo_correlativo')
+                                                 ->first();
+
+                    return back()->withInput()->with([
+                        'message' => 'Error al guardar: Caja no cuenta con una resolucion Aciva para emitir recibos',
+                        'type'    => 'error'
+                    ]);
+                    
+                    // dd($ultimo); <--- ESTO MATABA EL CÓDIGO. ELIMINADO.
+                    $nuevoCorrelativo = ($resolucion->ultimo_correlativo ?? 0) + 1;
+                    
+                    $maestroPago = new PagoMaestro();
+                    $maestroPago->empresa_id = $empresaId;
+                    $maestroPago->caja_id    = $request->caja_id;
+                    $maestroPago->tipo_documento_id = $recibo->id;
+                    $maestroPago->resolucion_id     = $request->resolucion_id;
+                    $maestroPago->fecha_emision     = $request->fecha_emision;
+                    $maestroPago->serie             = $resolucion->serie;
+                    $maestroPago->correlativo       = $nuevoCorrelativo;
+                    $maestroPago->estado            = 1;
+                    $maestroPago->save();
+
+                }
+                foreach($request->mpago as $pago){
+                    $detallePago = new PagoDetalle();
+                    $detallePago->pago_maestro_id = $maestroPago->id;
+                    $detallePago->forma_pago      = $pago->fpago_id;
+                    $detallePago->banco_id        = $pago->banco_id;
+                    $detallePago->cuenta_no       = $pago->cuenta_no;
+                    $detallePago->documento_no    = $pago->documento_no;
+                    $detallePago->autoriza_no     = $pago->autoriza_no;
+                    $detallePago->monto           = $pago->monto;
+                    $detallePago->save();
+                    $totalPago += $detallePago->monto;
+                }
+
+                $documentoPagado = new PagoDocumento();
+                $documentoPagado->pago_maestro_id   = $maestroPago->id;
+                $documentoPagado->documentoventa_id = $maestroVenta->id;
+                $documentoPagado->saldo_pendiente   = 0;
+                $documentoPagado->monto_aplicado    = $totalPago;
+                $documentoPagado->save();
+
             });
+
+            // 6. Si todo sale bien, retornamos una redirección con mensaje (No JSON)
+            return redirect()->route('documentos_listado')->with([
+                'message' => 'Guardado con éxito. Correlativo generado.',
+                'type'    => 'success'
+            ]);
+
         } catch (\Exception $e) {
-            // Si llegamos aquí, MySQL no guardó NADA
-            return response()->json([
-                'error' => 'Error al procesar la grabación',
-                'detalle' => $e->getMessage()
-            ], 500);
+            // Si hay error, regresamos atrás con el mensaje de error de SQL/PHP
+            return back()->withInput()->with([
+                'message' => 'Error al guardar: ' . $e->getMessage(),
+                'type'    => 'error'
+            ]);
         }
     }
 

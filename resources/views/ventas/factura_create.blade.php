@@ -1,8 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
     <style type="text/css">
         .nav-pills .nav-link.active,
         .show>.nav-pills .nav-link{
@@ -310,44 +308,17 @@
     </form>
 @endsection
 @section('js')
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "¡Trabajo Finalizado!",
-                        text: "{!! Session::get('message') !!}",
-                        icon: "success", // Cambiado de 'type' a 'icon'
-                        confirmButtonText: "Aceptar",
-                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
-                        customClass: {
-                            confirmButton: 'btn btn-success'
-                        },
-                        buttonsStyling: false
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "¡Trabajo Finalizado!",
-                        text: "{!! Session::get('message') !!}",
-                        icon: "error", // Cambiado de 'type' a 'icon'
-                        confirmButtonText: "Aceptar",
-                        confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
-                        customClass: {
-                            confirmButton: 'btn btn-danger'
-                        },
-                        buttonsStyling: false
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
+    <script>
+        $(document).ready(function() {
+            @if(session('message'))
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Éxito!' : 'Error' }}",
+                    text: "{!! addslashes(session('message')) !!}",
+                    icon: "{{ session('type') }}"
+                });
+            @endif
+        });
+    </script>
     <script type="text/javascript">
         var nLinea      = 0;
         var nLineap     = 0;
@@ -432,8 +403,8 @@
             html += '</select>';
             html += '</td>';
             html += '<td width="75px">';
-            html += '<input type="number" step="1" min="1" class="form-control classnumero numero" id="cargos['+nLinea+'][cantidad]" name="cargos['+nLinea+'][cantidad]" value="1" onchange="fnCalculo('+nLinea+');" />';
-            html += '</td">';
+            html += '<input type="number" id="cargos['+nLinea+'][cantidad]" name="cargos['+nLinea+'][cantidad]" class="form-control numero" value="1" onchange="fnCalculo('+nLinea+');" />';
+            html += '</td>';
             html += '<td width="125px">';
             html += '<input type="number" step="any" min="1" class="form-control classprecio numero" id="cargos['+nLinea+'][precio]" name="cargos['+nLinea+'][precio]" onchange="fnCalculo('+nLinea+');" />';
             html += '</td">';
@@ -466,18 +437,18 @@
             html += '</select>';
             html += '</td>';
             html += '<td width="125px">';
-            html += '<select id="mpago['+nLineap+'][casa_id]" name="mpago['+nLineap+'][casa_id]" class="form-control" data-required="true" disabled>';
+            html += '<select id="mpago['+nLineap+'][casa_id]" name="mpago['+nLineap+'][casa_id]" class="form-control" data-required="true" readonly>';
             html += '<option value="">Seleccionar...</option>';
             html += '</select>';
             html += '</td>';
             html += '<td width="75px">';
-            html += '<input type="number" step="1" min="1" class="form-control classnumero numero" id="mpago['+nLineap+'][cuenta_no]" name="mpago['+nLineap+'][cuenta_no]" value="1" onchange="fnCalculo('+nLineap+');" disabled/>';
+            html += '<input type="number" step="1" min="1" class="form-control classnumero numero" id="mpago['+nLineap+'][cuenta_no]" name="mpago['+nLineap+'][cuenta_no]" value="1" onchange="fnCalculo('+nLineap+');" readonly/>';
             html += '</td">';
             html += '<td width="125px">';
-            html += '<input type="number" step="any" min="1" class="form-control classprecio numero" id="mpago['+nLineap+'][documento_no]" name="mpago['+nLineap+'][documento_no]" disabled/>';
+            html += '<input type="number" step="any" min="1" class="form-control classprecio numero" id="mpago['+nLineap+'][documento_no]" name="mpago['+nLineap+'][documento_no]" readonly/>';
             html += '</td">';
             html += '<td width="125px">';
-            html += '<input type="number" step="any" min="1" class="form-control classprecio numero" id="mpago['+nLineap+'][autoriza_no]" name="mpago['+nLineap+'][autoriza_no]" disabled/>';
+            html += '<input type="number" step="any" min="1" class="form-control classprecio numero" id="mpago['+nLineap+'][autoriza_no]" name="mpago['+nLineap+'][autoriza_no]" readonly/>';
             html += '</td">';
             html += '<td width="125px">';
             html += '<input type="number" step="any" min="1" class="form-control classtotal numero" id="mpago['+nLineap+'][monto]" name="mpago['+nLineap+'][monto]"/>';
@@ -486,7 +457,7 @@
             html += '</tr>';
             $('#tblPagos tbody').append(html);
             $('.eliminar').on('click',eliminar);
-            nLinea += 1;
+            nLineap += 1;
         }
 
         function habilitarRegistro(nLineap) {
@@ -500,9 +471,9 @@
 
             // 2. Si no hay selección, deshabilitar y limpiar
             if (valorSeleccionado === "") {
-                casaSelect.prop('disabled', true).html('<option value="">Seleccionar...</option>');
+                casaSelect.prop('readonly', true).html('<option value="">Seleccionar...</option>');
                 // Deshabilitar los demás inputs de la fila
-                $('[id^="mpago[' + nLineap + ']"]').not(fPagoSelect).prop('disabled', true);
+                $('[id^="mpago[' + nLineap + ']"]').not(fPagoSelect).prop('readonly', true);
                 return;
             }
 
@@ -524,31 +495,31 @@
                         verBanco = response.banco;
                         if (response.banco == 'S') {
                             $('[id="mpago[' + nLineap + '][casa_id]"]').prop('required', true);
-                            $('[id="mpago[' + nLineap + '][casa_id]"]').prop('disabled', false);
+                            $('[id="mpago[' + nLineap + '][casa_id]"]').prop('readonly', false);
                         }else{
                             $('[id="mpago[' + nLineap + '][casa_id]"]').prop('required', false);
-                            $('[id="mpago[' + nLineap + '][casa_id]"]').prop('disabled', true);
+                            $('[id="mpago[' + nLineap + '][casa_id]"]').prop('readonly', true);
                         }
                         if (response.cuenta == 'S') {
                             $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('required', true);
-                            $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('disabled', false);
+                            $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('readonly', false);
                         }else{
                             $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('required', false);
-                            $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('disabled', true);
+                            $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('readonly', true);
                         }
                         if (response.documento == 'S') {
                             $('[id="mpago[' + nLineap + '][documento_no]"]').prop('required', true);
-                            $('[id="mpago[' + nLineap + '][documento_no]"]').prop('disabled', false);
+                            $('[id="mpago[' + nLineap + '][documento_no]"]').prop('readonly', false);
                         }else{
                             $('[id="mpago[' + nLineap + '][documento_no]"]').prop('required', false);
-                            $('[id="mpago[' + nLineap + '][documento_no]"]').prop('disabled', true);
+                            $('[id="mpago[' + nLineap + '][documento_no]"]').prop('readonly', true);
                         }
                         if (response.autorizacion == 'S') {
                             $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('required', true);
-                            $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('disabled', false);
+                            $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('readonly', false);
                         }else{
                             $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('required', false);
-                            $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('disabled', true);
+                            $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('readonly', true);
                         }
 
                         $.ajax({
@@ -579,10 +550,10 @@
                 $('[id="mpago[' + nLineap + '][casa_id]"]').focus();
             } else {
                 // Si vuelve a seleccionar "Seleccionar...", los volvemos a deshabilitar
-                $('[id="mpago[' + nLineap + '][casa_id]"]').prop('disabled', true);
-                $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('disabled', true);
-                $('[id="mpago[' + nLineap + '][documento_no]"]').prop('disabled', true);
-                $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('disabled', true);
+                $('[id="mpago[' + nLineap + '][casa_id]"]').prop('readonly', true);
+                $('[id="mpago[' + nLineap + '][cuenta_no]"]').prop('readonly', true);
+                $('[id="mpago[' + nLineap + '][documento_no]"]').prop('readonly', true);
+                $('[id="mpago[' + nLineap + '][autoriza_no]"]').prop('readonly', true);
             }
         }
 
@@ -772,52 +743,6 @@
             }
 
             console.log("El ID de admisión es:", admisionNo);
-
-            form.addEventListener('submit', function (e) {
-                // Previene el envío automático
-                e.preventDefault();
-
-                const filasCargos = document.querySelectorAll('#tblCargos tbody tr');
-
-                if (filasCargos.length === 0) {
-                    setTimeout(function() {
-                        swal({
-                            title: "Error",
-                            text: "Debe agregar al menos un cargo antes de guardar la factura.",
-                            type: "error"
-                        });
-                    }, 1000);
-                    // alert('Debe agregar al menos un cargo antes de guardar la factura.');
-                    return;
-                }
-
-                const condicionSeleccionada = document.querySelector('input[name="condicion"]:checked').value;
-
-                if (condicionSeleccionada == 0) {
-                    const filasPagos = document.querySelectorAll('#tblPagos tbody tr');
-
-                    if (filasPagos.length === 0) {
-                        setTimeout(function() {
-                            Swal.fire({
-                                title: "¡Error!",
-                                text: "Pendiente definir medio de pago",
-                                icon: "error", // Cambiado de 'type' a 'icon'
-                                confirmButtonText: "Aceptar",
-                                confirmButtonColor: "#A5C890", // Combinando con tu estilo de botones
-                                customClass: {
-                                    confirmButton: 'btn btn-danger'
-                                },
-                                buttonsStyling: false
-                            });
-                        }, 1000);
-                        return;
-                    }
-                }
-
-
-                 // Si todo está bien, enviar el formulario
-                form.submit();
-            });
         });
 
         function fnAdmision(){
