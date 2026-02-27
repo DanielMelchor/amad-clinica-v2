@@ -1,8 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
         #tblprincipal td:nth-child(11), 
         #tblprincipal td:nth-child(12) {

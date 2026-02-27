@@ -365,30 +365,30 @@ class VentaController extends Controller
                     $maestroPago->estado            = 1;
                     $maestroPago->save();
 
-                }
-                foreach($request->mpago as $pago){
-                    $detallePago = new PagoDetalle();
-                    $detallePago->pago_maestro_id = $maestroPago->id;
-                    $detallePago->forma_pago      = $pago['fpago_id'];
-                    $detallePago->banco_id        = $pago['casa_id'];
-                    $detallePago->cuenta_no       = $pago['cuenta_no'];
-                    $detallePago->documento_no    = $pago['documento_no'];
-                    $detallePago->autoriza_no     = $pago['autoriza_no'];
-                    $detallePago->monto           = $pago['monto'];
-                    $detallePago->estado          = 1;
-                    $detallePago->save();
-                    $totalPago += $detallePago->monto;
+                    foreach($request->mpago as $pago){
+                        $detallePago = new PagoDetalle();
+                        $detallePago->pago_maestro_id = $maestroPago->id;
+                        $detallePago->forma_pago      = $pago['fpago_id'];
+                        $detallePago->banco_id        = $pago['casa_id'];
+                        $detallePago->cuenta_no       = $pago['cuenta_no'];
+                        $detallePago->documento_no    = $pago['documento_no'];
+                        $detallePago->autoriza_no     = $pago['autoriza_no'];
+                        $detallePago->monto           = $pago['monto'];
+                        $detallePago->estado          = 1;
+                        $detallePago->save();
+                        $totalPago += $detallePago->monto;
+
+                    }
+
+                    $documentoPagado = new PagoDocumento();
+                    $documentoPagado->pago_maestro_id   = $maestroPago->id;
+                    $documentoPagado->documentoventa_id = $maestroVenta->id;
+                    $documentoPagado->saldo_pendiente   = $totalDocumento;
+                    $documentoPagado->monto_aplicado    = $totalPago;
+                    $documentoPagado->estado            = 1;
+                    $documentoPagado->save();
 
                 }
-
-                $documentoPagado = new PagoDocumento();
-                $documentoPagado->pago_maestro_id   = $maestroPago->id;
-                $documentoPagado->documentoventa_id = $maestroVenta->id;
-                $documentoPagado->saldo_pendiente   = $totalDocumento;
-                $documentoPagado->monto_aplicado    = $totalPago;
-                $documentoPagado->estado            = 1;
-                $documentoPagado->save();
-
             });
 
             // 6. Si todo sale bien, retornamos una redirección con mensaje (No JSON)
@@ -900,24 +900,45 @@ class VentaController extends Controller
         $serie       = strtoupper($_POST['serie']);
         $correlativo = $_POST['correlativo'];
 
-        $detalle = DB::table('documentoventa_detalles as dvd')
-                   ->groupBy('dvd.documentoventa_maestro_id')
-                   ->select('dvd.documentoventa_maestro_id', DB::raw('SUM(dvd.precio_neto) AS total'));
+        $listado = DocumentoMaestro::withSum(['pagosDocumento as total_pagado' => function($query) {
+                                        $query->where('estado', 1);
+                                    }], 'monto_aplicado')
+                                    ->when($paciente_id, function ($query, $paciente_id) {
+                                        return $query->where('paciente_id', $paciente_id);
+                                    })
+                                    ->when($serie, function ($query, $serie) {
+                                        return $query->where('serie', $serie);
+                                    })
+                                    ->when($correlativo, function ($query, $correlativo) {
+                                        return $query->where('correlativo', $correlativo);
+                                    })
+                                    ->where('empresa_id', auth()->user()->empresa_id)
+                                    ->select('id', 'nit', 'nombre', 'total', 'serie', 'correlativo', 'fecha_emision', 'estado') 
+                                    ->addSelect(['tipodocumento_descripcion' => TipoDocumento::select('descripcion')
+                                        ->whereColumn('id', 'documentoventa_maestros.tipodocumento_id')
+                                        ->limit(1)
+                                    ])
+                                    ->selectRaw('(total - IFNULL((SELECT SUM(monto_aplicado) FROM pago_documentos WHERE documentoventa_id = documentoventa_maestros.id AND estado = 1), 0)) as saldo_actual')
+                                    ->get();
 
-        $pago = DB::table('pago_documentos as pd')
-                ->where('pd.estado', 1)
-                ->groupBy('pd.documentoventa_id')
-                ->select('pd.documentoventa_id', DB::raw('SUM(IFNULL(monto_aplicado,0)) AS monto_aplicado'));
+        // $listado = DocumentoMaestro::withSum(['pagosDocumento as total_pagado' => function($query) {
+        //                 $query->where('estado', 1);
+        //             }], 'monto_aplicado') // <-- El segundo argumento de withSum es la columna
+        //            ->where('empresa_id', auth()->user()->empresa_id)
+        //            // ->when($paciente_id, function ($query, $paciente_id) {
+        //            //      return $query->where('paciente_id', $paciente_id);
+        //            // })
+        //            // Si usas select, DEBES incluir el ID y las columnas que necesitas.
+        //            // Nota: total_pagado se agrega automáticamente al resultado.
+        //            ->select('id', 'total', 'serie', 'correlativo', 'paciente_id') 
+        //            ->get();
 
-        $listado = DB::table('documentoventa_maestros as dvm')
+        /*$listado = DB::table('documentoventa_maestros as dvm')
                    ->join('tipo_documentos as td', 'dvm.tipodocumento_id', 'td.id')
-                   ->JoinSub($detalle, 'det', function($join){
-                        $join->on('dvm.id', '=', 'det.documentoventa_maestro_id');
-                    })
                    ->leftJoinSub($pago, 'pd', function($join){
                         $join->on('dvm.id', '=', 'pd.documentoventa_id');
                     })
-                   ->select('dvm.id', 'dvm.tipodocumento_id', 'td.descripcion', 'dvm.serie', 'dvm.correlativo', DB::raw('DATE_FORMAT(dvm.fecha_emision, "%Y-%m-%d") as fecha_emision'), 'dvm.nit', 'dvm.nombre', 'det.total', DB::raw('IFNULL(pd.monto_aplicado,0) as monto_aplicado'), DB::raw('det.total - IFNULL(pd.monto_aplicado,0)as saldo')
+                   ->select('dvm.id', 'dvm.tipodocumento_id', 'td.descripcion', 'dvm.serie', 'dvm.correlativo', DB::raw('DATE_FORMAT(dvm.fecha_emision, "%Y-%m-%d") as fecha_emision'), 'dvm.nit', 'dvm.nombre', 'dvm.total', DB::raw('IFNULL(pd.monto_aplicado,0) as monto_aplicado'), DB::raw('dvm.total - IFNULL(pd.monto_aplicado,0)as saldo')
                     )
                    ->where('dvm.empresa_id', Auth::user()->empresa_id)
                    ->when($paciente_id, function ($query, $paciente_id) {
@@ -930,8 +951,8 @@ class VentaController extends Controller
                         return $query->where('dvm.correlativo', $correlativo);
                     })
                    ->having('saldo', '!=', 0)
-                   ->get();
-            // dd($listado);
+                   ->get();*/
+
         return Response::json($listado);
         
     }

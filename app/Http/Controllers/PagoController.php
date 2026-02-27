@@ -29,60 +29,87 @@ class PagoController extends Controller
     }
 
     public function index(){
-        $listado = DB::table('pago_maestros as mp')
-                   ->join('tipo_documentos as td', 'mp.tipo_documento_id', 'td.id')
-                   ->leftjoin('pago_detalles as dp', 'mp.id', 'dp.pago_maestro_id')
-                   ->where('mp.empresa_id', Auth::user()->empresa_id)
-                   ->where('td.tipo_interno', 'RP')
-                   ->select('mp.id','mp.tipo_documento_id', 'td.descripcion as tipodocumento_descripcion','mp.fecha_emision', 'mp.serie', 'mp.correlativo','mp.estado', DB::raw('(CASE WHEN mp.estado = "1" THEN "Vigente" ELSE "Anulado" END) AS estado_descripcion'), DB::raw('SUM(dp.monto) as monto'))
-                   ->groupBy('mp.id','mp.tipo_documento_id', 'td.descripcion','mp.fecha_emision', 'mp.serie', 'mp.correlativo', 'mp.estado')
-                   ->get();
+        $listado = PagoMaestro::with(['tipoDocumento'])
+            ->withSum('detalles as monto', 'monto') // Laravel suma automáticamente sin groupBy manual
+            ->where('empresa_id', auth()->user()->empresa_id)
+            ->whereHas('tipoDocumento', function($q) {
+                $q->where('tipo_interno', 'RP');
+            })
+            ->get();
+
         return view('pagos.index', compact('listado'));
     }
 
-    public function create(){
-        $hoy       = Carbon::now()->format('Y-m-d');
-        $documento = TipoDocumento::where('tipo_interno', 'RP')->first();
-        $pacientes = Paciente::all();
-        $caja      = Caja::where('id', Auth::user()->caja_id)->first();
-        $bancos    = Banco::where('tipo_referencia', 'B')->where('estado', 'A')->get();
-        $tarjetas  = Banco::where('tipo_referencia', 'T')->where('estado', 'A')->get();
-        $formas_pago = FormaPago::where('estado', 'A')->get();
-
-        if (empty($caja)) {
-            $message = array(
-                'message' => 'Usuario no permitido para emitir Recibos !!!',
-                'type'    => 'error'
-            );
-
-            return redirect()->back()->with($message);
-            // return Redirect::back()->withErrors('Usuario no permitido para emitir Recibos');
-        } else{
-            $resolucion = CajaResolucion::where('caja_id', Auth::user()->caja_id)->where('tipo_documento_id', $documento->id)->where('estado', '1')->count();
-            if ($resolucion == 0) {
-                $message = array(
-                    'message' => 'Caja no cuenta con una resolucion Activa que permita emitir Recibos !!!',
-                    'type'    => 'error'
-                );
-
-                return redirect()->back()->with($message);
-                // return Redirect::back()->withErrors('Caja no cuenta con una resolucion Activa que permita emitir Recibos');
-            } else{
-                return view('pagos.create', compact('hoy', 'documento', 'pacientes', 'caja', 'bancos', 'tarjetas', 'formas_pago', 'resolucion'));
-            }
+    public function create()
+    {
+        $user = auth()->user();
+        
+        // 1. Cláusulas de Guarda (Validaciones previas)
+        $caja = Caja::find($user->caja_id);
+        if (!$caja) {
+            return redirect()->back()->with(['message' => 'Usuario no permitido para emitir Recibos !!!', 'type' => 'error']);
         }
+
+        $documento = TipoDocumento::where('tipo_interno', 'RP')->firstOrFail();
+        
+        $tieneResolucion = CajaResolucion::where('caja_id', $user->caja_id)
+            ->where('tipo_documento_id', $documento->id)
+            ->where('estado', 1)
+            ->exists(); // exists() es más rápido que count()
+
+        if (!$tieneResolucion) {
+            return redirect()->back()->with(['message' => 'Caja no cuenta con una resolución Activa !!!', 'type' => 'error']);
+        }
+
+        // 2. Carga de datos optimizada
+        $hoy         = now()->format('Y-m-d');
+        $pacientes   = Paciente::select('id', 'nombre_completo')->get(); // No traigas toda la tabla si solo usas ID y Nombre
+        $formas_pago  = FormaPago::where('estado', 1)->get();
+        
+        // Agrupamos la consulta de bancos y tarjetas para evitar redundancia
+        $entidades   = Banco::where('estado', 1)->get();
+        $bancos      = $entidades->where('tipo_referencia', 'B');
+        $tarjetas    = $entidades->where('tipo_referencia', 'T');
+
+        return view('pagos.create', compact(
+            'hoy', 'documento', 'pacientes', 'caja', 'bancos', 'tarjetas', 'formas_pago'
+        ));
     }
 
     public function recibo_store(Request $request){
-        $validData = $request->validate([
-            'tipo_documento_id' => 'required',
-            'resolucion_id'     => 'required',
-            'caja_id'           => 'required',
-            'fecha_emision'     => 'required',
-            'serie'             => 'required',
-            'correlativo'       => 'required'
-        ]);
 
+        $rules = [
+            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
+            'caja_id'           => 'required|exists:cajas,id',
+            'paciente_id'  => 'required_without:serie|nullable|exists:pacientes,id',
+            'serie'        => 'required_without:paciente_id|nullable|string',
+            'correlativo'  => 'required_without:paciente_id|nullable|numeric',
+            'fecha_emision'     => 'required|date',
+            // Validación de arreglos
+            'documentos'        => 'required|array|min:1',
+            'documentos.*.id'   => 'required|exists:documentoventa_maestros,id',
+            'mpago'             => 'required|array|min:1',
+            'mpago.*.fpago_id'  => 'required|exists:formas_pago,id',
+            'mpago.*.monto'     => 'required|numeric|min:0.01',
+        ];
+        
+        $messages = [
+            'tipo_documento_id.required' => 'El tipo de documento es obligatorio.',
+            'paciente_id.required_without' => 'Debe seleccionar un paciente o ingresar Serie/Correlativo.',
+            'serie.required_without'       => 'La serie es obligatoria si no se selecciona un paciente.',
+            'correlativo.required_without' => 'El correlativo es obligatorio si no se selecciona un paciente.',
+            'fecha_emision.date'         => 'La fecha de emisión no tiene un formato válido.',
+            'documentos.required'        => 'Debe seleccionar al menos un documento para pagar.',
+            'mpago.required'             => 'Debe agregar al menos una forma de pago.',
+            // Mensajes para los ítems del arreglo
+            'mpago.*.fpago_id.required'  => 'La forma de pago es obligatoria en cada registro.',
+            'mpago.*.monto.numeric'      => 'El monto del pago debe ser un número válido.',
+            'mpago.*.monto.min'          => 'El monto del pago debe ser mayor a cero.',
+        ];
+
+        // Ejecutar validación
+        $validData = $request->validate($rules, $messages);
+        dd('pase');
         $existe = PagoMaestro::where('empresa_id', Auth::user()->empresa_id)
                     ->where('tipo_documento_id', $validData['tipo_documento_id'])
                     ->where('serie', $validData['serie'])

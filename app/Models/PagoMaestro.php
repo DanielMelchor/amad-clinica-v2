@@ -23,12 +23,20 @@ class PagoMaestro extends Model
     
     protected $hidden = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
 
-
-    public function PagoDetalles(){
-        return $this->hasMany(PagoDetalle::class);
-    }
-
     public function PagoDocumentos(){
         return $this->hasMany(PagoDocumento::class);
+    }
+
+    public function detalles() {
+        return $this->hasMany(PagoDetalle::class, 'pago_maestro_id');
+    }
+
+    public function tipoDocumento() {
+        return $this->belongsTo(TipoDocumento::class, 'tipo_documento_id');
+    }
+
+    // Accessor para el estado
+    public function getEstadoDescripcionAttribute() {
+        return $this->estado == '1' ? 'Vigente' : 'Anulado';
     }
 }

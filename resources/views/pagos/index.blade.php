@@ -1,103 +1,158 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <style type="text/css">
+        /* Tabla de escritorio: Resaltar la columna 5 (Monto Aplicado) */
+        #tblprincipal td:nth-child(5) {
+            font-weight: bold;
+            color: #28a745; /* Verde para dinero */
+        }
+        /* Estilos para resaltar el monto en la vista móvil */
+        .mobile-monto {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 1.1rem;
+        }
+
         .numero{
             text-align: right;
         }
-
+        .moneda:after {
+            content: attr(data-numero);
+        }
     </style>
 @endsection
-@section('title', 'Facturas')
+@section('title', 'Comprobante de Pago')
 @section('content_header')
     <br>
 @endsection
 @section('content')
-    <div class="container-fluid">
-        <div class="card">
+    <div class="container-fluid px-0 px-md-2">
+        <div class="card shadow-sm">
             <div class="card-header" style="background-color: #E1E8ED;">
-                <div class="bg-default clearfix">
-                    <div class="row">
-                        <div class="col-lg-10 col-sm-10">
-                            <h6>Pago de Documentos</h6>
-                        </div>
-                        <div class="col-lg-2 col-sm-2" style="text-align: right;">
-                            <a href="{{ route('nuevo_recibo') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Nuevo Registro de Pago"><i class="fas fa-plus-circle"></i></a>
-                            <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir" onclick="confirma_salida(); return false;"><i class="fas fa-sign-out-alt"></i></a>
-                        </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Recibos</h6>
+                    <div>
+                        <a href="{{ route('nuevo_recibo') }}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" title="Grabar">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                        <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2 ml-1" title="Salir">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-lg-12 col-sm-12">
-                        <table id="tblprincipal" class="table table-sm table-striped table-hover" style="font-size: 12px;">
-                            <thead>
-                                <tr style="text-align: center;">
-                                    <th>Fecha</th>
-                                    <th>Serie</th>
-                                    <th>Correlativo</th>
-                                    <th>Beneficiario</th>
-                                    <th>Monto Aplicado</th>
-                                    <th>Estado</th>
-                                    <th></th>
+
+            <div class="card-body p-2 p-md-3">
+                
+                <div class="d-block d-md-none">
+                    @forelse($listado as $l)
+                        @php $Id = Crypt::encrypt($l->id); @endphp
+                        <div class="card mb-3 border shadow-sm">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">
+                                        <i class="far fa-calendar-alt"></i> {{ \Carbon\Carbon::parse($l->fecha_emision)->format('d/m/Y') }}
+                                    </span>
+                                    <span>
+                                        @if($l->estado == 1)
+                                            <span class="badge badge-success">Activo</span>
+                                        @else
+                                            <span class="badge badge-danger">Anulado</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                
+                                <h6 class="font-weight-bold mb-1">Doc: {{ $l->serie }} - {{ $l->correlativo }}</h6>
+                                <p class="mb-2 text-muted small">Beneficiario: <span class="font-italic">No especificado</span></p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                    <span class="mobile-monto">{{ $l->monto }}</span>
+                                    <a href="{{ route('editar_recibo', [$Id]) }}" class="btn btn-sm btn-warning rounded-circle elevation-2" title="Editar documento">
+                                        <i class="fas fa-edit text-dark"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center p-4 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            No hay facturas registradas.
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="d-none d-md-block table-responsive">
+                    <table id="tblprincipal" class="table table-sm table-striped table-hover w-100" style="font-size: 13px;">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 12%;">Fecha</th>
+                                <th style="width: 10%;">Serie</th>
+                                <th style="width: 12%;">Correlativo</th>
+                                <th style="width: 36%;">Beneficiario</th>
+                                <th style="width: 12%;">Monto Aplicado</th>
+                                <th style="width: 10%;">Estado</th>
+                                <th style="width: 8%;" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($listado as $l)
+                                <tr>
+                                    <td data-order="{{$l->fecha_emision}}">{{ \Carbon\Carbon::parse($l->fecha_emision)->format('d/m/Y') }}</td>
+                                    <td>{{ $l->serie }}</td>
+                                    <td class="numero">{{ $l->correlativo }}</td>
+                                    <td></td>
+                                    <td class="numero">{{ $l->monto }}</td>
+                                    <td>
+                                        @if($l->estado == 1)
+                                            <span class="badge badge-success">Activo</span>
+                                        @else
+                                            <span class="badge badge-danger">Anulado</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @php $Id= Crypt::encrypt($l->id); @endphp
+                                        <a href="{{ route('editar_recibo', [$Id]) }}" class="btn btn-xs btn-warning rounded-circle elevation-2 monto" title="Editar documento">
+                                            <i class="fas fa-edit text-dark"></i>
+                                        </a>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($listado as $l)
-                                    <tr style="text-align: center;">
-                                        <td data-order="{{$l->fecha_emision}}">{{ \Carbon\Carbon::parse($l->fecha_emision)->format('d/m/Y') }}</td>
-                                        <td>{{ $l->serie }}</td>
-                                        <td class="numero">{{ $l->correlativo }}</td>
-                                        <td></td>
-                                        <td class="numero">{{ $l->monto }}</td>
-                                        <td>{{ $l->estado_descripcion }}</td>
-                                        <td><a href="{{ route('editar_recibo', [$l->id,0]) }}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Documento"><i class="fas fa-edit"></i></a></td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+                
             </div>
         </div>
     </div>
 @endsection
 @section('js')
-    <script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
-    @if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                
-                setTimeout(function() {
-                    swal({
-                        title: "Trabajo Finalizado",
-                        text: "{!! Session::get('message') !!}",
-                        type: "success"
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    swal({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        type: "error"
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    <script type="text/javascript">
-         $(function () {
-            $('#tblprincipal').DataTable({
+    <script>
+        $(document).ready(function() {
+            @if(session('message'))
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Éxito!' : 'Error' }}",
+                    text: "{!! addslashes(session('message')) !!}",
+                    icon: "{{ session('type') }}"
+                });
+            @endif
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            @if(session('message'))
+                Swal.fire({
+                    title: "{{ session('type') == 'success' ? '¡Éxito!' : 'Error' }}",
+                    text: "{!! addslashes(session('message')) !!}",
+                    icon: "{{ session('type') }}",
+                    confirmButtonColor: '#3085d6'
+                });
+            @endif
+            
+            // Si usas DataTables, inicialízalo solo si estás en vista de escritorio
+            // para no afectar el rendimiento en móviles
+            if ($(window).width() >= 768) {
+                $('#tblprincipal').DataTable({
                 "scrollX": true,
                 "paging": true,
                 "lengthChange": true,
@@ -107,7 +162,7 @@
                 "autoWidth": false,
                 "pageLength": 25,  // Esto establece que por defecto se muestren 25 registros
                 "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],  // Esto establece las opciones en el dropdown
-                "order": [[0, 'desc'], [1, 'asc'], [2, 'asc']],
+                "order": [[3, 'desc'], [4, 'asc'], [5, 'desc']],
                 "language": {
                     "sProcessing": "Procesando...",
                     "sLengthMenu": "Mostrar _MENU_ registros",
@@ -125,15 +180,6 @@
                     }
                 },
                 "dom": '<"row"<"col-sm-4"l><"col-sm-4 text-center"B><"col-sm-4"f>>rtip', // Ajuste para disposición
-                columnDefs: [
-                    { width: "10%", targets: 0 }, // Columna 0 (primera columna)
-                    { width: "10%", targets: 1 }, // Columna 1
-                    { width: "10%", targets: 2 },  // Columna 2
-                    { width: "40%", targets: 3 },  // Columna 2
-                    { width: "20%", targets: 4 },
-                    { width: "10%", targets: 5 },  // Columna 5
-                ],
-                autoWidth: false,
                 "buttons": [
                     {
                         extend: 'excelHtml5',
@@ -142,77 +188,9 @@
                     }
                 ]
             });
+            }
         });
-        //=======================================================================
-        // Confirmar Salida de pantalla
-        //=======================================================================
-        function confirma_salida(){
-            swal({
-                title: 'Confirmación',
-                Swal.fire({
-
-                title: 'Confirmación',
-
-                text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
-
-text: "Confirmar salida: Se perderán las modificaciones no guardadas. ¿Desea continuar?",
-                icon: 'warning',
-
-                showCancelButton: true,
-
-                confirmButtonClass: 'btn-success',
-
-                cancelButtonClass: 'btn-danger',
-
-                confirmButtonText: 'Si',
-
-                cancelButtonText: 'No',
-
-                closeOnConfirm: false,
-
-                allowEscapeKey: true
-
-                },
-
-                function(isConfirm) {
-
-                    if (isConfirm) { 
-
-                        if (origen == 'P') {
-
-                            window.location.href = "{{ route('pacientes') }}";
-
-                        }
-
-                        if (origen == 'A') {
-
-                            window.location.href = "{{ route('nueva_agenda') }}";
-
-                        }
-
-                        // history.back();
-
-                        
-
-                    } 
-
-                }
-
-            );
-                showCancelButton: true,
-                confirmButtonClass: 'btn-success',
-                cancelButtonClass: 'btn-danger',
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No',
-                closeOnConfirm: false,
-                allowEscapeKey: true
-                },
-                function(isConfirm) {
-                    if (isConfirm) { 
-                        window.location.href = "{{ route('home') }}";
-                    } 
-                }
-            );
-        }
+    </script>
+    <script type="text/javascript">
     </script>
 @endsection

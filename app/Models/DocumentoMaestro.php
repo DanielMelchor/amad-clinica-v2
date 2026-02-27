@@ -30,16 +30,31 @@ class DocumentoMaestro extends Model
         return $this->hasMany('App\DocumentoDetalle', 'documentoventa_maestro_id');
     }
 
+    public function pagosDocumento()
+    {
+        return $this->hasMany(PagoDocumento::class, 'documentoventa_id', 'id');
+    }
+
     public function TipoDocumento(){
         return $this->belongsTo(TipoDocumento::class, 'foreign_key');
     }
 
-    public function getSaldoAttribute(){
-        return $this->DocumentoSaldo(
-            $this->tipodocumento_id,
-            $this->serie,
-            $this->correlativo
-        );
+    // public function getSaldoAttribute(){
+    //     return $this->DocumentoSaldo(
+    //         $this->tipodocumento_id,
+    //         $this->serie,
+    //         $this->correlativo
+    //     );
+    // }
+    public function getSaldoActualAttribute()
+    {
+        // Sumamos los montos aplicados de los pagos con estado activo (1)
+        $totalPagado = $this->pagosDocumento()
+                            ->where('estado', 1)
+                            ->sum('monto_aplicado');
+
+        // Restamos la sumatoria al total del documento
+        return $this->total - $totalPagado;
     }
 
     public function getCalculoTotalAttribute(){
@@ -48,5 +63,12 @@ class DocumentoMaestro extends Model
             $this->serie,
             $this->correlativo
         );
+    }
+
+    public function getTotalPagadoAttribute()
+    {
+        return $this->pagosDocumento()
+                    ->where('estado', 1)
+                    ->sum('monto_aplicado');
     }
 }

@@ -7,10 +7,6 @@
             background: #7FB3D5 !important;
             color: #000000 !important;
         }
-        .numero{
-            text-align: right;
-        }
-
         .btn-guardar{
             background-color: #A5C890 !important;
         }
