@@ -1357,35 +1357,33 @@ class AdmisionController extends Controller
         $imagenesSeleccionadas = $request->input('procesar_imagen', []);
         // 3. Obtener los archivos físicos
         if ($request->hasFile('imagenes')) {
+            // 1. Definir y asegurar que la carpeta existe
+            $carpetaDestino = storage_path('app/public/procedimientos'); // Recomendado usar app/public
+            
+            if (!file_exists($carpetaDestino)) {
+                // Creamos la carpeta con permisos 0755
+                mkdir($carpetaDestino, 0755, true);
+            }
+
             foreach ($request->file('imagenes') as $file) {
-                // Generar nombres
                 $nombreOriginal = $file->getClientOriginalName();
                 $nombreHashed = time() . '_' . $file->hashName();
 
-                // 4. PROCESAMIENTO CON INTERVENTION IMAGE
+                // PROCESAMIENTO
                 $img = Image::read($file);
                 $img->scale(width: 1000); 
 
-                // 5. GUARDAR FÍSICAMENTE
-                // Asegúrate de que la carpeta exista o usa Storage::makeDirectory
-                $rutaDestino = storage_path('procedimientos/' . $nombreHashed);
-                $img->save($rutaDestino);
+                // GUARDAR FÍSICAMENTE
+                // Es mejor separar la carpeta del nombre del archivo
+                $rutaCompleta = $carpetaDestino . '/' . $nombreHashed;
+                $img->save($rutaCompleta);
 
-                // 6. GUARDAR EN BASE DE DATOS
+                // GUARDAR EN BASE DE DATOS
                 $nuevaImagen = new AdmisionAtencionImagen();
                 $nuevaImagen->admision_atencion_id = $registro->id;
-                $nuevaImagen->ruta = $nombreHashed;
+                $nuevaImagen->ruta = 'procedimientos/' . $nombreHashed; // Guardamos ruta relativa
                 $nuevaImagen->nombre_original = $nombreOriginal;
-
-                // --- AQUÍ ESTÁ LA LÓGICA QUE NECESITAS ---
-                // Si el nombre original del archivo está en el array de seleccionados, marcamos como 1
-                if (in_array($nombreOriginal, $imagenesSeleccionadas)) {
-                    $nuevaImagen->visible_informe = 1;
-                } else {
-                    $nuevaImagen->visible_informe = 0;
-                }
-                // -----------------------------------------
-
+                $nuevaImagen->visible_informe = in_array($nombreOriginal, $imagenesSeleccionadas) ? 1 : 0;
                 $nuevaImagen->estado = 1;
                 $nuevaImagen->save();
 
