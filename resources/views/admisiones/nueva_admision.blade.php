@@ -804,7 +804,7 @@
                             </div>
                             <div class="card-body">
                                 <input type="hidden" id="procedimiento_admision_id" name="procedimiento_admision_id">
-                                <input type="text" id="procedimiento_atencion_id" name="procedimiento_atencion_id">
+                                <input type="text" id="procedimiento_atencion_id" name="procedimiento_atencion_id" value="0">
                                 <div class="row">
                                     <div class="col-lg-2 col-sm-12">
                                         <ul class="nav flex-column" style="font-size: 12px; !important">
@@ -2306,8 +2306,8 @@
                             
                             break;
                         case 3:
+                            console.log('entre a procedimiento y el response devuelve '+response);
                             openModal('modalProcedimientos');
-                            // console.log('entre a procedimiento y el response devuelve '+response)
                             document.getElementById('procedimiento_admision_id').value = response.admision_id;
                             document.getElementById('procedimiento_atencion_id').value = response.id;
                             console.log(response.pprocedimiento_id);

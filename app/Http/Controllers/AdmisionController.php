@@ -1293,12 +1293,27 @@ class AdmisionController extends Controller
 
     public function update_procedimiento_ajax(Request $request){
         // 1. Validar (buena práctica)
-        $request->validate([
+        $messages = [
+            'required' => 'El campo :attribute es obligatorio.',
+            'image'    => 'El archivo seleccionado en :attribute debe ser una imagen.',
+            'mimes'    => 'La imagen en :attribute debe ser de tipo: jpeg, png, jpg.',
+            'max'      => 'La imagen en :attribute no debe pesar más de 2MB.',
+            'imagenes.*.image' => 'Uno de los archivos subidos no es una imagen válida.',
+        ];
+
+        $attributes = [
+            'procedimiento_admision_id' => 'ID de admisión',
+            'procedimiento_atencion_id' => 'ID de atención',
+            'p_procedimiento_id'        => 'tipo de procedimiento',
+            'imagenes'                  => 'galería de imágenes',
+        ];
+
+        $validData = $request->validate([
             'procedimiento_admision_id' => 'required',
             'procedimiento_atencion_id' => 'required',
-            'p_procedimiento_id' => 'required',
-            'imagenes.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+            'p_procedimiento_id'        => 'required',
+            'imagenes.*'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ], $messages, $attributes);
 
         $admision_id = $request['procedimiento_admision_id'];
         if ($request['procedimiento_atencion_id'] == 0) {
@@ -1588,6 +1603,10 @@ class AdmisionController extends Controller
                     ->select('nombre_comercial', DB::raw('CONCAT(e.direccion, " ", m.nombre, " ", d.nombre, " ", p.nombre) as direccion'), 'e.ruta_logo', DB::raw('CONCAT(e.codigo_postal, " ",e.telefonos, " | ", e.email) as telefonos'))
                     ->first();
 
+        // 1. Limpiar Logo Empresa (si es JSON)
+        $datosLogo = json_decode($pEmpresa->ruta_logo, true);
+        $rutaLogo = is_array($datosLogo) ? ($datosLogo['logo'] ?? $pEmpresa->ruta_logo) : $pEmpresa->ruta_logo;
+
         $registro = DB::table('admision_atenciones as aa')
                     ->join('admisiones as a', 'aa.admision_id', 'a.id')
                     ->join('pacientes as p', 'a.paciente_id', 'p.id')
@@ -1631,7 +1650,7 @@ class AdmisionController extends Controller
 
         // return view('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos'));
 
-        $pdf = Pdf::loadView('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos', 'firma'));
+        $pdf = Pdf::loadView('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos', 'firma', 'rutaLogo'));
         $pdf->setPaper([0, 0, 612, 396], 'landscape');
 
         return $pdf->stream('informe_' . $registro->paciente_nombre . '.pdf');

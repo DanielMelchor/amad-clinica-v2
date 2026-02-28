@@ -158,12 +158,22 @@
 
     <header class="header-full">
         <div class="header-cell" style="width: 35%;">
-            @if(!empty($pEmpresa->ruta_logo))
-                @php
-                    $path = public_path($pEmpresa->ruta_logo);
-                    $base64 = (file_exists($path)) ? 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path)) : null;
-                @endphp
-                <img src="{{ $base64 }}" style="max-height: 40pt;">
+            {{-- 1. Logo de la Empresa --}}
+            @php
+                // Usamos la variable $rutaLogo que limpiamos en el controlador
+                $pathLogo = public_path($rutaLogo);
+                $logoBase64 = null;
+                if (file_exists($pathLogo)) {
+                    $type = pathinfo($pathLogo, PATHINFO_EXTENSION);
+                    $data = file_get_contents($pathLogo);
+                    $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                }
+            @endphp
+
+            @if($logoBase64)
+                <div class="logo-empresa" style="position: absolute; left: 10pt; top: 10pt;">
+                    <img src="{{ $logoBase64 }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
+                </div>
             @endif
         </div>
         <div class="header-cell" style="text-align: right;">
