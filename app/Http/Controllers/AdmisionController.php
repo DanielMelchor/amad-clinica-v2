@@ -1645,6 +1645,7 @@ class AdmisionController extends Controller
         $firma = Medico::findOrFail($medico->medico_id)->select(DB::raw('CONCAT(titulo, " ", nombre_completo) as nombre_profesional'),'firma')->first();
 
         $fotos = AdmisionAtencionImagen::where('admision_atencion_id', $atencion_id)->get();
+        dd($fotos);
 
         // return view('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos'));
 
