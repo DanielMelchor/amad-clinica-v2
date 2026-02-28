@@ -2403,7 +2403,7 @@
                 dataType: 'json',
                 success: function(data) {
                     previewContainer.empty(); // Limpiar el spinner
-
+                    console.log(data)
                     if (data.length === 0) {
                         // Opcional: No poner nada o un mensaje suave
                         return;
