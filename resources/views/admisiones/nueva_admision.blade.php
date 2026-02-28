@@ -2415,9 +2415,10 @@
                         // Usamos un nombre diferente para procesarlos distinto en el backend
                         const checked = img.visible == 1 ? 'checked' : '';
                         const uniqueId = `old_img_${img.id}`;
+                        const urlImagen = img.url.trim();
                         const urlCompleta = `/storage/procedimientos/${img.ruta}`;
                         //const urlImagen = img.url.replace(/\\\//g, "/");
-                        const urlImagen = img.url;
+                        //const urlImagen = img.url;
 
                         const html = `
                             <div class="col-md-3 mb-3">
