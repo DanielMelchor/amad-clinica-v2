@@ -25,39 +25,23 @@
             left: 0;
             width: 100%;
             height: 100%;
-            border: 0pt solid black; /* Cambiar a 1pt si quieres ver el borde */
             box-sizing: border-box;
         }
 
-        /* 1. Contenedor para que la firma siga al texto */
         .contenedor-indicaciones {
             position: absolute;
             left: 30pt; 
             top: 80pt; 
             width: 90%;
-            /* Evita que el conjunto crezca tanto que cree una página 2 */
             max-height: 280pt; 
         }
 
-        .tratamiento {
-            position: relative; /* Cambiado de absolute a relative */
-            width: 100%;
-            line-height: 1.4;
-            display: block;
-        }
-
         .medico-firma {
-            position: relative; /* Fluye después del tratamiento */
             margin-top: 15pt;
             display: block;
+            text-align: center;
         }
 
-        .tratamiento p {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        /* Clases auxiliares para otros elementos absolutos */
         .fecha, .paciente {
             position: absolute;
         }
@@ -65,17 +49,21 @@
 </head>
 <body>
     <div class="marco">
-        {{-- Logo --}}
-        @if(!empty($pEmpresa->ruta_logo))
-            <div class="logo-empresa" style="position: absolute; left: 10pt; top: 10pt;">
-                @php
-                    $path = public_path($pEmpresa->ruta_logo);
-                    $type = pathinfo($path, PATHINFO_EXTENSION);
-                    $data = file_get_contents($path);
-                    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                @endphp
+        {{-- 1. Logo de la Empresa --}}
+        @php
+            // Usamos la variable $rutaLogo que limpiamos en el controlador
+            $pathLogo = public_path($rutaLogo);
+            $logoBase64 = null;
+            if (file_exists($pathLogo)) {
+                $type = pathinfo($pathLogo, PATHINFO_EXTENSION);
+                $data = file_get_contents($pathLogo);
+                $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+        @endphp
 
-                <img src="{{ $base64 }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
+        @if($logoBase64)
+            <div class="logo-empresa" style="position: absolute; left: 10pt; top: 10pt;">
+                <img src="{{ $logoBase64 }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
             </div>
         @endif
 
@@ -89,22 +77,18 @@
             {{ $pConsulta->paciente_nombre }}
         </div>
 
-        {{-- 2. BLOQUE DINÁMICO: Tratamiento + Firma --}}
+        {{-- Tratamiento + Firma --}}
         <div class="contenedor-indicaciones">
             <div class="tratamiento">
                 {!! $pConsulta->ctratamiento !!}
             </div>
 
-            @if(!empty($firma->firma))
-                <div class="medico-firma" style="text-align: center;">
-                    @php
-                        $path = public_path($firma);
-                        $type = pathinfo($path, PATHINFO_EXTENSION);
-                        $data = file_get_contents($path);
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                    @endphp
-
-                    <img src="{{ $base64 }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
+            {{-- Usamos la firma que procesamos en el controlador --}}
+            @if(isset($firmaBase64) && $firmaBase64)
+                <div class="medico-firma">
+                    <img src="{{ $firmaBase64 }}" alt="Firma Médico" style="max-width: 150pt; max-height: 80pt;">
+                    <br>
+                    <span>{{ $medico->nombre }}</span> {{-- Opcional: Nombre del médico --}}
                 </div>
             @endif
         </div>

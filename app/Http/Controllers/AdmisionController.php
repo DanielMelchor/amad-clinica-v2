@@ -1515,55 +1515,66 @@ class AdmisionController extends Controller
         
     }
 
-    public function receta($atencion_id){
+    public function receta($atencion_id) {
         $pEmpresa = Empresa::findOrFail(Auth::user()->empresa_id);
-        $pConsulta = DB::table('admision_atenciones as aa')
-                     ->join('admisiones as a', 'aa.admision_id', 'a.id')
-                     ->join('pacientes as p', 'a.paciente_id', 'p.id')
-                     ->where('aa.id', $atencion_id)
-                     ->select('a.id', 'a.fecha','aa.ctratamiento',
-                              DB::raw("CONCAT(CASE WHEN p.genero = 'M' THEN 'Sr. ' ELSE 'Sra. ' END, p.nombre_completo) as paciente_nombre"))
-                     ->first();
 
-        $medico = admision::findOrFail($pConsulta->id)->select('medico_id')->first();
-        $firma = Medico::findOrFail($medico->medico_id)->select('firma')->first();
-        $pRecetaC = Receta_Medico::where('medico_id', $medico->medico_id)->first();
+        // 1. Limpiar Logo Empresa (si es JSON)
+        $datosLogo = json_decode($pEmpresa->ruta_logo, true);
+        $rutaLogo = is_array($datosLogo) ? ($datosLogo['logo'] ?? $pEmpresa->ruta_logo) : $pEmpresa->ruta_logo;
+
+        $pConsulta = DB::table('admision_atenciones as aa')
+            ->join('admisiones as a', 'aa.admision_id', 'a.id')
+            ->join('pacientes as p', 'a.paciente_id', 'p.id')
+            ->where('aa.id', $atencion_id)
+            ->select('a.id', 'a.fecha','aa.ctratamiento', 'a.medico_id',
+                DB::raw("CONCAT(CASE WHEN p.genero = 'M' THEN 'Sr. ' ELSE 'Sra. ' END, p.nombre_completo) as paciente_nombre"))
+            ->first();
+
+        $medico = Medico::findOrFail($pConsulta->medico_id);
+        
+        // 2. LIMPIAR FIRMA DEL MÉDICO (Aquí es donde saltaba tu error)
+        // Asumiendo que $medico->firma contiene el JSON {"firma":"firmas\/firma.jpg"}
+        $datosFirma = json_decode($medico->firma, true);
+        $rutaFirma = is_array($datosFirma) ? ($datosFirma['firma'] ?? $medico->firma) : $medico->firma;
+
+        // 3. Convertir a Base64 para que el Hosting no falle buscando rutas
+        $pathFirma = public_path($rutaFirma);
+        $firmaBase64 = null;
+        if (file_exists($pathFirma) && is_file($pathFirma)) {
+            $type = pathinfo($pathFirma, PATHINFO_EXTENSION);
+            $data = file_get_contents($pathFirma);
+            $firmaBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
+
+        $pRecetaC = Receta_Medico::where('medico_id', $medico->id)->first();
+        
+        // ... (Tu lógica de fechas y switch mes se mantiene igual) ...
         $fecha = \Carbon\Carbon::parse($pConsulta->fecha);
         $dia = $fecha->format('d');
-        $mes = $fecha->format('m');
-        switch ($mes) {
-            case '01': $nombre_mes = 'enero'; break;
-            case '02': $nombre_mes = 'febrero'; break;
-            case '03': $nombre_mes = 'marzo'; break;
-            case '04': $nombre_mes = 'abril'; break;
-            case '05': $nombre_mes = 'mayo'; break;
-            case '06': $nombre_mes = 'junio'; break;
-            case '07': $nombre_mes = 'julio'; break;
-            case '08': $nombre_mes = 'agosto'; break;
-            case '09': $nombre_mes = 'septiembre'; break;
-            case '10': $nombre_mes = 'octubre'; break;
-            case '11': $nombre_mes = 'noviembre'; break;
-            case '12': $nombre_mes = 'diciembre'; break;
-            default: $nombre_mes = 'no definido';  break;
-        }
+        $nombre_mes = $this->getNombreMes($fecha->format('m')); // Simplificado
         $anio = $fecha->format('Y');
 
         $posiciones = [
-            'pagina'    => ['alto' => ($pRecetaC->pagina_alto * 2.834).' pt', 'ancho' => ($pRecetaC->pagina_ancho * 2.834).' pt'],
-            'dia'       => ['x' => $pRecetaC->dia_x* 2.834, 'y' => $pRecetaC->dia_y* 2.834],
-            'mes'       => ['x' => $pRecetaC->mes_x* 2.834, 'y' => $pRecetaC->mes_y* 2.834],
-            'anio'      => ['x' => $pRecetaC->anio_x* 2.834, 'y' => $pRecetaC->anio_y* 2.834],
-            'paciente'  => ['x' => $pRecetaC->paciente_x* 2.834, 'y' => $pRecetaC->paciente_y* 2.834],
-            'tratamiento' => ['x' => $pRecetaC->tratamiento_x* 2.834, 'y' => $pRecetaC->tratamiento_y* 2.834],
+            'pagina'      => ['alto' => ($pRecetaC->pagina_alto * 2.834).' pt', 'ancho' => ($pRecetaC->pagina_ancho * 2.834).' pt'],
+            'dia'         => ['x' => $pRecetaC->dia_x * 2.834, 'y' => $pRecetaC->dia_y * 2.834],
+            'mes'         => ['x' => $pRecetaC->mes_x * 2.834, 'y' => $pRecetaC->mes_y * 2.834],
+            'anio'        => ['x' => $pRecetaC->anio_x * 2.834, 'y' => $pRecetaC->anio_y * 2.834],
+            'paciente'    => ['x' => $pRecetaC->paciente_x * 2.834, 'y' => $pRecetaC->paciente_y * 2.834],
+            'tratamiento' => ['x' => $pRecetaC->tratamiento_x * 2.834, 'y' => $pRecetaC->tratamiento_y * 2.834],
         ];
 
-        $pdf = Pdf::loadView('admisiones.receta', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'posiciones', 'pConsulta', 'firma'));
+        // Enviar 'firmaBase64' a la vista
+
+        $pdf = Pdf::loadView('admisiones.receta', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'posiciones', 'pConsulta', 'rutaLogo', 'medico', 'firmaBase64'));
         $pdf->setPaper([0, 0, 612, 396], 'landscape');
-        // $pdf->setPaper([0, 0, $pRecetaC->pagina_ancho * 2.834, $pRecetaC->pagina_alto * 2.834], $orientacion);
 
         return $pdf->stream('receta_' . $pConsulta->paciente_nombre . '.pdf');
-        // return view('admisiones.receta', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'posiciones', 'pConsulta'));
-        
+    }
+
+    // Función auxiliar para no ensuciar el controlador
+    private function getNombreMes($mes) {
+        $meses = ['01'=>'enero','02'=>'febrero','03'=>'marzo','04'=>'abril','05'=>'mayo','06'=>'junio','07'=>'julio','08'=>'agosto','09'=>'septiembre','10'=>'octubre','11'=>'noviembre','12'=>'diciembre'];
+        return $meses[$mes] ?? 'no definido';
     }
 
     function informe($atencion_id){

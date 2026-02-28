@@ -1,9 +1,6 @@
 @extends('adminlte::page')
 @section('css')
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-	<link href="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.css') }}" rel="stylesheet">
-	<link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-	<link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 	<style type="text/css">
         .nav-pills .nav-link.active,
         .show>.nav-pills .nav-link{
@@ -313,7 +310,6 @@
 	</div>
 @endsection
 @section('js')
-<script src="{{ asset('assets/bootstrap-sweetalert-master/dist/sweetalert.min.js') }}"></script>
 	@if(Session::get('type') == 'success')
         @if(Session::has('message'))
             <script>
