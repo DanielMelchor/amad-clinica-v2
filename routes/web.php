@@ -52,6 +52,11 @@ use Illuminate\Support\Facades\Route;
         return "¡Caché limpia!";
     });
 
+    Route::get('/instalar-storage', function () {
+        Artisan::call('storage:link');
+        return "Enlace de storage creado con éxito";
+    });
+
     Route::get('/consultas', function () {
         return view('consultas.index');
     })->middleware(['auth', 'verified'])->name('consultas');
