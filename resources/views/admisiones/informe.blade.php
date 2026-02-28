@@ -236,42 +236,39 @@
             <div class="contenido-texto">{!! $registro->indicacion !!}</div>
         </div>
 
-        @if($fotos->count() > 0)
-        <div class="seccion">
-            <div class="titulo-seccion">Evidencia Fotográfica</div>
-            <table class="grid-fotos" cellpadding="4">
-                @foreach($fotos->chunk(3) as $fila)
-                    <tr>
-                        @foreach($fila as $foto)
-                            @php
-                                // 1. Usamos storage_path para llegar a la carpeta privada
-                                $fPath = storage_path('app/public/procedimientos/' . $foto->ruta);
-                                
-                                // Opcional: Si el nombre en la BD ya incluye "procedimientos/", usa:
-                                // $fPath = storage_path('app/public/' . $foto->ruta);
+        @foreach($fila as $foto)
+            @php
+                // Quitamos cualquier barra sobrante al inicio de la ruta guardada
+                $nombreLimpio = ltrim($foto->ruta, '/');
 
-                                $b64 = null;
-                                if (file_exists($fPath)) {
-                                    $tipo = pathinfo($fPath, PATHINFO_EXTENSION);
-                                    $data = file_get_contents($fPath);
-                                    $b64 = 'data:image/' . $tipo . ';base64,' . base64_encode($data);
-                                }
-                            @endphp
-                            <td style="width: 33.3%;">
-                                <div class="img-container">
-                                    @if($b64)
-                                        <img src="{{ $b64 }}" class="img-ajustada" style="width: 100%;">
-                                    @else
-                                        <span style="font-size: 8px;">No encontrada</span>
-                                    @endif
-                                </div>
-                            </td>
-                        @endforeach
-                    </tr>
-                @endforeach
-            </table>
-        </div>
-        @endif
+                // Intentamos las dos rutas más probables en hostings Laravel
+                $rutaOp1 = storage_path('app/public/' . $nombreLimpio);
+                $rutaOp2 = storage_path('app/procedimientos/' . $nombreLimpio); 
+                
+                $fPath = null;
+                if (file_exists($rutaOp1)) {
+                    $fPath = $rutaOp1;
+                } elseif (file_exists($rutaOp2)) {
+                    $fPath = $rutaOp2;
+                }
+
+                $b64 = null;
+                if ($fPath) {
+                    $tipo = pathinfo($fPath, PATHINFO_EXTENSION);
+                    $b64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents($fPath));
+                }
+            @endphp
+            
+            <td style="width: 33.3%;">
+                <div class="img-container">
+                    @if($b64)
+                        <img src="{{ $b64 }}" class="img-ajustada" style="width: 100%;">
+                    @else
+                        <span style="font-size: 8px;">No encontrada en: {{ $rutaOp1 }}</span>
+                    @endif
+                </div>
+            </td>
+        @endforeach
 
         <div class="seccion">
             <div class="titulo-seccion">Recomendaciones</div>
