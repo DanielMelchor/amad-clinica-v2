@@ -1368,7 +1368,7 @@ class AdmisionController extends Controller
 
                 // 5. GUARDAR FÍSICAMENTE
                 // Asegúrate de que la carpeta exista o usa Storage::makeDirectory
-                $rutaDestino = storage_path('app/public/procedimientos/' . $nombreHashed);
+                $rutaDestino = storage_path('procedimientos/' . $nombreHashed);
                 $img->save($rutaDestino);
 
                 // 6. GUARDAR EN BASE DE DATOS
