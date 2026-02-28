@@ -2416,7 +2416,8 @@
                         const checked = img.visible == 1 ? 'checked' : '';
                         const uniqueId = `old_img_${img.id}`;
                         const urlCompleta = `/storage/procedimientos/${img.ruta}`;
-                        const urlImagen = img.url.replace(/\\\//g, "/");
+                        //const urlImagen = img.url.replace(/\\\//g, "/");
+                        const urlImagen = img.url;
 
                         const html = `
                             <div class="col-md-3 mb-3">
