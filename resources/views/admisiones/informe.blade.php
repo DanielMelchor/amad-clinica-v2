@@ -244,7 +244,7 @@
                     <tr>
                         @foreach($fila as $foto)
                             @php
-                                $fPath = public_path('storage/procedimientos/' . $foto->ruta);
+                                $fPath = public_path('procedimientos/' . $foto->ruta);
                                 $b64 = (file_exists($fPath)) ? 'data:image/' . pathinfo($fPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($fPath)) : null;
                             @endphp
                             <td style="width: 33.3%;">
