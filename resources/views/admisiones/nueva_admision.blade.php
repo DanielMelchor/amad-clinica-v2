@@ -227,7 +227,7 @@
                 <!-- <div class="alert-box allergy">⚠️ Alergia: Penicilina</div>
                 <div class="alert-box risk">⚠️ Riesgo: Caída Alta</div> -->
                 <div class="row">
-                    <button id="toggleRightSidebar" class="btn btn-xs rounded-circle elevation-4" data-widget="control-sidebar" data-slide="true">
+                    <button id="toggleRightSidebar" class="btn btn-sm rounded-circle elevation-4" data-widget="control-sidebar" data-slide="true">
                         <i class="fas fa-bars"></i>
                     </button>
                 </div>
@@ -323,15 +323,15 @@
                             <p>Signos Vitales</p>
                         </div>
                         <div class="col-3" style="text-align: right;">
-                            <a href="#" id="btnAgregarVitales" onclick="openModal('modalVitales'); return false;" class="btn btn-xs btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Signos Vitales"><i class="fas fa-plus"></i></a>
-                            <a href="#" onclick="closeDiv('signosVitalesDiv');" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
+                            <a href="#" id="btnAgregarVitales" onclick="openModal('modalVitales'); return false;" class="btn btn-sm btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Signos Vitales"><i class="fas fa-plus"></i></a>
+                            <a href="#" onclick="closeDiv('signosVitalesDiv');" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <!-- <div class="row">
                         <div class="col-1 offset-11" style="text-align: right;">
-                            <a href="#" onclick="openModal('modalVitales'); return false;" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" title="Agregar Signos Vitales"><i class="fas fa-plus"></i></a>
+                            <a href="#" onclick="openModal('modalVitales'); return false;" class="btn btn-sm btn-outline-primary rounded-circle elevation-4" title="Agregar Signos Vitales"><i class="fas fa-plus"></i></a>
                         </div>
                     </div> -->
                     <div class="row">
@@ -368,8 +368,8 @@
                             <p>Consulta Médica</p>
                         </div>
                         <div class="col-3" style="text-align: right;">
-                            <a href="#" id="btnAgregarConsultas" onclick="openModal('modalConsultas'); return false;" class="btn btn-xs btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Registro de Consulta"><i class="fas fa-plus"></i></a>
-                            <a href="#" onclick="closeDiv('consultasDiv');" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
+                            <a href="#" id="btnAgregarConsultas" onclick="openModal('modalConsultas'); return false;" class="btn btn-sm btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Registro de Consulta"><i class="fas fa-plus"></i></a>
+                            <a href="#" onclick="closeDiv('consultasDiv');" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
                         </div>
                     </div>
                 </div>
@@ -405,8 +405,8 @@
                             <p>Procedimientos</p>
                         </div>
                         <div class="col-3" style="text-align: right;">
-                            <a href="#" id="btnAgregarProcedimientos" onclick="openModal('modalProcedimientos'); return false;" class="btn btn-xs btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Registro de Consulta"><i class="fas fa-plus"></i></a>
-                            <a href="#" onclick="closeDiv('procedimientosDiv');" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
+                            <a href="#" id="btnAgregarProcedimientos" onclick="openModal('modalProcedimientos'); return false;" class="btn btn-sm btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Registro de Consulta"><i class="fas fa-plus"></i></a>
+                            <a href="#" onclick="closeDiv('procedimientosDiv');" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
                         </div>
                     </div>
                 </div>
@@ -442,8 +442,8 @@
                             <p>Hospitalización</p>
                         </div>
                         <div class="col-3" style="text-align: right;">
-                            <a href="#" id="btnAgregarHospitalizaciones" onclick="openModal('modalHospitalizacion'); return false;" class="btn btn-xs btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Registro"><i class="fas fa-plus"></i></a>
-                            <a href="#" onclick="closeDiv('hospitalizacionDiv');" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
+                            <a href="#" id="btnAgregarHospitalizaciones" onclick="openModal('modalHospitalizacion'); return false;" class="btn btn-sm btn-outline-primary rounded-circle elevation-4 agregar_registro" title="Agregar Registro"><i class="fas fa-plus"></i></a>
+                            <a href="#" onclick="closeDiv('hospitalizacionDiv');" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" title="Cerrar Ventana"><i class="fas fa-times"></i></a>
                         </div>
                     </div>
                 </div>
@@ -491,10 +491,10 @@
                                     </div>
 
                                     <div style="display: flex; gap: 8px;">
-                                        <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4 inicio-atencion" title="Iniciar Atención" onclick="fnInicioAtencion();">
+                                        <a href="#" class="btn btn-sm btn-outline-primary rounded-circle elevation-4 inicio-atencion" title="Iniciar Atención" onclick="fnInicioAtencion();">
                                             <i class="fas fa-lock-open"></i>
                                         </a>
-                                        <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 final-atencion" title="Finalizar Atención" onclick="fnFinalAtencion();">
+                                        <a href="#" class="btn btn-sm btn-outline-danger rounded-circle elevation-4 final-atencion" title="Finalizar Atención" onclick="fnFinalAtencion();">
                                             <i class="fas fa-lock"></i>
                                         </a>
                                     </div>
@@ -541,8 +541,8 @@
                                         <h5>Signos Vitales</h5>
                                     </div>
                                     <div class="col-md-3" style="text-align: right;">
-                                        <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
-                                        <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-sign-out-alt"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -637,9 +637,9 @@
                                         <h5>Consulta Médica</h5>
                                     </div>
                                     <div class="col-md-3" style="text-align: right;">
-                                        <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
-                                        <a href="#" id="impresion_receta" class="btn btn-xs btn-danger rounded-circle elevation-4" target="_blank" title="Impresión de Receta" onclick="generar_receta(); return false;" target="_blank"><i class="fas fa-file-pdf"></i></a>
-                                        <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-times"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
+                                        <a href="#" id="impresion_receta" class="btn btn-sm btn-danger rounded-circle elevation-4" target="_blank" title="Impresión de Receta" onclick="generar_receta(); return false;" target="_blank"><i class="fas fa-file-pdf"></i></a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-times"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -735,7 +735,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="mb-1 col-lg-2 col-sm-2" style="text-align: right;">
-                                                        <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" onclick="copiarDosis(); return false;"><i class="fas fa-plus"></i></a>
+                                                        <a href="#" class="btn btn-sm btn-outline-primary rounded-circle elevation-4" onclick="copiarDosis(); return false;"><i class="fas fa-plus"></i></a>
                                                     </div>
                                                 </div> -->
                                                 <div class="row">
@@ -759,7 +759,7 @@
                                                         </select>
                                                     </div>
                                                     <div class="mb-1 col-1" style="text-align: right;">
-                                                        <a href="#" class="btn btn-xs btn-outline-primary rounded-circle elevation-4" onclick="agregarRegistroMedicamento(); return false;" title="Agregsar medicamento"><i class="fas fa-hand-pointer"></i></a>
+                                                        <a href="#" class="btn btn-sm btn-outline-primary rounded-circle elevation-4" onclick="agregarRegistroMedicamento(); return false;" title="Agregsar medicamento"><i class="fas fa-hand-pointer"></i></a>
                                                     </div>
                                                 </div>
                                                 <input type="hidden" class="form-control" id="tratamiento_descripcion" name="tratamiento_descripcion">
@@ -796,9 +796,9 @@
                                         <h5>Procedimiento</h5>
                                     </div>
                                     <div class="col-md-3" style="text-align: right;">
-                                        <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
-                                        <a href="#" id="impresion_receta" class="btn btn-xs btn-danger rounded-circle elevation-4" target="_blank" title="Informe Medico" onclick="generar_informe(); return false;"><i class="fas fa-file-pdf"></i></a>
-                                        <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-times"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
+                                        <a href="#" id="impresion_receta" class="btn btn-sm btn-danger rounded-circle elevation-4" target="_blank" title="Informe Medico" onclick="generar_informe(); return false;"><i class="fas fa-file-pdf"></i></a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-times"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -983,8 +983,8 @@
                                         <h5>Hospitalización</h5>
                                     </div>
                                     <div class="col-md-3" style="text-align: right;">
-                                        <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
-                                        <button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-times"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-circle elevation-4" title="Guardar cambios"><i class="fas fa-save"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Cerrar Ventana"><i class="fas fa-times"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -1509,7 +1509,7 @@
                         html += response[i]['presion']
                         html += '</td>'
                         html += '<td>'
-                        html += '<a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Registro" '
+                        html += '<a href="#" class="btn btn-sm btn-warning rounded-circle elevation-4" title="Editar Registro" '
                         html += 'onclick="fn_edicion_vitales('+response[i]['id']+')"><i class="fas fa-edit"></i></a>'
                         html += '</td>'
                         html += '</tr>'
@@ -1557,7 +1557,7 @@
                         html += response[i]['hresumen']
                         html += '</td>'
                         html += '<td>'
-                        html += '<a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Registro" '
+                        html += '<a href="#" class="btn btn-sm btn-warning rounded-circle elevation-4" title="Editar Registro" '
                         html += 'onclick="fn_edicion('+response[i]['id']+')"><i class="fas fa-edit"></i></a>'
                         html += '</td>'
                         html += '</tr>'
@@ -1605,7 +1605,7 @@
                         html += response[i]['cimpresion_clinica']
                         html += '</td>'
                         html += '<td>'
-                        html += '<a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Registro" '
+                        html += '<a href="#" class="btn btn-sm btn-warning rounded-circle elevation-4" title="Editar Registro" '
                         html += 'onclick="fn_edicion('+response[i]['id']+')"><i class="fas fa-edit"></i></a>'
                         html += '</td>'
                         html += '</tr>'
@@ -1653,7 +1653,7 @@
                         html += response[i]['descripcion']
                         html += '</td>'
                         html += '<td>'
-                        html += '<a href="#" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Registro" '
+                        html += '<a href="#" class="btn btn-sm btn-warning rounded-circle elevation-4" title="Editar Registro" '
                         html += 'onclick="fn_edicion('+response[i]['id']+')"><i class="fas fa-edit"></i></a>'
                         html += '</td>'
                         html += '</tr>'
@@ -2157,7 +2157,7 @@
             // html += '<input type="text" class="form-control" id="receta['+nLinea+'][tratamiento_descripcion]" name="receta['+nLinea+'][tratamiento_descripcion]" required>'
             // html += '</div>'
             // html += '</td>'
-            // html += '<td><a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" id="btn_eliminar_registro"><i class="fas fa-trash-alt"></i></a></td>';
+            // html += '<td><a href="#" class="btn btn-sm btn-outline-danger rounded-circle elevation-4 eliminar" id="btn_eliminar_registro"><i class="fas fa-trash-alt"></i></a></td>';
             // html += '</tr>'
             // nLinea++;
 
