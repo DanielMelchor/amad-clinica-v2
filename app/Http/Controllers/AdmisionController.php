@@ -1329,10 +1329,10 @@ class AdmisionController extends Controller
         $registro->ptolerancia         = $request['tolerncia'];
         $registro->ppatologo           = $request['ppatologo'];
         $registro->panestesiologo      = $request['panestesilogo'];
-        $registro->indicacion          = $request['pIndicacion'];
-        $registro->hallazgos           = $request['pHallazgos'];
-        $registro->diagnostico         = $request['pDiagnostico'];
-        $registro->recomendaciones     = $request['pRecomendacion'];
+        $registro->indicacion          = $request['pindicacion'];
+        $registro->hallazgos           = $request['phallazgos'];
+        $registro->diagnostico         = $request['pdiagnostico'];
+        $registro->recomendaciones     = $request['precomendacion'];
         $registro->estado              = 1;
         $registro->save();
 
