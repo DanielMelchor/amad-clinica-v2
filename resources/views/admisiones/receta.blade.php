@@ -97,7 +97,14 @@
 
             @if(!empty($firma->firma))
                 <div class="medico-firma" style="text-align: center;">
-                    <img src="{{ asset($firma->firma) }}" alt="Logo" style="max-width: 120pt; max-height: 80pt;">
+                    @php
+                        $path = public_path($firma);
+                        $type = pathinfo($path, PATHINFO_EXTENSION);
+                        $data = file_get_contents($path);
+                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    @endphp
+
+                    <img src="{{ $base64 }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
                 </div>
             @endif
         </div>
