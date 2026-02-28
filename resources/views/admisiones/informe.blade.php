@@ -172,7 +172,7 @@
 
             @if($logoBase64)
                 <div class="logo-empresa" style="position: absolute; left: 10pt; top: 10pt;">
-                    <img src="{{ $logoBase64 }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
+                    <img src="{{ $logoBase64 }}" alt="Logo" style="max-width: 90pt; max-height: 50pt;">
                 </div>
             @endif
         </div>
