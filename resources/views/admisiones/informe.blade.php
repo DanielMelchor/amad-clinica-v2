@@ -244,13 +244,25 @@
                     <tr>
                         @foreach($fila as $foto)
                             @php
-                                $fPath = public_path('procedimientos/' . $foto->ruta);
-                                $b64 = (file_exists($fPath)) ? 'data:image/' . pathinfo($fPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($fPath)) : null;
+                                // 1. Usamos storage_path para llegar a la carpeta privada
+                                $fPath = storage_path('app/public/procedimientos/' . $foto->ruta);
+                                
+                                // Opcional: Si el nombre en la BD ya incluye "procedimientos/", usa:
+                                // $fPath = storage_path('app/public/' . $foto->ruta);
+
+                                $b64 = null;
+                                if (file_exists($fPath)) {
+                                    $tipo = pathinfo($fPath, PATHINFO_EXTENSION);
+                                    $data = file_get_contents($fPath);
+                                    $b64 = 'data:image/' . $tipo . ';base64,' . base64_encode($data);
+                                }
                             @endphp
                             <td style="width: 33.3%;">
                                 <div class="img-container">
                                     @if($b64)
-                                        <img src="{{ $b64 }}" class="img-ajustada">
+                                        <img src="{{ $b64 }}" class="img-ajustada" style="width: 100%;">
+                                    @else
+                                        <span style="font-size: 8px;">No encontrada</span>
                                     @endif
                                 </div>
                             </td>
