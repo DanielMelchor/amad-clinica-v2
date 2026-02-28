@@ -1646,12 +1646,12 @@ class AdmisionController extends Controller
 
         $fotos = AdmisionAtencionImagen::where('admision_atencion_id', $atencion_id)->get();
 
-        return view('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos'));
+        //return view('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos'));
 
-        /*$pdf = Pdf::loadView('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos', 'firma', 'rutaLogo'));
+        $pdf = Pdf::loadView('admisiones.informe', compact('pEmpresa', 'dia', 'nombre_mes', 'anio', 'registro', 'fotos', 'firma', 'rutaLogo'));
         $pdf->setPaper([0, 0, 612, 396], 'landscape');
 
-        return $pdf->stream('informe_' . $registro->paciente_nombre . '.pdf');*/
+        return $pdf->stream('informe_' . $registro->paciente_nombre . '.pdf');
         
     }
 
