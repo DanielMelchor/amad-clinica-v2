@@ -68,7 +68,14 @@
         {{-- Logo --}}
         @if(!empty($pEmpresa->ruta_logo))
             <div class="logo-empresa" style="position: absolute; left: 10pt; top: 10pt;">
-                <img src="{{ asset($pEmpresa->ruta_logo) }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
+                @php
+                    $path = public_path($pEmpresa->ruta_logo);
+                    $type = pathinfo($path, PATHINFO_EXTENSION);
+                    $data = file_get_contents($path);
+                    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                @endphp
+
+                <img src="{{ $base64 }}" alt="Logo" style="max-width: 100pt; max-height: 60pt;">
             </div>
         @endif
 
@@ -90,7 +97,7 @@
 
             @if(!empty($firma->firma))
                 <div class="medico-firma" style="text-align: center;">
-                    <img src="{{ public_path($firma->firma) }}" alt="Logo" style="max-width: 120pt; max-height: 80pt;">
+                    <img src="{{ asset($firma->firma) }}" alt="Logo" style="max-width: 120pt; max-height: 80pt;">
                 </div>
             @endif
         </div>
