@@ -1884,7 +1884,7 @@ class AdmisionController extends Controller
             return [
                 'id' => $img->id,
                 'nombre' => $img->nombre_original,
-                'url' => asset($img->ruta),
+                'url' => asset('storage/' .$img->ruta),
                 'visible' => $img->visible_informe
             ];
         });
