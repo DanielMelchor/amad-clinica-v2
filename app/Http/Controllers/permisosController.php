@@ -295,4 +295,34 @@ class permisosController extends Controller
         //return redirect(route('permiso_listado'))->with('success', 'Usuario acutalizado con exito!!!');
         // return redirect()->back()->with(['success' => 'Usuario Actualizado con exito !!!']);
     }
+
+    // *************************************************************************************** //
+    // ********************************* Auditoria ******************************************* //
+    // *************************************************************************************** //
+    public function auditoria_index(Request $request)
+    {
+        // Capturamos los filtros de la URL
+        $usuario = $request->get('usuario');
+        $desde   = $request->get('fecha_desde');
+        $hasta   = $request->get('fecha_hasta');
+
+        $logs = \App\Models\AuditoriaAcceso::with('usuario')
+            ->when($usuario, function ($query, $usuario) {
+                // Buscamos en la relación con la tabla de usuarios
+                return $query->whereHas('usuario', function ($q) use ($usuario) {
+                    $q->where('name', 'LIKE', "%$usuario%");
+                });
+            })
+            ->when($desde, function ($query, $desde) {
+                return $query->whereDate('fecha_registro', '>=', $desde);
+            })
+            ->when($hasta, function ($query, $hasta) {
+                return $query->whereDate('fecha_registro', '<=', $hasta);
+            })
+            ->orderBy('fecha_registro', 'desc')
+            ->paginate(50)
+            ->withQueryString(); // Esto mantiene los filtros al cambiar de página
+
+        return view('admin.auditoria.index', compact('logs'));
+    }
 }

@@ -8,6 +8,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "intervention/image-laravel": "^1.5",
+        "jenssegers/agent": "^2.6",
         "jeroennoten/laravel-adminlte": "^3.15",
         "laravel-notification-channels/telegram": "^6.0",
         "laravel/framework": "^11.0",

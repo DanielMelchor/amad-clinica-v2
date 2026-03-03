@@ -23,15 +23,4 @@ class Empresa extends Model
     
     protected $hidden = ['created_at', 'updated_at', 'created_by', 'updated_by'];
 
-    public static function obtenerImpuesto($empresaId)
-    {
-        $registro = self::where('id', $empresaId)->first();
-        if ($registro) {
-            // Realizamos la operación para devolver el factor (ej: 1.12)
-            return 1 + ($registro->porcentaje_impuesto / 100);
-        }
-
-        // Retorno por defecto si no encuentra la empresa (factor 1 = sin impuesto)
-        return 1;
-    }
 }

@@ -44,6 +44,8 @@ use Illuminate\Support\Facades\Route;
         return view('welcome');
     });
 
+    Route::get('auditoria_accesos', [permisosController::class, 'auditoria_index'])->name('auditoria.index');
+
     Route::get('/clear-cache', function() {
         Artisan::call('config:clear');
         Artisan::call('cache:clear');
@@ -67,7 +69,7 @@ use Illuminate\Support\Facades\Route;
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 
-    Route::middleware(['auth'])->group(function () {
+    Route::middleware(['auth', 'auditoria.medica'])->group(function () {
         // Admisiones
         Route::group([
             'prefix' => 'admisiones',

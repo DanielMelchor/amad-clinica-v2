@@ -130,11 +130,37 @@
                 "autoWidth": false,
                 "responsive": true, // Activamos el modo responsivo nativo
                 "pageLength": 25,
+
+                // "language": {
+                //     "sSearch": "", // Quitamos el texto "Buscar" para ganar espacio
+                //     "searchPlaceholder": "Buscar...",
+                //     "sLengthMenu": "_MENU_",
+                //     // ... resto de tus traducciones ...
+                // },
                 "language": {
-                    "sSearch": "", // Quitamos el texto "Buscar" para ganar espacio
+                    "sProcessing":     "Procesando...",
+                    "sLengthMenu":     "Mostrar _MENU_ registros",
+                    "sZeroRecords":    "No se encontraron resultados",
+                    "sEmptyTable":     "Ningún dato disponible en esta tabla",
+                    "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                    "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
+                    "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+                    "sInfoPostFix":    "",
+                    "sSearch":         "",
                     "searchPlaceholder": "Buscar...",
-                    "sLengthMenu": "_MENU_",
-                    // ... resto de tus traducciones ...
+                    "sUrl":            "",
+                    "sInfoThousands":  ",",
+                    "sLoadingRecords": "Cargando...",
+                    "oPaginate": {
+                        "sFirst":    "Primero",
+                        "sLast":     "Último",
+                        "sNext":     "Siguiente",
+                        "sPrevious": "Anterior"
+                    },
+                    "oAria": {
+                        "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
+                        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                    }
                 },
                 // Ajuste del DOM para que en móvil los elementos se apilen
                 "dom": '<"row"<"col-12 col-md-6"B><"col-12 col-md-6"f>>rt<"row"<"col-12"i><"col-12"p>>',
