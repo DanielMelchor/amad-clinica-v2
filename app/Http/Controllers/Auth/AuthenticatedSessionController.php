@@ -26,20 +26,21 @@ class AuthenticatedSessionController extends Controller
     {
         // dd($request->all());
         $request->authenticate();
+        return redirect()->route('login.waiting');
 
-        $request->session()->regenerate();
+        // $request->session()->regenerate();
 
-        $user = auth()->user();
+        // $user = auth()->user();
 
-        $url = match (true) {
-            $user->hasRole('Super Admin')   => route('home'),
-            $user->hasRole('Administrador') => route('graficas_index'),
-            $user->hasRole('Medico')        => route('index_medico'),
-            $user->hasRole('Recepción')     => route('nueva_agenda'), // Con tilde como en tu DB
-            default                         => route('consultas'),
-        };
+        // $url = match (true) {
+        //     $user->hasRole('Super Admin')   => route('home'),
+        //     $user->hasRole('Administrador') => route('graficas_index'),
+        //     $user->hasRole('Medico')        => route('index_medico'),
+        //     $user->hasRole('Recepción')     => route('nueva_agenda'), // Con tilde como en tu DB
+        //     default                         => route('consultas'),
+        // };
 
-        return redirect()->intended($url);
+        // return redirect()->intended($url);
 
         // return redirect()->intended(route('consultas', absolute: false));
     }

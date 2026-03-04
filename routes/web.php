@@ -44,6 +44,29 @@ use Illuminate\Support\Facades\Route;
         return view('welcome');
     });
 
+    Route::get('/login/check-status', function() {
+        $userId = session('auth_temp_user_id');
+        
+        // Buscamos si hay alguna verificación confirmada recientemente para este usuario
+        $confirmed = \App\Models\LoginVerification::where('user_id', $userId)
+            ->where('is_confirmed', true)
+            ->where('updated_at', '>=', now()->subMinutes(5))
+            ->exists();
+
+        if ($confirmed) {
+            // Si ya confirmó, iniciamos la sesión oficialmente
+            Auth::loginUsingId($userId);
+            session()->forget('auth_temp_user_id');
+            return response()->json(['confirmed' => true]);
+        }
+
+        return response()->json(['confirmed' => false]);
+    })->name('login.check-status');
+
+    Route::get('/test-waiting', function () {
+        return view('auth.waiting-verification');
+    });
+
     Route::get('auditoria_accesos', [permisosController::class, 'auditoria_index'])->name('auditoria.index');
 
     Route::get('/clear-cache', function() {
