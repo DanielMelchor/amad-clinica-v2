@@ -26,11 +26,38 @@ class AuthenticatedSessionController extends Controller
     {
         // dd($request->all());
         $request->authenticate();
-        return redirect()->route('login.waiting');
+
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if (!$user || !$user->email) {
+            return back()->withErrors(['email' => 'No se pudo determinar el destinatario del correo.']);
+        }
+        $destinatario = $user->email;
+
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        $token = \Illuminate\Support\Str::random(64);
+
+        \App\Models\LoginVerification::create([
+            'user_id'    => $user->id,
+            'token'      => $token,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'expires_at' => now()->addMinutes(15),
+        ]);
+
+        \Illuminate\Support\Facades\Mail::to($user->email)
+        ->send(new \App\Mail\LoginConfirmationMail($token));
+
+        session(['auth_user_id' => $user->id]);
+
+        return redirect()->route('login.verify.form');
+
+        //return redirect()->route('login.waiting');
 
         // $request->session()->regenerate();
 
-        // $user = auth()->user();
+        //$user = auth()->user();
 
         // $url = match (true) {
         //     $user->hasRole('Super Admin')   => route('home'),
@@ -57,5 +84,37 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    // Muestra la vista de "Revisa tu correo"
+    public function showVerifyForm() {
+        return view('auth.verify-login-msg'); // Una vista simple de Breeze
+    }
+
+    // Procesa el link del correo
+    public function verify($token) {
+        $verification = \App\Models\LoginVerification::where('token', $token)
+            ->where('is_confirmed', false)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$verification) {
+            return redirect()->route('login')->withErrors(['email' => 'El enlace ha expirado o es inválido.']);
+        }
+
+        // Marcar como usado y loguear
+        $verification->update(['is_confirmed' => true]);
+
+        $user = \App\Models\User::find($verification->user_id);
+
+        if ($user) {
+            auth()->login($user); // Aquí es donde se crea la cookie de sesión
+            
+            // 4. Limpiar la sesión temporal que usamos en el paso anterior
+            session()->forget('auth_user_id');
+            
+            // 5. Redirigir al home o dashboard
+            return redirect()->intended(route('home', absolute: false));
+        }
     }
 }

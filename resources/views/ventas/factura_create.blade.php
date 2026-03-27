@@ -481,7 +481,7 @@
 
             // Si el usuario seleccionó algo (valor no vacío)
             if (fpago_id !== "") {
-                $.ajax({
+                /*$.ajax({
                     url: "{{ route('campos_requeridos') }}",
                     type: "POST",
                     async: true,
@@ -540,7 +540,51 @@
                     error: function(error){
                         console.log(error);
                     }
+                });*/
+                const selectorCasa = `#mpago\\[${id}\\]\\[casa_id\\]`;
+                const $selectCasa = $(selectorCasa);
+                console.log(response);
+                // 1. Determinar si el campo de "Casa/Entidad" debe habilitarse
+                // Basado en tu lógica: Se habilita si viene banco='S' O casa='S' (o como lo maneje tu backend)
+                const habilitarCasa = (response.banco === 'S' || response.casa === 'S');
+
+                $selectCasa.prop('disabled', !habilitarCasa);
+                $selectCasa.css('background-color', habilitarCasa ? '#fff' : '#e9ecef');
+
+                if (habilitarCasa) {
+                    // 2. Lógica de selección de lista:
+                    // Si banco = 'S' y casa = 'N' -> listaBancos, de lo contrario -> listaTarjetas
+                    const datosAInsertar = (response.banco === 'S' && response.casa === 'N') 
+                                           ? listaBancos 
+                                           : listaTarjetas;
+
+                    // 3. Limpiar y llenar el select
+                    $selectCasa.empty().append('<option value="">Seleccione Entidad...</option>');
+                    
+                    $.each(datosAInsertar, function(index, item) {
+                        $selectCasa.append($('<option>', {
+                            value: item.id,
+                            text: item.nombre // Ajusta 'nombre' según el campo de tu tabla bancos
+                        }));
+                    });
+                } else {
+                    $selectCasa.empty().append('<option value="">N/A</option>').val('');
+                }
+
+                // 4. Otros campos (Cuenta, Documento, Autorización)
+                const otrosCampos = {
+                    'cuenta': 'cuenta_no',
+                    'documento': 'documento_no',
+                    'autorizacion': 'autoriza_no'
+                };
+
+                $.each(otrosCampos, function(key, suffix) {
+                    const selector = `#mpago\\[${id}\\]\\[${suffix}\\]`;
+                    const activo = (response[key] === 'S');
+                    $(selector).prop('readonly', !activo).val(activo ? $(selector).val() : '');
+                    $(selector).css('background-color', activo ? '#fff' : '#e9ecef');
                 });
+            },
                 
                 // Opcional: Poner el foco en el siguiente campo automáticamente
                 $('[id="mpago[' + nLineap + '][casa_id]"]').focus();

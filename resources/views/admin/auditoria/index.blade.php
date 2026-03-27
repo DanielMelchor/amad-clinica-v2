@@ -36,7 +36,7 @@
 <div class="card">
     <div class="card-body p-0">
         <table class="table table-hover table-sm">
-            <thead class="bg-navy">
+            <thead class="bg-light">
                 <tr>
                     <th>Fecha/Hora</th>
                     <th>Usuario</th>
@@ -50,7 +50,7 @@
                 @forelse($logs as $log)
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($log->fecha_registro)->format('d/m/Y H:i:s') }}</td>
-                    <td><b>{{ $log->usuario->name ?? 'Sistema' }}</b></td>
+                    <td><b>{{ $log->user_id ?? 'Sistema' }}</b></td>
                     <td><code>{{ $log->ip_address }}</code></td>
                     <td>{{ $log->navegador }} / {{ $log->plataforma }}</td>
                     <td>{{ $log->dispositivo }}</td>

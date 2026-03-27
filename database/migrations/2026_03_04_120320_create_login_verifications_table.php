@@ -27,7 +27,7 @@ return new class extends Migration
             $table->boolean('is_confirmed')->default(false);
             
             // Tiempos de vida
-            $table->timestamp('expires_at');
+            $table->timestamp('expires_at')->index();
             $table->timestamps(); // Crea created_at y updated_at
         });
     }

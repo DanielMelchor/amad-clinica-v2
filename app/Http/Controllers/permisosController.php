@@ -306,8 +306,7 @@ class permisosController extends Controller
         $desde   = $request->get('fecha_desde');
         $hasta   = $request->get('fecha_hasta');
 
-        $logs = \App\Models\AuditoriaAcceso::with('usuario')
-            ->when($usuario, function ($query, $usuario) {
+        $logs = \App\Models\AuditoriaAcceso::when($usuario, function ($query, $usuario) {
                 // Buscamos en la relación con la tabla de usuarios
                 return $query->whereHas('usuario', function ($q) use ($usuario) {
                     $q->where('name', 'LIKE', "%$usuario%");

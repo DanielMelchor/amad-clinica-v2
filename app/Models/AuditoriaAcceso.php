@@ -17,6 +17,12 @@ class AuditoriaAcceso extends Model
         'metodo'
     ];
 
+    public function usuario()
+    {
+        // Si tu llave foránea en la tabla se llama 'user_id', Laravel la detecta solo.
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     // Desactivamos timestamps si solo usamos 'fecha_registro'
     public $timestamps = false;
 }

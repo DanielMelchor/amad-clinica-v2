@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\AdmisionController;
@@ -43,6 +44,14 @@ use Illuminate\Support\Facades\Route;
     Route::get('/', function () {
         return view('welcome');
     });
+
+    // routes/auth.php
+
+    Route::get('verify-login', [AuthenticatedSessionController::class, 'showVerifyForm'])
+                    ->name('login.verify.form');
+
+    Route::get('verify-login/{token}', [AuthenticatedSessionController::class, 'verify'])
+                    ->name('login.verify');
 
     Route::get('/login/check-status', function() {
         $userId = session('auth_temp_user_id');

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Crypt;
 use Auth;
 use Session;
 use Response;
-use App\Models\Inventario_Transaccion;
+use App\Models\InventarioTransaccion;
 
 class InventarioTrnController extends Controller
 {
@@ -19,7 +19,7 @@ class InventarioTrnController extends Controller
     }
 
     public function index(){
-    	$listado = Inventario_Transaccion::all();
+    	$listado = InventarioTransaccion::all();
     	return view('inv_transacciones.index', compact('listado'));
     }
 
@@ -30,7 +30,7 @@ class InventarioTrnController extends Controller
             'tipo_transaccion' => 'required'
         ]);
 
-        $transaccion = new Inventario_Transaccion();
+        $transaccion = new InventarioTransaccion();
         $transaccion->empresa_id  = Auth::user()->empresa_id;
         $transaccion->descripcion = $validData['descripcion'];
         $transaccion->signo       = $validData['signo'];
@@ -56,7 +56,7 @@ class InventarioTrnController extends Controller
     public function edit(){
     	$id = $_POST['id'];
         $trnId = Crypt::decrypt($id);
-    	$transaccion = Inventario_Transaccion::findOrFail($trnId);
+    	$transaccion = InventarioTransaccion::findOrFail($trnId);
     	return Response::json($transaccion);
     }
 
@@ -67,7 +67,7 @@ class InventarioTrnController extends Controller
             'etipo_transaccion' => 'required'
         ]);
 
-        $transaccion = Inventario_Transaccion::findOrFail($request->eid);
+        $transaccion = InventarioTransaccion::findOrFail($request->eid);
         $transaccion->descripcion      = $validData['edescripcion'];
         $transaccion->signo            = $validData['esigno'];
         $transaccion->tipo_transaccion = $validData['etipo_transaccion'];
