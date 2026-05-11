@@ -50,77 +50,88 @@
 @endsection
 
 @section('content')
-	<div class="row">
-        <div class="col-md-10 offset-md-1">
-            <div class="card">
-                <div class="card-header" style="background-color: #E1E8ED;">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <h5>Disponibilidad de Artículos</h5>
-                        </div>
-                        <div class="col-md-3" style="text-align: right;">
-                        	<a href="{{ route('rpt_disponible_pdf') }}" class="btn btn-xs btn-default rounded-circle elevation-4" title="Impresión" target="_blank"><i class="fas fa-file-pdf"></i></a>
-                            <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
+	<div class="container-fluid pt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header" style="background-color: #E1E8ED;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 font-weight-bold">
+                                <i class="fas fa-file mr-2"></i>Disponibilidad de Artículos
+                            </h6>
+                            <div>
+                                <button class="btn btn-sm btn-outline-info rounded-circle elevation-2 mr-1" onclick="fnAbrirBusqueda();">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                	<div class="table-responsive">
-						<table id="tbldisponible" class="table table-sm table-hover text-center">
-							<thead>
-								<tr style="font-size: 12px;">
-									<th>Producto</th><th>Unidad de medida</th><th>Disponible</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach($detalle as $d)
-									<tr style="font-size: 12px;">
-										<td>{{ $d->producto_descripcion }}</td>
-										<td>{{ $d->unidad_medida_descripcion }}</td>
-										<td>{{ $d->disponible }}</td>
-									</tr>
-								@endforeach
-							</tbody>
-						</table>
-					</div>
+                    <div class="card-body text-center p-2 p-md-3">
+                        <div class="row">
+                            <div class="col-10 offset-1">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped" style="font-size:12px;" id="tblprincipal">
+                                        <thead>
+                                            <tr>
+                                                <th>Familia</th>
+                                                <th>Insumo</th>
+                                                <th>Unidad Medida</th>
+                                                <th>Existencia</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($existencias as $item)
+
+                                                <tr>
+                                                    <td>{{ $item->familia->nombre ?? 'Sin Familia' }}</td>
+                                                    <td>{{ $item->producto_nombre }}</td>
+                                                    <td>{{ $item->unidadMedida->descripcion ?? 'N/A' }}</td>
+                                                    <td class="numero">{{ number_format($item->stock_total, 2) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    @include('reportes.partials.modals_reportes', ['routeAction' => route('rpt_disponible')])
 @endsection
 @section('js')
 	<script>
-	  $(function () {
-	    // $('#tbldisponible').DataTable({
-	    //   "paging": true,
-	    //   "lengthChange": false,
-	    //   "searching": true,
-	    //   "ordering": true,
-	    //   "info": true,
-	    //   "autoWidth": false,
-	    //   language: {
-		//         "sProcessing":     "Procesando...",
-        //     	"sLengthMenu":     "Mostrar _MENU_ registros",
-        //     	"sZeroRecords":    "No se encontraron resultados",
-        //     	"sEmptyTable":     "Ningún dato disponible en esta tabla =(",
-        //     	"sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-        //     	"sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
-        //     	"sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
-        //     	"sInfoPostFix":    "",
-        //     	"sSearch":         "Buscar:",
-        //     	"sUrl":            "",
-        //     	"sInfoThousands":  ",",
-        //     	"sLoadingRecords": "Cargando...",
-        //     	"oPaginate": {
-        //         				"sFirst":    "Primero",
-        //         				"sLast":     "Último",
-        //         				"sNext":     "Siguiente",
-        //         				"sPrevious": "Anterior"
-        // 					}
-		//     },
-		//     dom: 'Bfrtip'
-	    // });
-	    $('#tbldisponible').DataTable({
+        //=====================================================================
+        // Función para abrir parametros de busqueda
+        //=====================================================================
+        function fnAbrirBusqueda(){
+            event.preventDefault();
+            $('#busquedaModal').find('input[type="text"], input[type="email"], input[type="number"], textarea').val('');
+            $('#busquedaModal').modal('show');
+            $('#bodega_id').select2({
+                theme: 'bootstrap4',
+                width: 'style', // Esto hace que tome el ancho del elemento original
+                placeholder: 'Seleccionar ...'
+            });
+            $('#familia_id').select2({
+                theme: 'bootstrap4',
+                width: 'style', // Esto hace que tome el ancho del elemento original
+                placeholder: 'Seleccionar ...'
+            });
+            $('#producto_id').select2({
+                theme: 'bootstrap4',
+                width: 'style', // Esto hace que tome el ancho del elemento original
+                placeholder: 'Seleccionar ...'
+            });
+        }
+
+        $(function () {
+            $('#tblprincipal').DataTable({
                 "paging": true,
                 "lengthChange": true,
                 "searching": true,
@@ -150,10 +161,11 @@
                     {
                         extend: 'excelHtml5',
                         text: 'Excel',
-                        className: 'btn btn-xs btn-default'
+                        className: 'btn btn-md btn-default'
                     }
                 ]
             });
-	  });
-	</script>
+        });
+
+    </script>
 @endsection

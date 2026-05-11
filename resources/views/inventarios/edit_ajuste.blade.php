@@ -49,7 +49,7 @@
                             </div>
                             <div class="col-12 col-md-2 d-flex align-items-end mb-2">
                                 @if(!$esSoloLectura)
-                                    <button type="button" class="btn btn-xs btn-outline-primary rounded-circle d-none d-md-inline elevation-2 ml-auto" onclick="agregarFila();" title="Agregar Artículo">
+                                    <button type="button" class="btn btn-xs btn-outline-primary rounded-circle d-none d-md-inline elevation-2 ml-auto" onclick="agregarFila();" title="Agregar Insumo">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 @endif
@@ -62,7 +62,7 @@
                             <table id="tblDetalle" class="table table-sm table-hover border-0">
                                 <thead class="bg-light">
                                     <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
-                                        <th style="width: 50%;">Artículo</th>
+                                        <th style="width: 50%;">Insumo</th>
                                         <th style="width: 15%;">U. Medida</th>
                                         <th style="width: 15%;">Cantidad</th>
                                         <th style="width: 15%;">Movimiento</th>

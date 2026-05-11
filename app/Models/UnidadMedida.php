@@ -22,4 +22,9 @@ class UnidadMedida extends Model
     protected $fillable = ['descripcion', 'siglas', 'estado'];
     
     protected $hidden = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
+
+    public function articulos()
+    {
+        return $this->hasMany(Articulo::class, 'medida_id');
+    }   
 }

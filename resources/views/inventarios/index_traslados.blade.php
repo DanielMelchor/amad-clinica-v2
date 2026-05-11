@@ -46,7 +46,7 @@
             }
 
             /* Botones de acción más grandes para pulgares */
-            .btn-sm { padding: 0.5rem 0.7rem; font-size: 1rem; }
+            .btn-xs { padding: 0.5rem 0.7rem; font-size: 1rem; }
             
             /* Ajuste de controles de búsqueda */
             .dataTables_wrapper .row { flex-direction: column; align-items: center; }
@@ -54,7 +54,7 @@
     </style>
 @endsection
 
-@section('title', 'Ajustes')
+@section('title', 'Traslados')
 @section('content_header')
     <br>
 @endsection
@@ -65,10 +65,10 @@
                 <div class="card-header" style="background-color: #E1E8ED;">
                     <div class="row align-items-center">
                         <div class="col-8">
-                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shield-alt mr-2"></i>Lista de Ajustes</h6>
+                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shield-alt mr-2"></i>Lista de Traslados</h6>
                         </div>
                         <div class="col-4 text-right">
-                            <a href="{{ route('crear_ajuste') }}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
+                            <a href="{{ route('crear_traslado') }}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2 mr-2" title="Nuevo Traslado">
                                 <i class="fas fa-plus-circle"></i>
                             </a>
                             <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
@@ -84,6 +84,8 @@
                                 <tr class="text-center" style="font-size: 11px; text-transform: uppercase;">
                                     <th class="text-left pl-3">Transacción / Número</th>
                                     <th class="d-none d-sm-table-cell">Fecha</th>
+                                    <th>Bodega Origen</th>
+                                    <th>Bodega Destino</th>
                                     <th style="width: 50px;">Acción</th>
                                 </tr>   
                             </thead>
@@ -93,16 +95,19 @@
                                         <td class="text-left pl-3 align-middle">
                                             <div class="font-weight-bold text-dark">{{ $l->transaccion_descripcion }}</div>
                                             <small class="text-muted">{{ $l->correlativo }} - {{ $l->anio }}</small>
-                                            <div class="d-block d-sm-none mt-1">
-                                                <i class="far fa-calendar-alt mr-1"></i>{{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
-                                            </div>
                                         </td>
                                         <td class="align-middle d-none d-sm-table-cell">
-                                            {{ \Carbon\Carbon::parse($l->created_at)->format('d/m/Y') }}
+                                            {{ \Carbon\Carbon::parse($l->fecha_emision)->format('d/m/Y') }}
+                                        </td>
+                                        <td>
+                                            <div class="font-weight-bold text-dark">{{ $l->bodegaOrigen->descripcion }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="font-weight-bold text-dark">{{ $l->bodegaDestino->descripcion }}</div>
                                         </td>
                                         <td class="align-middle pr-3">
                                             @php $Id= Crypt::encrypt($l->id); @endphp
-                                            <a href="{{ route('editar_ajuste', $Id) }}" class="btn btn-sm btn-warning rounded-circle elevation-2" title="Editar Compra">
+                                            <a href="{{ route('editar_traslado', $Id) }}" class="btn btn-sm btn-warning rounded-circle elevation-2" title="Editar Compra">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                         </td>
@@ -116,7 +121,7 @@
         </div>
     </div>
 
-    @include('aseguradoras.partials.modals_aseguradoras')
+    @include('inventarios.partials.modals_traslados')
 
 @endsection
 

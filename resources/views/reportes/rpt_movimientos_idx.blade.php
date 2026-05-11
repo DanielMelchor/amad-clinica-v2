@@ -1,28 +1,7 @@
 @extends('adminlte::page')
 @section('css')
-	<link rel="stylesheet" href="{{ asset('assets/select2/css/select2.min.css')}}">
-    <link rel="stylesheet" href="{{ asset('assets/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-	<style type="text/css">
-        .btn-reporte{
-          background-color: #FF8D33 !important;
-        }
-        .btn-excel{
-          background-color: #A5C890 !important;
-        }
-        .btn-config{
-          background-color: #C8BA90 !important;
-        }
-        .btn-refactura{
-          background-color: #C890A4 !important;
-        }
-        .btn-renumera{
-          background-color: #8B9BC1 !important;
-        }
-        .btn-anular{
-          background-color: #226D7C !important;
-          color: white !important;
-        }
+    <style type="text/css">
         .btn-guardar{
             background-color: #A5C890 !important;
         }
@@ -71,109 +50,87 @@
 @endsection
 
 @section('content')
-	<div class="row">
-      <div class="col-md-10 offset-md-1">
-          <div class="card">
-              <div class="card-header" style="background-color: #E1E8ED;">
-                  <div class="row">
-                      <div class="col-md-9">
-                          <h5>Movimiento de Productos</h5>
-                      </div>
-                      <div class="col-md-3" style="text-align: right;">
-                      		<button type="button" class="btn btn-xs btn-config rounded-circle elevation-4" title="Parámetros" data-toggle="modal" data-target="#parametrosModal"><i class="fas fa-cog"></i></button>
-                      		<a href="#" class="btn btn-xs btn-default rounded-circle elevation-4" title="Generar informe" onclick="generar_pdf();" target="_blank"><i class="far fa-file-pdf"></i></a>
-                          <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" title="Salir"><i class="fas fa-sign-out-alt"></i></a>
-                      </div>
-                  </div>
-              </div>
-              <div class="card-body">
-              		<div class="table-responsive">
-											<table id="tblprincipal" class="table table-sm table-striped table-bordered" style="width: 100%;">
-												<thead>
-													<tr style="text-align: center; font-size: 12px;">
-														<th>Producto</th>
-														<th>Saldo Inicial</th>
-														<th>Entrada</th>
-														<th>Salida</th>
-														<th>Saldo Final</th>
-													</tr>
-												</thead>
-												<tbody>
-													@foreach($movimientos as $m)
-							              <tr style="font-size: 12px">
-							                <td>{{ $m['producto_descripcion'] }}</td>
-							                <td style="text-align: right;">{{ number_format($m['saldo_inicial'],2) }}</td>
-							                <td style="text-align: right;">{{ $m['ingreso'] }}</td>
-							                <td style="text-align: right;">{{ $m['egreso'] }}</td>
-							                <td style="text-align: right;">{{ number_format($m['saldo_final'],2) }}</td>
-							              </tr>
-							            @endforeach
-												</tbody>
-											</table>
-										</div>
-              </div>
-          </div>
-      </div>
-  </div>
+    <div class="container-fluid">
+        {{-- 1. Alerta de Descuadre (Validación contra InvSaldo) --}}
+        <div class="card">
+            <div class="card-header" style="background-color: #E1E8ED;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 font-weight-bold">
+                        <i class="fas fa-file mr-2"></i>Movimiento de Artículos
+                    </h6>
+                    <div>
+                        <button class="btn btn-sm btn-outline-info rounded-circle elevation-2 mr-1" onclick="fnAbrirBusqueda();">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="tblprincipal" class="table table-bordered table-striped table-sm" style="font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <th>Familia</th>
+                            <th>Insumo</th>
+                            <th class="text-right">Saldo Inicial</th>
+                            <th class="text-right">Entrada</th>
+                            <th class="text-right">Salida</th>
+                            <th class="text-right">Saldo Final</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($movimientos as $m)
+                            @php 
+                                $saldoFinal = $m->saldo_inicial + $m->entradas - $m->salidas; 
+                            @endphp
+                            <tr>
+                                <td>{{ $m->familia_nombre ?? 'Sin Familia' }}</td>
+                                <td>{{ $m->descripcion }}</td>
+                                <td class="text-right">{{ number_format($m->saldo_inicial, 2) }}</td>
+                                <td class="text-right">{{ number_format($m->entradas, 2) }}</td>
+                                <td class="text-right">{{ number_format($m->salidas, 2) }}</td>
+                                <td class="text-right text-bold">{{ number_format($saldoFinal, 2) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-	<!-- Modal -->
-	<div class="modal fade" id="parametrosModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="parametrosModalLabel" aria-hidden="true">
-  		<div class="modal-dialog modal-dialog-centered">
-  			<div class="modal-content">
-		      		<div class="card">
-		      			<div class="card-header bg-default" style="background-color: #E1E8ED;">
-		      				<div class="row">
-		      						<div class="col-md-9">
-				      					<h6>Parámetros</h6>
-				      				</div>
-				      				<div class="col-md-3" style="text-align: right;">
-				      					<a href="#" class="btn btn-xs btn-outline-secondary rounded-circle elevation-4" title="filtrar" onclick="fn_buscar(); return false;"><i class="fas fa-search"></i></a>
-				      						<button type="button" class="btn btn-xs btn-outline-danger rounded-circle elevation-4" data-dismiss="modal" title="Salir"><i class="fas fa-sign-out-alt"></i></button>
-				      				</div>
-		      				</div>
-		      			</div>
-		      			<div class="card-body">
-		      				<div class="row">
-		      					<div class="col-md-12">
-		      						<div class="input-group mb-1 input-group-sm col-md-10 offset-md-1">
-                          <div class="input-group-prepend">
-                              <label class="input-group-text">Fecha Inicio</label>
-                          </div>
-                          <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ $fecha_inicial }}">
-                      </div>
-		      					</div>
-		      				</div>
-		      				<div class="row">
-		      					<div class="col-md-12">
-		      						<div class="input-group mb-1 input-group-sm col-md-10 offset-md-1">
-                          <div class="input-group-prepend">
-                              <label class="input-group-text">Fecha Final</label>
-                          </div>
-                          <input type="date" class="form-control" id="fecha_final" name="fecha_inicio" value="{{ $fecha_final }}">
-                      </div>
-		      					</div>
-		      				</div>
-		      			</div>
-		      			<div class="card-footer">
-		      				
-		      			</div>
-		      		</div>
-  			</div>
-  		</div>
-  	</div>
+    {{-- Incluimos el modal pasando la ruta de movimientos y activando fechas --}}
+    @include('reportes.partials.modals_reportes', [
+        'routeAction' => route('rpt_movimiento_articulos'),
+        'mostrarFechas' => true
+    ])
 @endsection
 @section('js')
-		<script src="{{ asset('assets/select2/js/select2.full.min.js')}}"></script>
-		<script type="text/javascript">
-				//========================================================================
-        // inicializar librerias
-        //========================================================================
-        $(function () {
-            $('.select2').select2()
-            $('.select2bs4').select2({
-              theme: 'bootstrap4'
-            })
-        });
+    <script>
+        //=====================================================================
+        // Función para abrir parametros de busqueda
+        //=====================================================================
+        function fnAbrirBusqueda(){
+            event.preventDefault();
+            $('#busquedaModal').find('input[type="text"], input[type="email"], input[type="number"], textarea').val('');
+            $('#busquedaModal').modal('show');
+            $('#bodega_id').select2({
+                theme: 'bootstrap4',
+                width: 'style', // Esto hace que tome el ancho del elemento original
+                placeholder: 'Seleccionar ...'
+            });
+            $('#familia_id').select2({
+                theme: 'bootstrap4',
+                width: 'style', // Esto hace que tome el ancho del elemento original
+                placeholder: 'Seleccionar ...'
+            });
+            $('#producto_id').select2({
+                theme: 'bootstrap4',
+                width: 'style', // Esto hace que tome el ancho del elemento original
+                placeholder: 'Seleccionar ...'
+            });
+        }
 
         $(function () {
             $('#tblprincipal').DataTable({
@@ -211,31 +168,5 @@
                 ]
             });
         });
-
-        window.onload = function() {
-        	// trae_detalle();
-        	$('.dropdown-item').toggle();
-        }
-
-		function fn_buscar(){
-	    	let fecha_inicial = document.getElementById('fecha_inicio').value;
-	    	let fecha_final   = document.getElementById('fecha_final').value;
-	    	
-	    	if(fecha_inicial == '' || fecha_final == '') return false;
-				let url = "{{ route('rpt_movimiento_articulos', ['fecha_inicial' => '2020-01-01', 'fecha_final' => '2020-01-31']) }}";
-		    	url = url.replace('2020-01-01', fecha_inicial);
-		    	url = url.replace('2020-01-31', fecha_final);
-		    	location.href = url;
-    }
-
-    function generar_pdf(){
-    	let fecha_inicial = document.getElementById('fecha_inicio').value;
-    	let fecha_final   = document.getElementById('fecha_final').value;
-    	let url = "{{ route('rpt_movimiento_articulos_pdf', ['fecha_inicial' => '2020-01-01', 'fecha_final' => '2020-01-31']) }}";
-		    	url = url.replace('2020-01-01', fecha_inicial);
-		    	url = url.replace('2020-01-31', fecha_final);
-		    	// location.href = url;
-		    	window.open(url, '_blank');
-    }
-	</script>
+    </script>
 @endsection

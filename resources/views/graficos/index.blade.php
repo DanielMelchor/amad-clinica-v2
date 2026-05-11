@@ -294,6 +294,13 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="tab-pane fade show" id="inventario" role="tabpanel" aria-labelledby="inventario-tab">
+                                        <div class="row">
+                                            <div class="col-lg-12 col-12">
+                                                <div id="contenedor-grafica"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -333,6 +340,7 @@
     <!-- <script src="{{ asset('lib/jquery-plugin-circliful-master/js/jquery.circliful.min.js') }}"></script> -->
     <!-- Highcharts local -->
     <script src="{{ asset('assets/Highcharts-11.1.0/js/highcharts.js') }}"></script>
+    <script src="{{ asset('assets/Highcharts-11.1.0/modules/bullet.js') }}"></script>
     <script src="{{ asset('assets/Highcharts-11.1.0/modules/accessibility.js') }}"></script>
     <script src="{{ asset('assets/Highcharts-11.1.0/modules/exporting.js') }}"></script>
     <script src="{{ asset('assets/Highcharts-11.1.0/modules/export-data.js') }}"></script>
@@ -425,7 +433,7 @@
         function fn_datos(){
             var fecha_inicial = document.getElementById('fecha_inicial').value;
             var fecha_final   = document.getElementById('fecha_final').value;
-
+            cargarGraficaInventario(1);
             $.ajax({
                 url: "{{ route('total_admisiones_v2') }}",
                 dataType: "json",
@@ -596,38 +604,78 @@
                     // *************************************   Finanzas   ***********************************//
                     // **************************************************************************************//
                     document.getElementById('total_ingresos').innerHTML  = response[6]['ventas']['total_documentos'];
-                    document.getElementById('total_facturado').innerHTML  = response[6]['ventas']['monto_facturado'];
-                    document.getElementById('saldo_pendiente').innerHTML  = response[6]['ventas']['saldo_pendiente'];
-                    document.getElementById('total_anulaciones').innerHTML  = response[6]['ventas']['total_anulados'];
+                    document.getElementById('total_facturado').innerHTML  = response[6]['ventas']['monto_facturado'] ?? 0;
+                    document.getElementById('saldo_pendiente').innerHTML  = response[6]['ventas']['saldo_pendiente'] ?? 0;
+                    document.getElementById('total_anulaciones').innerHTML  = response[6]['ventas']['total_anulados'] ?? 0;
 
                 },
                 error: function(error){
                     console.log(error);
                 }
             });
-
-            // $.ajax({
-            //     url: "{{ route('grp_data') }}",
-            //     dataType: "json",
-            //     type: "POST",
-            //     async: true,
-            //     data: {"_token": "{{ csrf_token() }}",
-            //            fecha_inicial : fecha_inicial,
-            //            fecha_final   : fecha_final},
-            //     success: function(response){
-            //         console.log(response[2]);
-            //         document.getElementById('ticket_promedio').innerHTML  = response[0]['ticket_promedio'];
-            //         document.getElementById('total_ingresos').innerHTML  = response[1]['total_ventas'];
-            //         drilldown(response[3], response[4]);
-            //     },
-            //     error: function(error){
-            //         console.log(error);
-            //     }
-            // });
         }
 
         window.onload = function() {
             fn_datos();
+            cargarGraficaInventario(1);
+        }
+
+        function cargarGraficaInventario(bodegaId) {
+            let urlData = "{{ route('datos_grafica_inventario', ':id') }}";
+            urlData = urlData.replace(':id', bodegaId);
+
+            $.ajax({
+                url: urlData,
+                method: 'GET',
+                success: function(response) {
+                    const categorias = response.map(d => d.nombre);
+                    
+                    const seriesData = response.map(d => ({
+                        y: d.actual,
+                        target: d.maximo,
+                        lowTarget: d.minimo,
+                        unidadLabel: d.unidad // Guardamos la unidad (Caja, Und, etc)
+                    }));
+
+                    Highcharts.chart('contenedor-grafica', {
+                        chart: { type: 'bullet', inverted: true },
+                        title: { text: 'Nivel de Inventario por Unidad de Medida' },
+                        xAxis: { categories: categorias },
+                        yAxis: {
+                            title: { text: 'Cantidad según Unidad Principal' }
+                        },
+                        series: [{
+                            name: 'Stock Actual',
+                            data: seriesData,
+                            color: '#17a2b8',
+                            // Personalizamos el marcador del "Target" (Máximo)
+                            targetOptions: {
+                                width: '140%',
+                                height: 3,
+                                borderWidth: 0,
+                                color: '#dc3545' // Rojo para el límite máximo
+                            }
+                        }],
+                        tooltip: {
+                            useHTML: true,
+                            pointFormat: `
+                                <span style="color:{point.color}">\u25CF</span> <b>{point.category}</b><br/>
+                                Actual: <b>{point.y} {point.unidadLabel}</b><br/>
+                                Mínimo: <b>{point.lowTarget} {point.unidadLabel}</b><br/>
+                                Máximo: <b>{point.target} {point.unidadLabel}</b>
+                            `
+                        },
+                        plotOptions: {
+                            series: {
+                                dataLabels: {
+                                    enabled: true,
+                                    format: '{y} {point.unidadLabel}'
+                                }
+                            }
+                        }
+                    });
+                }
+            });
         }
 
         function fnTodasAdmisiones(){

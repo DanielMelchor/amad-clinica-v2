@@ -11,6 +11,8 @@ use Auth;
 use Session;
 use Response;
 use App\Models\Bodega;
+use App\Models\BodegaProductoConfig;
+use App\Models\Producto;
 
 class BodegaController extends Controller
 {
@@ -78,5 +80,35 @@ class BodegaController extends Controller
         );
         return redirect()->back()->with($message);
 
+    }
+
+    public function getConfiguracion($id_encriptado) {
+        $id = Crypt::decrypt($id_encriptado);
+        // Obtenemos todos los productos y su configuración específica para esta bodega
+        $productos = Producto::select('id', 'descripcion')
+            ->with(['bodegasConfiguradas' => function($q) use ($id) {
+                $q->where('bodega_id', $id);
+            }])->get();
+
+        return Response::json($productos);
+    }
+
+    public function guardarConfiguracion(Request $request) {
+        $bodega_id = Crypt::decrypt($request->bodega_id);
+        
+        foreach ($request->productos as $prod) {
+            BodegaProductoConfig::updateOrCreate(
+                ['bodega_id' => $bodega_id, 'producto_id' => $prod['id']],
+                [
+                    'stock_minimo' => $prod['minimo'] ?? 0,
+                    'stock_maximo' => $prod['maximo'] ?? 0,
+                    'punto_reorden' => $prod['reorden'] ?? 0,
+                    'estado' => 1,
+                    'updated_by' => Auth::user()->name
+                ]
+            );
+        }
+
+        return response()->json(['message' => 'Configuración actualizada correctamente']);
     }
 }

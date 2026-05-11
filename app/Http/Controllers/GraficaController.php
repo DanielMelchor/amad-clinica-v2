@@ -177,7 +177,6 @@ class GraficaController extends Controller
                     ->where('dvm.estado', 1)
                     ->selectRaw('AVG(dvd.total) as promedio, SUM(dvd.total) as suma')
                     ->tosql();
-        dd($ventas);
 
         $dvd = DB::table('documentoventa_detalles')
                 ->select('documentoventa_maestro_id', DB::raw('SUM(precio_neto) as total'))
@@ -409,5 +408,45 @@ class GraficaController extends Controller
         array_push($arreglo_final, $drilldown);
 
         return Response::json($arreglo_final);
+    }
+
+    public function getDatosInsumos($id)
+    {
+        try {
+            // Usamos Query Builder para evitar errores de relaciones de Eloquent por ahora
+            $datos = DB::table('productos as p')
+                        ->join('bodega_producto_config as config', 'p.id', '=', 'config.producto_id')
+                        // Subconsulta para obtener el stock real total por producto sin duplicados
+                        ->leftJoin(DB::raw('(SELECT producto_id, SUM(stock_actual) as total_stock 
+                                             FROM inv_saldos 
+                                             GROUP BY producto_id) as s'), 
+                            'p.id', '=', 's.producto_id')
+                        ->where('config.estado', 1)
+                        ->select(
+                            'p.descripcion as nombre',
+                            DB::raw('COALESCE(s.total_stock, 0) as actual'),
+                            // Usamos MAX para obtener el límite más alto configurado para ese producto
+                            DB::raw('MAX(config.stock_minimo) as minimo'),
+                            DB::raw('MAX(config.stock_maximo) as maximo')
+                        )
+                        ->groupBy('p.id', 'p.descripcion', 's.total_stock')
+                        ->get()
+                        ->map(function($item) {
+                            return [
+                                'nombre' => $item->nombre,
+                                'actual' => (float)$item->actual,
+                                'minimo' => (float)($item->minimo ?? 0),
+                                'maximo' => (float)($item->maximo ?? 0),
+                                'unidad' => 'Und'
+                            ];
+                        });
+
+            return response()->json($datos);
+
+
+        } catch (\Exception $e) {
+            // Esto te devolverá el error real en el Network tab de Chrome en lugar de solo "500"
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

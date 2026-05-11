@@ -44,6 +44,9 @@
             /* Botones más grandes para touch */
             .btn-xs { padding: 0.4rem 0.6rem; font-size: 0.9rem; }
         }
+        .numero{
+            text-align: right;
+        }
     </style>
 @endsection
 
@@ -96,6 +99,10 @@
                                                 <button class="btn btn-xs btn-warning rounded-circle elevation-2" onclick="fn_edicion('{{ $Id }}')">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
+                                                <button class="btn btn-xs btn-info rounded-circle elevation-2" title="Límites de Stock" 
+                                                        onclick="fn_configurar_stock('{{ $Id }}', '{{ $l->descripcion }}')">
+                                                    <i class="fas fa-boxes"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -107,41 +114,36 @@
             </div>
         </div>
     </div>
-
-    {{-- Los modales se mantienen similares pero usamos clases de padding de Bootstrap 4 --}}
-    @include('bodegas.partials.modals_bodegas') {{-- Sugerencia: Mover modales a un partial para limpiar el index --}}
+    @include('bodegas.partials.modals_bodegas')
 @endsection
 @section('js')
-	@if(Session::get('type') == 'success')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Trabajo Finalizado",
-                        text: "{{ Session::get('message') }}",
-                        icon: 'success', // En v2 es 'icon', no 'type'
-                        confirmButtonColor: '#28a745', // Color success de AdminLTE
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
-    @endif
-    @if(Session::get('type') == 'error')
-        @if(Session::has('message'))
-            <script>
-                setTimeout(function() {
-                    Swal.fire({
-                        title: "Error",
-                        text: "{!! Session::get('message') !!}",
-                        icon: 'error', // En v2 es 'icon', no 'type'
-                        showConfirmButton: true,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }, 1000);
-            </script>
-        @endif
+	@if(Session::has('message'))
+        <script>
+            $(document).ready(function() {
+                // Forzamos la obtención fresca de los datos de sesión
+                let tipo = "{{ Session::get('type') }}"; 
+                let mensaje = {!! json_encode(Session::get('message')) !!};
+                let titulo = (tipo === 'success') ? '¡Éxito!' : 'Atención';
+
+                Swal.fire({
+                    title: titulo,
+                    text: mensaje,
+                    icon: tipo, // Esto debe recibir 'error' para ponerse rojo
+                    confirmButtonColor: tipo === 'success' ? '#28a745' : '#dc3545',
+                    confirmButtonText: 'Aceptar'
+                }).then((result) => {
+                    // Si hubo error, habilitamos el botón de nuevo
+                    if(tipo === 'error'){
+                        $('#submitButton').prop('disabled', false);
+                    }
+                });
+            });
+        </script>
+        {{-- ESTO ES LO QUE FALTA: Borrar la sesión después de imprimir el JS --}}
+        @php 
+            Session::forget('message'); 
+            Session::forget('type'); 
+        @endphp
     @endif
 	<script type="text/javascript">
 		$(function () {
@@ -231,5 +233,62 @@
                 // $('#submitButton').text('Enviando...');
             });
         });
+
+
+        //========================================================================
+        // minimos y maximos por bodega
+        //========================================================================        
+        function fn_configurar_stock(id, nombre) {
+            $('#config_bodega_id').val(id);
+            $('#nombreBodegaConfig').text(nombre);
+            $('#bodyConfigStock').html('<tr><td colspan="4" class="text-center">Cargando...</td></tr>');
+            
+            $("#configStockModal").modal('show');
+
+            $.ajax({
+                url: "{{ url('bodegas/configuracion') }}/" + id,
+                type: "GET",
+                success: function(response) {
+                    let html = '';
+                    response.forEach(prod => {
+                        let config = prod.bodegas_configuradas[0] ? prod.bodegas_configuradas[0].pivot : {stock_minimo: 0, stock_maximo: 0, punto_reorden: 0};
+                        html += `
+                            <tr>
+                                <td>${prod.descripcion}</td>
+                                <td><input type="number" class="form-control form-control-sm config-min numero" data-id="${prod.id}" value="${config.stock_minimo}"></td>
+                                <td><input type="number" class="form-control form-control-sm config-max numero" value="${config.stock_maximo}"></td>
+                                <td><input type="number" class="form-control form-control-sm config-reorden numero" value="${config.punto_reorden}"></td>
+                            </tr>`;
+                    });
+                    $('#bodyConfigStock').html(html);
+                }
+            });
+        }
+
+        function fn_guardar_config() {
+            let productos = [];
+            $('#bodyConfigStock tr').each(function() {
+                productos.push({
+                    id: $(this).find('.config-min').data('id'),
+                    minimo: $(this).find('.config-min').val(),
+                    maximo: $(this).find('.config-max').val(),
+                    reorden: $(this).find('.config-reorden').val()
+                });
+            });
+
+            $.ajax({
+                url: "{{ route('bodega_guardar_config') }}", // Definir esta ruta en web.php
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    bodega_id: $('#config_bodega_id').val(),
+                    productos: productos
+                },
+                success: function(res) {
+                    Swal.fire('Guardado', res.message, 'success');
+                    $("#configStockModal").modal('hide');
+                }
+            });
+        }
 	</script>
 @endsection

@@ -450,7 +450,7 @@ return [
                             'can'    => 'ver-catalogo-inventarios-familias',
                         ],
                         [
-                            'text'   => 'Productos',
+                            'text'   => 'Insumos',
                             'route'  => 'productos',
                             'icon'   => 'fas fa-boxes',
                             'can'    => 'ver-catalogo-inventarios-productos',
@@ -489,18 +489,11 @@ return [
                         [
                             'text'   => 'Kardex',
                             'route'  => 'rpt_kardex_articulos',
-                            'route'      => ['rpt_kardex_articulos', ['producto_id' => 0,
-                                              'fecha_inicial'             => $fecha_inicio
-                                              ]
-                                ],
                             'can'    => 'ver-reporte-inventario-kardex'
                         ],
                         [
                             'text'   => 'Movimiento de Articulos',
-                            'route'  => ['rpt_movimiento_articulos', ['fecha_inicial' => $fecha_inicial,
-                                                                      'fecha_final'   => $fecha_final
-                                                                      ],
-                                ],
+                            'route'  => 'rpt_movimiento_articulos',
                             'can'    => 'ver-reporte-inventario-movimientos'
                         ],
                         
@@ -517,6 +510,12 @@ return [
                     'route' => 'lista_compras',
                     'icon'  => 'fas fa-shopping-cart',
                     'can'   => 'administrar-procesos-inventario-compra'
+                ],
+                [
+                    'text'  => 'Traslado entre Bodegas',
+                    'route' => 'lista_traslados',
+                    'icon'  => 'fas fa-paper-plane',
+                    'can'   => 'administrar-procesos-inventario-traslado',
                 ],
             ]
         ],

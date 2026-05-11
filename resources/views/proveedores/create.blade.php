@@ -32,10 +32,10 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">Nuevo Proveedor</h6>
                                 <div class="btn-group-xs">
-                                    <button type="submit" id="submitButton" class="btn btn-xs btn-outline-success rounded-circle elevation-2" title="Agregar Registro">
+                                    <button type="submit" id="submitButton" class="btn btn-sm btn-outline-success rounded-circle elevation-2" title="Agregar Registro">
                                         <i class="fas fa-save"></i>
                                     </button>
-                                    <a href="{{ route('proveedores') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                    <a href="{{ route('proveedores') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
                                         <i class="fas fa-sign-out-alt"></i>
                                     </a>
                                 </div>
@@ -44,7 +44,15 @@
 
                         <div class="card-body p-2 p-md-4">
                             <div class="row">
-                                <div class="col-12 col-md-6 mb-2">
+                                <div class="col-12 col-md-2 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">N.I.T.</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="nit" name="nit" required value="{{ old('nit') }}" autofocus>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-5 mb-2">
                                     <div class="input-group input-group-sm">
                                         <div class="input-group-prepend">
                                             <label class="input-group-text">Razón Social</label>
@@ -52,7 +60,7 @@
                                         <input type="text" class="form-control" id="razon_social" name="razon_social" required value="{{ old('razon_social') }}" autofocus>
                                     </div>
                                 </div>
-                                <div class="col-12 col-md-6 mb-2">
+                                <div class="col-12 col-md-5 mb-2">
                                     <div class="input-group input-group-sm">
                                         <div class="input-group-prepend">
                                             <label class="input-group-text">Nombre Comercial</label>
@@ -141,7 +149,7 @@
                                     <div class="tab-content border rounded p-2 bg-white">
                                         <div class="tab-pane fade show active" id="contactos">
                                             <div class="d-flex justify-content-end mb-2">
-                                                <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-2" onclick="nuevoContacto(); return false;">
+                                                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" onclick="nuevoContacto(); return false;">
                                                     <i class="fas fa-plus"></i>
                                                 </button>
                                             </div>
@@ -249,7 +257,7 @@
             html += '</div>';
             html += '</td>';
             html += '<td style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-trash"></i></button>'
+            html += '<button class="btn btn-sm btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-trash"></i></button>'
             html += '</td>';    
             html += '</tr>';
             $('#tblcontactos tbody').append(html);

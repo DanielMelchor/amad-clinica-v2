@@ -150,6 +150,7 @@ class ProductoController extends Controller
         $validData = $request->validate([
             'producto_id'            => 'required',
             'inv_clasificacion_id'   => 'required',
+            'inv_familia_id'         => 'required',
             'descripcion'            => 'required'
         ]); 
 
@@ -171,6 +172,7 @@ class ProductoController extends Controller
 
         $producto = Producto::findOrFail($producto_id);
         $producto->clasificacion         = $validData['inv_clasificacion_id'];
+        $producto->inv_familia_id        = $validData['inv_familia_id'];
         $producto->siglas                = $siglas;
         $producto->descripcion           = $descripcion;
         $producto->descripcion_a_mostrar = $descripcion_a_mostrar;

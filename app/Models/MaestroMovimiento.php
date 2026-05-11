@@ -48,6 +48,16 @@ class MaestroMovimiento extends Model
         return $this->belongsTo(Bodega::class, 'bodega_origen_id');
     }
 
+    public function bodegaOrigen()
+    {
+        return $this->belongsTo(Bodega::class, 'bodega_origen_id');
+    }
+
+    public function bodegaDestino()
+    {
+        return $this->belongsTo(Bodega::class, 'bodega_destino_id');
+    }
+
     // Relación con los Detalles (Artículos)
     public function detalles()
     {

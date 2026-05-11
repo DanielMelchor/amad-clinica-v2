@@ -13,10 +13,10 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">Proveedores</h6>
                             <div class="btn-group-xs">
-                                <a href="{{ route('crear_proveedor') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2" title="Crear Proveedor">
+                                <a href="{{ route('crear_proveedor') }}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" title="Crear Proveedor">
                                     <i class="fas fa-plus-circle"></i>
                                 </a>
-                                <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
                                     <i class="fas fa-sign-out-alt"></i>
                                 </a>
                             </div>
@@ -27,6 +27,7 @@
                             <table class="table table-sm table-striped table-hover mb-0" id="tblprincipal">
                                 <thead class="thead-light">
                                     <tr style="font-size: 12px; text-align: center;">
+                                        <th>NIT</th>
                                         <th>Nombre</th>
                                         <th class="d-none d-md-table-cell">Dirección</th>
                                         <th>Teléfonos</th>
@@ -38,6 +39,7 @@
                                 <tbody style="font-size: 13px;">
                                     @foreach($proveedores as $p)
                                         <tr class="text-center">
+                                            <td>{{ $p->nit }}</td>
                                             <td class="align-middle text-left text-md-center font-weight-md-normal">
                                                 {{ $p->nombre_comercial }}
                                             </td>
@@ -50,7 +52,7 @@
                                                 </span>
                                             </td>
                                             <td class="align-middle">
-                                                <a href="{{ route('editar_proveedor', $p->id) }}" class="btn btn-xs btn-warning rounded-circle shadow-sm" title="Editar">
+                                                <a href="{{ route('editar_proveedor', $p->id) }}" class="btn btn-sm btn-warning rounded-circle shadow-sm" title="Editar">
                                                     <i class="fa fa-edit"></i>
                                                 </a>
                                             </td>

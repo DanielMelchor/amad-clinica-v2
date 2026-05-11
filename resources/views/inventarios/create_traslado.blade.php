@@ -82,7 +82,7 @@
     </style>
 @endsection
 
-@section('title', 'Ajustes')
+@section('title', 'Traslados')
 @section('content_header')
     <br>
 @endsection
@@ -90,12 +90,12 @@
     <div class="row pt-3">
         <div class="col-12 col-lg-12">
             <div class="card shadow-lg border-0">
-                <form role="form" id="FormaAjuste" method="POST" action="{{route('grabar_ajuste')}}">
+                <form role="form" id="FormaTraslado" method="POST" action="{{route('grabar_traslado')}}">
                     @csrf
                     <div class="card-header py-2" style="background-color: #E1E8ED;">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 font-weight-bold text-secondary">
-                                <i class="fas fa-tools mr-2"></i>Nuevo Ajuste
+                            <h6 class="mb-0 font-weight-bold">
+                                <i class="fas fa-tools mr-2"></i>Nuevo Traslado
                             </h6>
                             <div class="d-flex">
                                 <button type="submit" id="submitButton" class="btn btn-sm btn-outline-success rounded-circle mr-2 shadow-sm elevation-2" title="Guardar">
@@ -111,49 +111,68 @@
                     <div class="card-body p-3">
                         {{-- SECCIÓN CABECERA --}}
                         <div class="row mb-3">
-                            <div class="col-12 col-md-6 mb-2">
-                                <label class="small mb-0">Bodega</label>
-                                <select class="custom-select custom-select-sm select2bs4" id="bodega_id" name="bodega_id" required>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="small mb-0">Bodega Origen</label>
+                                <select class="form-control form-control-sm select2bs4 border-0" 
+                                        name="bodega_origen_id" 
+                                        id="bodega_origen_id" 
+                                        required 
+                                        style="width: 100%;">
                                     <option value="">Seleccione...</option>
                                     @foreach($bodegas as $pBodega)
                                         <option value="{{$pBodega->id}}">{{$pBodega->descripcion}}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-12 col-md-6 mb-2">
-                                <label class="small mb-0">Fecha</label>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="small mb-0">Bodega Destino</label>
+                                <select class="form-control form-control-sm select2bs4 border-0" 
+                                        name="bodega_destino_id" 
+                                        id="bodega_destino_id" 
+                                        required 
+                                        style="width: 100%;">
+                                    <option value="">Seleccione...</option>
+                                    @foreach($bodegas as $pBodega)
+                                        <option value="{{$pBodega->id}}">{{$pBodega->descripcion}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4 mb-2">
                                 <div class="input-group input-group-sm">
-                                    <input type="date" class="form-control form-control-sm" name="fecha" id="fecha" value="{{date('Y-m-d')}}" required>
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light font-weight-bold">Fecha</span>
+                                    </div>
+                                    <input type="date" class="form-control" name="fecha" id="fecha" value="{{date('Y-m-d')}}" required>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-6 mb-2">
-                                <label class="small mb-0">Motivo</label>
+                            <div class="col-12 mb-2">
                                 <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control form-control-sm" name="comentario" id="comentario" placeholder="Ej. Inventario inicial, corrección..." required>
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light font-weight-bold">Motivo</span>
+                                    </div>
+                                    <input type="text" class="form-control" name="comentario" id="comentario" placeholder="Ej. Inventario inicial, corrección..." required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="text-right mb-2">
-                            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-sm" style="background-color: #7FB3D5;" onclick="agregarFila();" title="Agregar Artículo">
+                            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-sm" style="background-color: #7FB3D5;" onclick="agregarFila();" title="Agregar Insumo">
                                 <i class="fas fa-plus mr-1"></i>
                             </button>
                         </div>
 
                         {{-- SECCIÓN DETALLE --}}
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover" id="tblDetalle">
-                                <thead class="bg-light">
-                                    <tr style="font-size: 12px; text-transform: uppercase;">
-                                        <th style="min-width: 150px;">Insumo</th>
-                                        <th style="width: 100px;">U.M.</th>
-                                        <th style="width: 100px;" class="text-center">Tipo</th>
-                                        <th style="width: 50px;" class="text-center" style="width: 15%">Cantidad</th>
+                        <div class="table-responsive" style="-webkit-overflow-scrolling: touch;">
+                            <table id="tblDetalle" class="table table-sm table-striped table-hover border">
+                                <thead class="bg-light shadow-sm">
+                                    <tr>
+                                        <th style="width: 50%">Insumo</th>
+                                        <th class="text-center">Medida</th>
+                                        <th class="text-center" style="width: 15%">Cantidad</th>
                                         <th class="text-center">Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -164,9 +183,32 @@
 @endsection
 
 @section('js')
+    @if(Session::has('message'))
+        <script>
+            Swal.fire({
+                title: "{{ Session::get('type') == 'success' ? '¡Éxito!' : 'Atención' }}",
+                text: "{{ Session::get('message') }}",
+                icon: "{{ Session::get('type') }}", // 'success' o 'error'
+                confirmButtonText: 'Aceptar'
+            }).then((result) => {
+                // Si fue error, habilitamos el botón para que el usuario corrija
+                if("{{ Session::get('type') }}" === 'error'){
+                    $('#submitButton').prop('disabled', false);
+                }
+            });
+        </script>
+        
+        {{-- Limpiamos la sesión para que no se repita el mensaje al recargar --}}
+        @php Session::forget(['message', 'type']); @endphp
+    @endif
     <script>
         $(document).ready(function() {
-            $('.select2').each(function() {
+            $('#bodega_origen_id').select2({
+                theme: 'bootstrap4',
+                width: 'style', // Esto hace que tome el ancho del elemento original
+                placeholder: 'Seleccione...'
+            });
+            $('.select2bs4').each(function() {
                 $(this).select2({
                     theme: 'bootstrap4',
                     width: '100%',
@@ -176,18 +218,8 @@
                     // dropdownParent: $(this).parent() 
                 });
             });
-
-            // Fix para que el buscador reciba el foco automáticamente al abrir
-            $(document).on('select2:open', () => {
-                document.querySelector('.select2-search__field').focus();
-            });
-            
-            $('#bodega_id').select2({
-                theme: 'bootstrap4',
-                width: '100%', // Esto soluciona el desbordamiento
-                placeholder: "Seleccione una bodega"
-            });
         });
+
 
         //========================================================================
         // Variables
@@ -195,31 +227,13 @@
         var nLinea = 0;
         var nFila  = 1;
         const productos_db = @json($productos);
-        productos_db.sort(compare);
-
-        //========================================================================
-        // funcion para ordenar detalle
-        //========================================================================
-
-        function compare(a,b){
-            const valorA = a.linea;
-            const valorB = b.linea;
-            let comparacion = 0;
-
-            if (valorA < valorB) {
-                comparacion = -1;
-            }else{
-                comparacion = 1;
-            }
-            return comparacion;
-        }
 
         function agregarFila() {
             let html = `
                 <tr>
                     <input type="hidden" name="productos[${nLinea}][id]" value="${nLinea}">
                     
-                    <td style="width: 150px;">
+                    <td style="min-width: 250px;">
                         <select class="custom-select custom-select-sm select2bs4" 
                                 id="productos[${nLinea}][articulo_id]" 
                                 name="productos[${nLinea}][articulo_id]" 
@@ -229,24 +243,19 @@
                         </select>
                     </td>
 
-                    <td style="width: 100px;">
+                    <td style="min-width: 120px;">
                         <select class="custom-select custom-select-sm select2bs4" 
-                                id="productos[${nLinea}][unidad_medida_id]" name="productos[${nLinea}][unidad_medida_id]" required>
+                                id="productos[${nLinea}][unidad_medida_id]" 
+                                name="productos[${nLinea}][unidad_medida_id]" 
+                                required>
+                            <option value="">Seleccionar...</option>
                         </select>
                     </td>
 
-                    <td style="width: 100px;">
-                        <select class="custom-select custom-select-sm select2bs4" 
-                                id="productos[${nLinea}][tipo]" name="productos[${nLinea}][tipo]" required>
-                                <option value="1">Ingreso (+)</option>
-                                <option value="-1">Egreso (-)</option>
-                        </select>
-                    </td>
-
-                    <td style="width: 50px; min-width: 50px;">
+                    <td style="width: 100px; min-width: 80px;">
                         <input type="number" class="form-control text-right" 
                             placeholder="0" id="productos[${nLinea}][cantidad]" name="productos[${nLinea}][cantidad]" 
-                            step="any" onchange="total_linea(${nLinea})" required>
+                            step="any" required>
                     </td>
 
                     <td class="text-center" style="width: 50px;">
@@ -279,39 +288,6 @@
             nLinea += 1;
         }
 
-        //========================================================================
-        // actualizar unidad de medida en base a producto seleccionado
-        //========================================================================
-        function actualizarMedidas(id){
-            var producto_id = document.getElementById("productos["+id+"][articulo_id]").value;
-            var select      = document.getElementById("productos["+id+"][unidad_medida_id]"); 
-            
-            $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('trae_medidas_x_producto') }}",
-                method: "POST",
-                data: {producto_id: producto_id},
-                success: function(response){
-                    var el = document.createElement("option");
-                    el.textContent = 'Seleccionar...';
-                    el.value = '';
-                    select.appendChild(el);
-                    for (var i = 0; i < response.length; i++) {
-                        var opt = response.length;
-                        var el = document.createElement("option");
-                        el.textContent = response[i]['unidad_medida_descripcion'];
-                        el.value = response[i]['unidad_medida_id'];
-                        select.appendChild(el);
-                    }
-                },
-                error: function(error){
-                    console.log(error);
-                }       
-            });
-        }
-
         function eliminarFila(btn) {
             if ($('#tblDetalle tbody tr').length > 1) {
                 $(btn).closest('tr').remove();
@@ -331,12 +307,52 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = "{{ route('lista_ajustes') }}";
+                    window.location.href = "{{ route('lista_traslados') }}";
                 }
             });
         }
 
-        $('#FormaAjuste').on('submit', function(e) {
+        function actualizarMedidas(linea){
+            var x = document.getElementById("productos["+linea+"][articulo_id]").selectedIndex;
+            var y = document.getElementById("productos["+linea+"][articulo_id]").options;
+            var producto_id = y[x].value;              
+
+            $.ajax({
+                url: "{{ route('trae_medidas_x_producto') }}",
+                type: "POST",
+                async: true,
+                data: {"_token": "{{ csrf_token() }}", producto_id: producto_id},
+                success: function(response){
+                    if (response.length == 0) {
+                        let dropdown = document.getElementById("productos["+linea+"][unidad_medida_id]");
+                        dropdown.length = 0;
+                        let option;
+                        option = document.createElement('option');
+                        option.text = 'Unidad';
+                        option.value = 1;
+                        dropdown.add(option);
+                    }else{
+                        let dropdown = document.getElementById("productos["+linea+"][unidad_medida_id]");
+                        dropdown.length = 0;
+                        let option;
+                        option = document.createElement('option');
+                        option.text = 'Seleccionar ....';
+                        option.value = '';
+                        for (let i = 0; i < response.length; i++) {
+                            option = document.createElement('option');
+                            option.text = response[i].unidad_medida_descripcion;
+                            option.value = response[i].unidad_medida_id;
+                            dropdown.add(option);
+                        }
+                    }
+                },
+                error: function(error){
+                    console.log(error);
+                } 
+            });
+        }
+
+        $('#FormaTraslado').on('submit', function(e) {
             e.preventDefault();
             $('#submitButton').prop('disabled', true);
             
@@ -346,12 +362,25 @@
                 data: $(this).serialize(),
                 success: function(response) {
                     Swal.fire("Éxito", "Ajuste guardado correctamente", "success")
-                        .then(() => window.location.href = "{{ route('lista_ajustes') }}");
+                        .then(() => window.location.href = "{{ route('lista_traslados') }}");
                 },
                 error: function(xhr) {
-                    $('#submitButton').prop('disabled', false);
+                    /*$('#submitButton').prop('disabled', false);
                     let mensaje = xhr.responseJSON ? xhr.responseJSON.message : "Error al guardar";
-                    Swal.fire("Error", mensaje, "error");
+                    Swal.fire("Error", mensaje, "error");*/
+                    $('#submitButton').prop('disabled', false);
+                    let mensaje = "Ocurrió un error al procesar el traslado.";
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        mensaje = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        title: "No se puede realizar el traslado",
+                        text: mensaje, // Aquí aparecerá: "El producto 'X' no está autorizado..."
+                        icon: "warning",
+                        confirmButtonText: "Revisar Detalle"
+                    });
                 }
             });
         });

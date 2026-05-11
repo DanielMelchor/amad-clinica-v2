@@ -38,16 +38,16 @@
 @section('content')
     <div class="container-fluid">
         <div class="row">
-            <div class="col-12 col-lg-10 offset-lg-1">
-                <div class="card shadow-sm border-0">
+            <div class="col-12 col-md-11 mx-auto">
+                <div class="card shadow-lg border-0">
                     <div class="card-header py-2" style="background-color: #E1E8ED;">
                         <div class="d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 font-weight-bold text-secondary">Listado de Compras</h6>
                             <div class="d-flex">
-                                <a href="{{ route('crear_compra') }}" class="btn btn-xs btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
+                                <a href="{{ route('crear_compra') }}" class="btn btn-sm btn-outline-primary rounded-circle elevation-2 mr-2" title="Nueva Compra">
                                     <i class="fas fa-plus-circle"></i>
                                 </a>
-                                <a href="{{ route('home') }}" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir">
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir">
                                     <i class="fas fa-sign-out-alt"></i>
                                 </a>
                             </div>
@@ -75,7 +75,7 @@
                                             <td class="numero">Q {{ number_format($l->total, 2, '.', ',') }}</td>
                                             <td>
                                                 @php $Id= Crypt::encrypt($l->id); @endphp
-                                                <a href="{{ route('editar_compra', $Id) }}" class="btn btn-xs btn-warning rounded-circle elevation-4" title="Editar Compra"> <i class="fas fa-edit"></i></a>
+                                                <a href="{{ route('editar_compra', $Id) }}" class="btn btn-sm btn-warning rounded-circle elevation-4" title="Editar Compra"> <i class="fas fa-edit"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

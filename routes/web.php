@@ -218,6 +218,8 @@ use Illuminate\Support\Facades\Route;
             Route::post('grabar',[BodegaController::class, 'store'])->name('bodega_grabar');
             Route::post('editar',[BodegaController::class, 'edit'])->name('bodega_editar');
             Route::post('actualizar',[BodegaController::class, 'update'])->name('bodega_actualizar');
+            Route::get('configuracion/{id}', [BodegaController::class, 'getConfiguracion'])->name('bodega_get_config');
+            Route::post('/bodegas/guardar-config', [BodegaController::class, 'guardarConfiguracion'])->name('bodega_guardar_config');
         });
 
         // Cajas
@@ -291,6 +293,7 @@ use Illuminate\Support\Facades\Route;
             Route::get('graficas_index/{fecha_inicial}/{fecha_final}', [GraficaController::class, 'index'])->name('graficas_index');
             Route::post('grp_data', [VentaController::class, 'trae_datos'])->name('grp_data');
             Route::get('admisiones_unificado/{fecha_inicial}/{fecha_final}/{tipo_admision}/{saldo}/{estado}', [ReporteController::class, 'adm_unificado_idx'])->name('rpt_admisiones_unificado');
+            Route::get('graficas/datos-grafica/{id}', [GraficaController::class, 'getDatosInsumos'])->name('datos_grafica_inventario');
         });
 
         // Bodegas
@@ -331,6 +334,21 @@ use Illuminate\Support\Facades\Route;
             Route::post('actualizar', [InvMovimientoController::class, 'update_compra'])->name('actualizar_compra');
             Route::post('trae_detalle_compra', [InvMovimientoController::class, 'trae_detalle_compra'])->name('trae_detalle_compra');        
         });
+
+        // Traslados
+        Route::group(['prefix' => 'invmov_traslado',
+                      'middleware' => ['permission:administrar-procesos-inventario-traslado']
+        ], function () { 
+            Route::get('listadoTraslados',[InvMovimientoController::class, 'index_traslado'])->name('lista_traslados');
+            Route::get('crearTraslado',[InvMovimientoController::class, 'create_traslado'])->name('crear_traslado');
+            Route::get('edicionTraslado/{traslado_id}',[InvMovimientoController::class, 'edit_traslado'])->name('editar_traslado');
+            Route::get('mostrarTraslado/{traslado_id}',[InvMovimientoController::class, 'show_traslado'])->name('mostrar_traslado');
+            Route::get('elimianr', [InvMovimientoController::class, 'destroy'])->name('transaccion_eliminar');
+            Route::post('grabar', [InvMovimientoController::class, 'store_traslado'])->name('grabar_traslado');
+            Route::post('actualizar', [InvMovimientoController::class, 'update_traslado'])->name('actualizar_traslado');
+            Route::post('trae_detalle_traslado', [InvMovimientoController::class, 'trae_detalle_traslado'])->name('trae_detalle_traslado');        
+        });
+
         // Clasificaciones
         Route::group(['prefix' => 'inv_clasificacion',
                       'middleware' => ['permission:ver-catalogo-inventarios-clasificaciones']
@@ -541,8 +559,8 @@ use Illuminate\Support\Facades\Route;
                   'middleware' => ['permission:ver-reporte-inventario-disponibles']
         ], function () {
             Route::get('disponibilidad_articulos', [ReporteController::class, 'disponibilidad_articulos_idx'])->name('rpt_disponible');
-            Route::get('disponibilidad_articulos_pdf', [ReporteController::class, 'disponibilidad_articulos_pdf'])->name('rpt_disponible_pdf');
-            Route::get('disponibilidad_articulos_xls', [ReporteController::class, 'disponibilidad_articulos_xls'])->name('rpt_disponible_xls');
+            //Route::get('disponibilidad_articulos_pdf', [ReporteController::class, 'disponibilidad_articulos_pdf'])->name('rpt_disponible_pdf');
+            //Route::get('disponibilidad_articulos_xls', [ReporteController::class, 'disponibilidad_articulos_xls'])->name('rpt_disponible_xls');
         });
 
         //=================================================================================
@@ -551,8 +569,8 @@ use Illuminate\Support\Facades\Route;
         Route::group(['prefix' => 'reportesinv',
                   'middleware' => ['permission:ver-reporte-inventario-kardex']
         ], function () {
-            Route::get('kardex_articulos/{producto_id}/{fecha_inicial}', [ReporteController::class, 'rpt_kardex_articulos'])->name('rpt_kardex_articulos');
-            Route::get('kardex_articulos_pdf/{producto_id}/{fecha_inicial}', [ReporteController::class, 'rpt_kardex_articulos_pdf'])->name('rpt_kardex_articulos_pdf');
+            Route::get('kardex_articulos', [ReporteController::class, 'rpt_kardex_articulos'])->name('rpt_kardex_articulos');
+            //Route::get('kardex_articulos_pdf/{producto_id}/{fecha_inicial}', [ReporteController::class, 'rpt_kardex_articulos_pdf'])->name('rpt_kardex_articulos_pdf');
         });
         //=================================================================================
         // Movimientos
@@ -560,8 +578,8 @@ use Illuminate\Support\Facades\Route;
         Route::group(['prefix' => 'reportesinv',
                   'middleware' => ['permission:ver-reporte-inventario-movimientos']
         ], function () {
-            Route::get('movimiento_articulos/{fecha_inicial}/{fecha_final}', [ReporteController::class, 'rpt_movimiento_articulos'])->name('rpt_movimiento_articulos');
-            Route::get('movimiento_articulos_pdf/{fecha_inicial}/{fecha_final}', [ReporteController::class, 'rpt_movimiento_articulos_pdf'])->name('rpt_movimiento_articulos_pdf');
+            Route::get('movimiento_articulos', [ReporteController::class, 'rpt_movimiento_articulos'])->name('rpt_movimiento_articulos');
+            //Route::get('movimiento_articulos_pdf/{fecha_inicial}/{fecha_final}', [ReporteController::class, 'rpt_movimiento_articulos_pdf'])->name('rpt_movimiento_articulos_pdf');
         });
 
         // Salas

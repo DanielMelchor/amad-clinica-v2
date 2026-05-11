@@ -28,4 +28,14 @@ class DetalleMovimiento extends Model
         // El segundo parámetro debe ser la llave foránea en tu tabla detalle_movimientos
         return $this->belongsTo(UnidadMedida::class, 'unidad_medida_id');
     }
+
+    public function maestro()
+    {
+        // Ajusta 'maestro_id' al nombre real de tu llave foránea
+        return $this->belongsTo(MaestroMovimiento::class, 'maestro_movimiento_id');
+    }
+
+    public function producto() {
+        return $this->belongsTo(Producto::class, 'producto_id');
+    }
 }

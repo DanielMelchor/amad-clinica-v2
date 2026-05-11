@@ -97,3 +97,36 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="configStockModal" data-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="card-header d-flex align-items-center" style="background-color: #F4F6F7;">
+                <h6 class="mb-0 flex-grow-1">Configuración de Stock: <span id="nombreBodegaConfig"></span></h6>
+                <button type="button" class="btn btn-sm btn-outline-success rounded-circle mr-2" onclick="fn_guardar_config();">
+                    <i class="fas fa-save"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" data-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <input type="hidden" id="config_bodega_id">
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-sm table-striped" id="tblConfigStock">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th width="150">Mínimo</th>
+                                <th width="150">Máximo</th>
+                                <th width="150">Punto Reorden</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyConfigStock">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

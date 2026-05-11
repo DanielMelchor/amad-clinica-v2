@@ -29,53 +29,75 @@ class ProveedorController extends Controller
         return view('proveedores.create', compact('lineasmedicas'));
     }
 
-    public function store(Request $Request){
-        // dd('entre '.$Request);
-        $proveedor = new Proveedor();
-        $proveedor->empresa_id       = Auth::user()->empresa_id;
-        $proveedor->razon_social     = $Request->razon_social;
-        $proveedor->nombre_comercial = $Request->nombre_comercial;
-        $proveedor->direccion        = $Request->direccion;
-        $proveedor->telefonos        = $Request->telefonos;
-        $proveedor->email            = $Request->email;
-        $proveedor->condicion        = $Request->condicion;
-        if ($Request->condicion == 0) {
-            $proveedor->dias_credito     = 0;
-        }else{
-            $proveedor->dias_credito     = $Request->dias_credito;
-        }
-        if (isset($Request->estado)) {
-            $proveedor->estado = 1;
-        }else{
-            $proveedor->estado = 0;
-        }
-        $proveedor->save();
+    public function store(Request $request){
+        //dd('entre '.$request);
+        $validData = $request->validate([
+            'nit'                   => 'required',
+            'razon_social'          => 'required',
+            'nombre_comercial'      => 'required',
+            'direccion'             => 'required',
+            'telefonos'             => 'required',
+            'email'                 => 'required',
+        ]);
 
-        $contactos = (array) $Request['contactos'];
-        $totalRegistros = count($contactos);
-
-        for ($i=0; $i < $totalRegistros ; $i++) {
-            $contacto = new LineaMedicaContacto;
-            $contacto->lineamedica_id  = intval($contactos[$i]['lineamedica_id']);
-            $contacto->proveedor_id    = $proveedor->id;
-            $contacto->nombre_contacto = $contactos[$i]['nombre_contacto'];
-            $contacto->telefonos       = $contactos[$i]['contacto_telefonos'];
-            $contacto->email           = $contactos[$i]['contacto_email'];
-            if (isset($contactos[$i]['contacto_estado'])) {
-                $contacto->estado          = 1;
+        DB::beginTransaction();
+        try {
+            $proveedor = new Proveedor();
+            $proveedor->empresa_id       = Auth::user()->empresa_id;
+            $proveedor->nit              = $validData['nit'];
+            $proveedor->razon_social     = $validData['razon_social'];
+            $proveedor->nombre_comercial = $validData['nombre_comercial'];
+            $proveedor->direccion        = $validData['direccion'];
+            $proveedor->telefonos        = $validData['telefonos'];
+            $proveedor->email            = $validData['email'];
+            $proveedor->condicion        = $request->condicion;
+            if ($request->condicion == 0) {
+                $proveedor->dias_credito     = 0;
             }else{
-                $contacto->estado          = 0;
+                $proveedor->dias_credito     = $request->dias_credito;
             }
-            
-            $contacto->save();
+
+            if (isset($request->estado)) {
+                $proveedor->estado = 1;
+            }else{
+                $proveedor->estado = 0;
+            }
+            $proveedor->save();
+
+            $contactos = (array) $request['contactos'];
+            $totalRegistros = count($contactos);
+
+            for ($i=0; $i < $totalRegistros ; $i++) {
+                $contacto = new LineaMedicaContacto;
+                $contacto->lineamedica_id  = intval($contactos[$i]['lineamedica_id']);
+                $contacto->proveedor_id    = $proveedor->id;
+                $contacto->nombre_contacto = $contactos[$i]['nombre_contacto'];
+                $contacto->telefonos       = $contactos[$i]['contacto_telefonos'];
+                $contacto->email           = $contactos[$i]['contacto_email'];
+                if (isset($contactos[$i]['contacto_estado'])) {
+                    $contacto->estado          = 1;
+                }else{
+                    $contacto->estado          = 0;
+                }
+                
+                $contacto->save();
+            }
+
+            DB::commit();
+
+            $message = array(
+                'message' => '! Registro almacenado con exito !',
+                'type'    => 'success'
+            );
+
+            return redirect()->route('editar_proveedor', [$proveedor->id])->with($message);
+
+        }catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Hubo un problema al actualizar el registro. {$request->context_agenda_id}: ' . $e->getMessage(),
+                'type'    => 'error'
+            ], 500);
         }
-
-        $message = array(
-            'message' => '! Registro almacenado con exito !',
-            'type'    => 'success'
-        );
-
-        return redirect()->route('editar_proveedor', [$proveedor->id])->with($message);
     }
 
     public function edit($id){

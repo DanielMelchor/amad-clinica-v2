@@ -44,10 +44,10 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">Edición de Proveedor</h6>
                                 <div class="btn-group-xs">
-                                    <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-2" title="Guardar Cambios">
+                                    <button type="submit" class="btn btn-sm btn-outline-success rounded-circle elevation-2" title="Guardar Cambios">
                                         <i class="fas fa-save"></i>
                                     </button>
-                                    <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir" onclick="confirma_salida(); return false;">
+                                    <a href="#" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir" onclick="confirma_salida(); return false;">
                                         <i class="fas fa-sign-out-alt"></i>
                                     </a>
                                 </div>
@@ -58,6 +58,14 @@
                             <input type="hidden" id="proveedor_id" name="proveedor_id" value="{{ $proveedor->id }}">
                             
                             <div class="row">
+                                <div class="col-12 col-md-6 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">N.I.T.</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="nit" name="nit" required value="{{ old('nit', $proveedor->nit) }}" autofocus>
+                                    </div>
+                                </div>
                                 <div class="col-12 col-md-6 mb-2">
                                     <div class="input-group input-group-sm">
                                         <div class="input-group-prepend">
@@ -152,7 +160,7 @@
                                     <div class="tab-content border rounded p-2 bg-white">
                                         <div class="tab-pane fade show active" id="contactos">
                                             <div class="d-flex justify-content-end mb-2">
-                                                <button type="button" class="btn btn-xs btn-outline-primary rounded-circle elevation-2" onclick="nuevoContacto(); return false;">
+                                                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle elevation-2" onclick="nuevoContacto(); return false;">
                                                     <i class="fas fa-plus"></i>
                                                 </button>
                                             </div>
@@ -312,7 +320,7 @@
             html += '</div>';
             html += '</td>';
             html += '<td style="text-align: right">';
-            html += '<button class="btn btn-xs btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-trash"></i></button>'
+            html += '<button class="btn btn-sm btn-outline-danger rounded-circle elevation-4 eliminar" title="eliminar registro"><i class="fas fa-trash"></i></button>'
             html += '</td>';    
             html += '</tr>';
             $('#tblcontactos tbody').append(html);

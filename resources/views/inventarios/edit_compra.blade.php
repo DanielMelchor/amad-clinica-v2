@@ -70,7 +70,7 @@
                 height: calc(1.5em + 1rem + 2px) !important; /* Más alto para dedos */
                 font-size: 16px !important; /* Evita que iOS haga zoom automático al enfocar */
             }
-            .btn-xs {
+            .btn-sm {
                 padding: 0.5rem !important; /* Botones más grandes */
                 font-size: 1rem !important;
             }
@@ -101,14 +101,14 @@
                 <div class="card shadow-sm">
                     <div class="card-header" style="background-color: #E1E8ED;">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 font-weight-bold">Nueva Compra</h6>
+                            <h6 class="mb-0 font-weight-bold"><i class="fas fa-shopping-cart">&nbsp;Edición Compra</i></h6>
                             <div>
                                 @if(!$esSoloLectura)
-                                <button type="submit" class="btn btn-xs btn-outline-success rounded-circle elevation-2" title="Guardar">
+                                <button type="submit" class="btn btn-sm btn-outline-success rounded-circle elevation-2" title="Guardar">
                                     <i class="fas fa-save"></i>
                                 </button>
                                 @endif
-                                <a href="#" class="btn btn-xs btn-outline-danger rounded-circle elevation-2" title="Salir" onclick="confirma_salida();">
+                                <a href="#" class="btn btn-sm btn-outline-danger rounded-circle elevation-2" title="Salir" onclick="confirma_salida();">
                                     <i class="fas fa-sign-out-alt"></i>
                                 </a>
                             </div>
@@ -204,7 +204,7 @@
 
                         <div class="text-right mb-2">
                             @if(!$esSoloLectura)
-                            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-sm" style="background-color: #7FB3D5;" onclick="agregarFila();" title="Agregar Artículo">
+                            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-sm" style="background-color: #7FB3D5;" onclick="agregarFila();" title="Agregar Insumo">
                                 <i class="fas fa-plus mr-1"></i>
                             </button>
                             @endif
@@ -214,7 +214,7 @@
                             <table id="tblDetalle" class="table table-sm table-striped table-hover border">
                                 <thead class="bg-light shadow-sm">
                                     <tr style="font-size: 11px; text-transform: uppercase;">
-                                        <th style="min-width: 200px;">Artículo</th>
+                                        <th style="min-width: 200px;">Insumo</th>
                                         <th style="width: 80px;">U.M.</th>
                                         <th style="width: 80px;">Cant.</th>
                                         <th style="width: 100px;">Unitario</th>
@@ -556,7 +556,7 @@
                     </td>
 
                     <td class="text-center" style="width: 50px;">
-                        <button type="button" class="btn btn-xs btn-outline-danger rounded-circle shadow-sm" 
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" 
                                 onclick="eliminarFila(this)">
                             <i class="fa fa-trash-alt"></i>
                         </button>
@@ -627,7 +627,7 @@
 
                     <td class="text-center" style="width: 50px;">
                         ${!esSoloLectura ? `
-                            <button type="button" class="btn btn-xs btn-outline-danger rounded-circle shadow-sm" 
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" 
                                     onclick="eliminarFila(this)">
                                 <i class="fa fa-trash-alt"></i>
                             </button>

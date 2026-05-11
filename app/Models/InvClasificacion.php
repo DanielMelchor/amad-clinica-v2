@@ -22,4 +22,9 @@ class InvClasificacion extends Model
     protected $fillable = ['id', 'nombre', 'definir_medidas', 'definir_dosis', 'definir_caracteristica', 'estado'];
     
     protected $hidden = ['empresa_id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
+
+    public function articulos()
+    {
+        return $this->hasMany(Articulo::class, 'inv_clasificacion_id');
+    }
 }
